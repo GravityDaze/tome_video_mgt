@@ -36,16 +36,14 @@
             <div :style="{width:curFocus===2?'100%':''}" class="line"></div>
           </label>
           <div
-            class="code my_hover"
+            class="code"
             :style="{backgroundImage:`url(${imgCodeUrl})`,backgroundSize:'100% 100%'}"
-            @click="getNewCode()"
+            @click="getCode"
           ></div>
         </div>
       </div>
       <div class="footer">
-        <div class="login_btn my_hover" @click="loginFn()">
-          <span>登录</span>
-        </div>
+        <div class="login_btn" @click="loginFn">登录</div>
       </div>
       <div class="copy">
         <p style="padding:0;margin:0">—— 途咪小视频 后台管理系统 ——</p>
@@ -56,6 +54,7 @@
 </template>
 
 <script>
+import { filterRouter } from '../utils/filterRouter'
 import { getCode, login, getMenu } from "@/request/api";
 export default {
   name: "login",
@@ -72,6 +71,7 @@ export default {
     };
   },
   created() {
+    this.enter();
     this.getCode();
   },
   methods: {
@@ -101,30 +101,34 @@ export default {
       // 登录接口
       const res = await login(this.ruleForm);
       if (res.data.resultStatus.resultCode === "0000") {
-        
         const token = res.data.value.access_token;
-        localStorage.setItem('token',token)
-        this.$store.commit("setToken",token);
-
-        this.$store.commit("setUserInfo", this.ruleForm.name);
-        localStorage.setItem("allScopeUserName", this.ruleForm.name);
-
+        this.$store.commit("saveToken",token);
+        this.$store.commit("saveUserInfo", this.ruleForm.name);
+        
         // 获取菜单权限接口
         const menuRes = await getMenu()
-        console.log(menuRes)
-        if(menuRes.data.resultStatus.resultCode === "0000"){
-          var menuK = menuRes.data.value;
-          this.$store.commit("getMenuVarArr", { menuVarArr: menuK });
-          this.$store.state.menuVarArr = [...menuK];
-          this.$router.push("/layout")
+        const { value,resultStatus } = menuRes.data
+        if(resultStatus.resultCode === "0000"){
+          const menuList = value;
+          this.$store.commit("saveMenuList", menuList );
+          this.$router.push("/")
         }else{
-          this.$message.warning(menuRes.data.resultStatus.resultMessage);
+          this.$message.warning(resultStatus.resultMessage);
         }
 
       } else {
         this.$message.warning(res.data.resultStatus.resultMessage);
         this.getCode()
       }
+    },
+    // 监听回车按钮
+    enter(){
+      // 回车键
+      const _this = this
+      document.onkeydown = function(){
+      const key = window.event.keyCode
+      key === 13 &&  _this.loginFn()
+    }
     }
   }
 };
@@ -218,6 +222,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+   cursor:pointer;
 }
 .footer {
   box-sizing: border-box;
@@ -234,6 +239,7 @@ input {
   width: 100%;
   border-radius: 5px;
   transition: 0.5s;
+  cursor:pointer;
 }
 
 .login_btn:hover {

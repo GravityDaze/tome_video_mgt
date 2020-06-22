@@ -8,9 +8,9 @@
           </div>
           <div>
             <div class="show_name">
-              <span>{{$store.state.allScopeUserName}}</span>
+              <span>{{userName}}</span>
             </div>
-            <div class="show_login_out my_hover" @click="loginOutFn()">
+            <div class="show_login_out my_hover" @click="logout">
               <span>退出登录</span>
             </div>
           </div>
@@ -71,6 +71,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { logout } from '../request/api' 
 export default {
   name: "layout",
   data() {
@@ -166,39 +168,28 @@ export default {
       // ],
     };
   },
-  mounted() {
-    let param = JSON.parse(localStorage.getItem("menuVarArr"));
-    // console.log('菜单数据：',param)
-    this.menuVar = [...param];
+  created() {
+    this.getMenuList()
   },
   methods: {
-    loginOutFn() {
+    // 获取菜单列表
+    getMenuList(){
+      this.menuVar = JSON.parse(this.menuList)
+      console.log(this.menuVar)
+    },
+
+    logout() {
       this.$confirm("确定退出吗?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
-        center: true
       })
-        .then(() => {
-          this.$axios({
-            method: "post",
-            url: "/v/sysLogout",
-            data: {
-              name: this.$store.state.allScopeUserName
-            }
-          }).then(res => {
-            // console.log('退出登录结果返回',res.data)
-            if (res.data.resultStatus.resultCode === "0000") {
-              this.$store.commit("loginOut");
-              this.$router.push("/");
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-          });
+        .then( async () => {
+          const res = await logout({name:this.userName})
+          localStorage.clear()
+          this.$router.push("/login")
         })
-        .catch(() => {
-          this.$message.warning("本次操作已取消");
-        });
+        .catch(() => {});
     },
 
     handleOpen(key, keyPath) {
@@ -211,7 +202,8 @@ export default {
       // console.log(this);
       // console.log(key, keyPath);
     }
-  }
+  },
+  computed:mapState(['userName','menuList'])
 };
 </script>
 

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
+import router from '../router'
 
 const BASE_URL = process.env.NODE_ENV === 'development' ? 'https://tome3pay.zhihuiquanyu.com' : 'https://tome3pay.zhihuiquanyu.com'
 const instance = axios.create({
@@ -18,23 +19,23 @@ instance.interceptors.request.use(config => {
 
 // 响应拦截器
 instance.interceptors.response.use(response => {
-    // console.log(response)
     return response
 }, err => {
     const { response } = err
     if (response) {
         switch (response.status) {
             case 401: //权限不足
+            Message.warning('登录过期')
                 break
-            case 403: //服务器拒绝执行
-                break
-            case 404: //not Found
+            case 404: 
+            Message.warning('404 NOT FOUND')
                 break
         }
+        console.log(response)
+        router.push('/login')
     } else {
         if (!window.navigator.onLine) {
-            // 断网
-            return
+            return Message.warning('网络错误')
         }
         return Promise.reject(err)
     }

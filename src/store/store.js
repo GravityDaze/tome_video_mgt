@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
+import router from "../router";
 
 Vue.use(Vuex);
 
@@ -14,18 +15,15 @@ const state = {
   pageSizeParam2: 10,
   totalParam2: 66,
   //权限控制以后，获取到的菜单数据数组
-  menuVarArr: localStorage.getItem("menuVarArr")
-    ? localStorage.getItem("menuVarArr")
+  menuList: localStorage.getItem("menuList")
+    ? localStorage.getItem("menuList")
     : "",
-  // isGoParam:false,//这个参数是为了阻止数据没有成功获取到，就直接跳转页面，导致数据用的是上一次的数据
-
-  // 存储token
+  // token
   token: localStorage.getItem("token") ? localStorage.getItem("token") : "",
-  // 代表全局用户名
-  // allScopeUserName: '默认用户名',
-  allScopeUserName: localStorage.getItem("allScopeUserName")
-    ? localStorage.getItem("allScopeUserName")
-    : "登录名",
+  // 用户名
+  userName: localStorage.getItem("userName")
+    ? localStorage.getItem("userName")
+    : "",
   //模态框相关参数
   scenerymanage: false,
   scenerymanageInfo: false,
@@ -88,29 +86,22 @@ const state = {
 const mutations = {
 
   // 保存用户名
-  setUserInfo(state,name){
-    state.allScopeUserName = name;
+  saveUserInfo(state,name){
+    localStorage.setItem("userName", name);
+    state.userName = name
   },
 
   // 将token存入localStorage
-  setToken(state, token) {
-    state.token = token;
+  saveToken(state, token) {
+    localStorage.setItem('token',token)
+    state.token = token
+    
   },
 
   // 登录成功后，默认获取后台返回的菜单权限数据数组，并放入缓存
-  getMenuVarArr(state, obj) {
-    // console.log('全局获取菜单数组数据，并存入缓存', obj)
-    if (localStorage.getItem("menuVarArr")) {
-      localStorage.removeItem("menuVarArr");
-    }
-    var myString = JSON.stringify(obj.menuVarArr);
-    // console.log('全局获取菜单数组数据，并存入缓存', obj,'myString:',myString)
-    localStorage.setItem("menuVarArr", myString);
-  },
-
-  loginOut(state) {
-    state.token = "";
-    localStorage.clear();
+  saveMenuList(state, menuList) {
+    localStorage.setItem("menuList", JSON.stringify(menuList));
+    state.menuList =  JSON.stringify(menuList)
   }
 };
 const actions = {};

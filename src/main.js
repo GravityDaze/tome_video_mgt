@@ -3,6 +3,7 @@
 import Vue from "vue";
 import App from "./App";
 import router from "./router";
+import './router/permit'
 import Vuex from "vuex";
 import axios from "axios";
 import ElementUI from "element-ui";
@@ -52,6 +53,8 @@ axios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+
 
 new Vue({
   router,
