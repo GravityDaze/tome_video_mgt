@@ -1,10 +1,9 @@
 import store from '@/store/store'
-export function filterRouter() { //遍历后台传来的路由字符串，转换为组件对象
+export function filterRouter() { //遍历后台传来的菜单数组转换为组件对象
 
     let router = []
-    const RouterMap = store.state.menuList
-    const RouterComps = JSON.parse(RouterMap)
-    for (const item of RouterComps) {
+    const RouterMap = JSON.parse(store.state.menuList)
+    for (const item of RouterMap) {
         router.push(item.child.map((v) => {
             return {
                 path: v.url,
@@ -20,6 +19,7 @@ export function filterRouter() { //遍历后台传来的路由字符串，转换
         path: "/",
         name: "layout",
         component: () => import('@/views/layout'),
+        redirect:router.flat()[0].path,
         children: router.flat()
     }]
 

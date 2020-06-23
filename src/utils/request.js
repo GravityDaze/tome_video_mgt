@@ -1,16 +1,16 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
 import router from '../router'
+import store from '../store'
 
-const BASE_URL = process.env.NODE_ENV === 'development' ? 'https://tome3pay.zhihuiquanyu.com' : 'https://tome3pay.zhihuiquanyu.com'
 const instance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: process.env.VUE_APP_BASE_URL,
     timeout: 10000
 })
 
 // 请求拦截器
 instance.interceptors.request.use(config => {
-    const token = localStorage.getItem('token')
+    const token = store.getters.token 
     token && (config.headers['Authorization'] = `Bearer ${token}`)
     return config
 }, err => {

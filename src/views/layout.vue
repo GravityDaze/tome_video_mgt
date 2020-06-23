@@ -8,9 +8,9 @@
           </div>
           <div>
             <div class="show_name">
-              <span>{{userName}}</span>
+              <span>{{username}}</span>
             </div>
-            <div class="show_login_out my_hover" @click="logout">
+            <div class="show_login_out my_hover" @click="handleLogout">
               <span>退出登录</span>
             </div>
           </div>
@@ -47,13 +47,13 @@
                   <!--此页面就只有两种选择，要么上面注释的代码为授权以前的，否则就是下面的加入授权控制后的更改-->
 
                   <template v-for="item in this.menuVar">
-                    <el-submenu :index="String(item.id)">
+                    <el-submenu :index="String(item.id)" :key="item.id">
                       <template slot="title">
                         <i class="iconfont icon-Dollar font18 icon_color"></i>
                         <span>{{item.name}}</span>
                       </template>
-                      <template v-for="item1 in item.child">
-                        <el-menu-item :index="item1.url">{{item1.name}}</el-menu-item>
+                      <template v-for="(item1,index) in item.child">
+                        <el-menu-item :index="item1.url" :key="index">{{item1.name}}</el-menu-item>
                       </template>
                     </el-submenu>
                   </template>
@@ -71,8 +71,8 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import { logout } from '../request/api' 
+import { mapGetters, mapActions } from 'vuex'
+// import { logout } from '../api/layout' 
 export default {
   name: "layout",
   data() {
@@ -172,22 +172,26 @@ export default {
     this.getMenuList()
   },
   methods: {
+    ...mapActions({logout:'user/logout',getMenu:'permission/getMenuList'}),
+
     // 获取菜单列表
     getMenuList(){
-      this.menuVar = JSON.parse(this.menuList)
-      console.log(this.menuVar)
+      this.getMenu().then( resolve=>{
+        console.log('成功获取菜单列表')
+        this.menuVar = JSON.parse(this.menuList)
+      } )
     },
 
-    logout() {
+    // 注销
+    handleLogout() {
       this.$confirm("确定退出吗?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       })
         .then( async () => {
-          const res = await logout({name:this.userName})
-          localStorage.clear()
-          this.$router.push("/login")
+          await this.logout(this.username)
+          this.$router.push('/login')
         })
         .catch(() => {});
     },
@@ -203,22 +207,15 @@ export default {
       // console.log(key, keyPath);
     }
   },
-  computed:mapState(['userName','menuList'])
+  computed:mapGetters(['username','menuList'])
 };
 </script>
 
 <style scoped>
-#header_div,
-#aside_div,
-#main_div {
-  /*border:1px solid red;*/
-}
-
 #header_div {
   /*width:100%;*/
   height: 80px !important;
-  background-image: url("../../static/bg1.png");
-  background-size: cover;
+  /* background-size: cover; */
   display: flex;
   align-items: center;
   justify-content: center;

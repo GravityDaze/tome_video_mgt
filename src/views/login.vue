@@ -2,17 +2,18 @@
   <div class="home_bg">
     <div class="login_content">
       <div class="title">
-        <img
-          class="logo"
-          src="http://39.108.113.236/wp-content/themes/tome_wordpress/images/logo.png"
-          alt
-        />
+        <img class="logo" src="../assets/images/logo.png" alt />
       </div>
       <div class="input_content">
         <div>
           <label>
             <span class="input1">用户名：</span>
-            <input @focus="curFocus=0" @blur="curFocus=-1" type="text" v-model.trim="ruleForm.name" />
+            <input
+              @focus="curFocus=0"
+              @blur="curFocus=-1"
+              type="text"
+              v-model.trim="loginForm.name"
+            />
             <div :style="{width:curFocus===0?'100%':''}" class="line"></div>
           </label>
         </div>
@@ -24,7 +25,7 @@
               @focus="curFocus=1"
               @blur="curFocus=-1"
               type="password"
-              v-model.trim="ruleForm.password"
+              v-model.trim="loginForm.password"
             />
             <div :style="{width:curFocus===1?'100%':''}" class="line"></div>
           </label>
@@ -32,7 +33,12 @@
         <div>
           <label>
             <span class="input3">验证码：</span>
-            <input @focus="curFocus=2" @blur="curFocus=-1" type="text" v-model.trim="ruleForm.code" />
+            <input
+              @focus="curFocus=2"
+              @blur="curFocus=-1"
+              type="text"
+              v-model.trim="loginForm.code"
+            />
             <div :style="{width:curFocus===2?'100%':''}" class="line"></div>
           </label>
           <div
@@ -54,14 +60,14 @@
 </template>
 
 <script>
-import { filterRouter } from '../utils/filterRouter'
-import { getCode, login, getMenu } from "@/request/api";
+import { getCode } from "@/api/user";
+import { mapActions } from "vuex";
 export default {
   name: "login",
   data() {
     return {
       imgCodeUrl: "",
-      ruleForm: {
+      loginForm: {
         name: "",
         password: "",
         code: "",
@@ -75,60 +81,47 @@ export default {
     this.getCode();
   },
   methods: {
+    ...mapActions({login: "user/login"}),
+
     // 获取验证码
     async getCode() {
-      const num = Math.ceil(Math.random() * 10); //生成一个随机数（防止缓存）
       const res = await getCode();
       const { url, baseURL } = res.config;
-      this.imgCodeUrl = baseURL + url + "?" + num;
+      this.imgCodeUrl = baseURL + url + "?" + Date.now();
     },
 
     // 登录
     async loginFn() {
-
-      if (!this.ruleForm.name) {
+      if (!this.loginForm.name) {
         this.$message.warning("请输入用户名！");
         return;
       }
-      if (!this.ruleForm.password) {
+      if (!this.loginForm.password) {
         this.$message.warning("请输入密码！");
         return;
       }
-      if (!this.ruleForm.code) {
+      if (!this.loginForm.code) {
         this.$message.warning("请输入验证码！");
         return;
       }
-      // 登录接口
-      const res = await login(this.ruleForm);
-      if (res.data.resultStatus.resultCode === "0000") {
-        const token = res.data.value.access_token;
-        this.$store.commit("saveToken",token);
-        this.$store.commit("saveUserInfo", this.ruleForm.name);
-        
-        // 获取菜单权限接口
-        const menuRes = await getMenu()
-        const { value,resultStatus } = menuRes.data
-        if(resultStatus.resultCode === "0000"){
-          const menuList = value;
-          this.$store.commit("saveMenuList", menuList );
-          this.$router.push("/")
-        }else{
-          this.$message.warning(resultStatus.resultMessage);
+      // dispatch actions
+      this.login(this.loginForm).then(errMsg => {
+        if (errMsg) {
+          this.$message.warning(errMsg);
+          this.getCode();
+        } else {
+          this.$router.push("/");
         }
-
-      } else {
-        this.$message.warning(res.data.resultStatus.resultMessage);
-        this.getCode()
-      }
+      });
     },
+
     // 监听回车按钮
-    enter(){
+    enter() {
       // 回车键
-      const _this = this
-      document.onkeydown = function(){
-      const key = window.event.keyCode
-      key === 13 &&  _this.loginFn()
-    }
+      document.onkeydown = () => {
+        const key = window.event.keyCode;
+        key === 13 && this.loginFn();
+      };
     }
   }
 };
@@ -222,7 +215,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-   cursor:pointer;
+  cursor: pointer;
 }
 .footer {
   box-sizing: border-box;
@@ -239,7 +232,7 @@ input {
   width: 100%;
   border-radius: 5px;
   transition: 0.5s;
-  cursor:pointer;
+  cursor: pointer;
 }
 
 .login_btn:hover {
