@@ -1,10 +1,12 @@
-import Vue from 'vue'; 
-const vm = new Vue();
+/*
+*  视频下载方法    
+*/
+import request from './request'
 export function downVideo(url, name) {
-     return vm.$axios({
+     return request({
           method: 'get',
           url,
-          responseType: 'blob' 
+          responseType: 'blob'
      }).then(async response => {
           const href = URL.createObjectURL(response.data); //根据二进制对象创造新的链接
           const a = document.createElement('a');

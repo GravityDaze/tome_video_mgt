@@ -26,7 +26,6 @@
                   :unique-opened="state"
                   class="el-menu-vertical-demo"
                   background-color="#202D3D"
-                  @select="handleSelect"
                   router
                   text-color="#fff"
                   active-text-color="#FA8819"
@@ -46,7 +45,7 @@
 
                   <!--此页面就只有两种选择，要么上面注释的代码为授权以前的，否则就是下面的加入授权控制后的更改-->
 
-                  <template v-for="item in this.menuVar">
+                  <template v-for="item in JSON.parse(this.menuList)">
                     <el-submenu :index="String(item.id)" :key="item.id">
                       <template slot="title">
                         <i class="iconfont icon-Dollar font18 icon_color"></i>
@@ -169,18 +168,10 @@ export default {
     };
   },
   created() {
-    this.getMenuList()
+
   },
   methods: {
-    ...mapActions({logout:'user/logout',getMenu:'permission/getMenuList'}),
-
-    // 获取菜单列表
-    getMenuList(){
-      this.getMenu().then( resolve=>{
-        console.log('成功获取菜单列表')
-        this.menuVar = JSON.parse(this.menuList)
-      } )
-    },
+    ...mapActions({logout:'user/logout'}),
 
     // 注销
     handleLogout() {
@@ -190,21 +181,14 @@ export default {
         type: "warning",
       })
         .then( async () => {
-          await this.logout(this.username)
-          this.$router.push('/login')
+          try{
+            await this.logout(this.username)
+            this.$router.push('/login')
+          }catch(err){
+            this.$router.push('/login')
+          }
         })
         .catch(() => {});
-    },
-
-    handleOpen(key, keyPath) {
-      // console.log(key, keyPath);
-    },
-    handleClose(key, keyPath) {
-      // console.log(key, keyPath);
-    },
-    handleSelect(key, keyPath) {
-      // console.log(this);
-      // console.log(key, keyPath);
     }
   },
   computed:mapGetters(['username','menuList'])

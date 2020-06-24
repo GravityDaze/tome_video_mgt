@@ -43,7 +43,7 @@
           </label>
           <div
             class="code"
-            :style="{backgroundImage:`url(${imgCodeUrl})`,backgroundSize:'100% 100%'}"
+            :style="{backgroundImage:`url(${codeUrl})`,backgroundSize:'100% 100%'}"
             @click="getCode"
           ></div>
         </div>
@@ -66,7 +66,7 @@ export default {
   name: "login",
   data() {
     return {
-      imgCodeUrl: "",
+      codeUrl: "",
       loginForm: {
         name: "",
         password: "",
@@ -81,13 +81,18 @@ export default {
     this.getCode();
   },
   methods: {
-    ...mapActions({login: "user/login"}),
+    ...mapActions(
+      { 
+        login: "user/login" ,
+        getMenuList: "permission/getMenuList" 
+      }
+    ),
 
     // 获取验证码
     async getCode() {
       const res = await getCode();
       const { url, baseURL } = res.config;
-      this.imgCodeUrl = baseURL + url + "?" + Date.now();
+      this.codeUrl = baseURL + url + "?" + Date.now();
     },
 
     // 登录
@@ -104,20 +109,23 @@ export default {
         this.$message.warning("请输入验证码！");
         return;
       }
-      // dispatch actions
-      this.login(this.loginForm).then(errMsg => {
-        if (errMsg) {
-          this.$message.warning(errMsg);
+      // 登录actions
+      this.login(this.loginForm)
+        .then(() => {
+          // 获取菜单actions
+          this.getMenuList()
+            .then(resolve => {
+              this.$router.push("/");
+            })
+            .catch(() => {});
+        })
+        .catch(() => {
           this.getCode();
-        } else {
-          this.$router.push("/");
-        }
-      });
+        });
     },
 
     // 监听回车按钮
     enter() {
-      // 回车键
       document.onkeydown = () => {
         const key = window.event.keyCode;
         key === 13 && this.loginFn();
@@ -130,7 +138,7 @@ export default {
 <style scoped>
 .home_bg {
   height: 100vh;
-  background-image: url("http://thecodeplayer.com/uploads/media/gs.png");
+  background-image: url("../assets/images/gs.png");
   background-repeat: repeat;
   display: flex;
   justify-content: center;

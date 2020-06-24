@@ -6,8 +6,8 @@ import Vuex from "vuex";
 import axios from "axios";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
-// import store from "./store/store";
-import store from "./store"
+// import store from "./store/store"; // 原vuex
+import store from "./store" //模块化vuex
 
 //引入rem转化
 // require("rem-init")({
@@ -18,6 +18,8 @@ import store from "./store"
 Vue.use(ElementUI);
 Vue.use(Vuex);
 Vue.prototype.$axios = axios;
+
+// baseURL  ( request.js 待废除 2020/6/24) 
 axios.defaults.baseURL =  "https://tome3pay.zhihuiquanyu.com"
 
 
@@ -33,7 +35,7 @@ Vue.component("mySearchs", mySearchs);
 Vue.component("priceSets", priceSets);
 Vue.component("treeviewComponent", treeviewComponent);
 
-// 添加请求拦截器，在请求头中加token
+// 添加请求拦截器，在请求头中加token (拦截器已放入request.js 本代码块待废除 2020/6/24)
 axios.interceptors.request.use(
   config => {
     if (localStorage.getItem("token")) {

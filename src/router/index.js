@@ -9,11 +9,12 @@ export const constantRouterMap = [
     name: "login",
     component: ()=>import('@/views/login')
   },
-   { 
-     path: "/",
-     name: "layout",
-     component: ()=>import('@/views/layout')
-   }
+    // 首页布局
+  //  { 
+  //    path: "/",
+  //    name: "layout",
+  //    component: ()=>import('@/views/layout')
+  //  }
 ]
 
 //实例化vue的时候只挂载constantRouter

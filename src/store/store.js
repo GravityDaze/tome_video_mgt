@@ -1,3 +1,5 @@
+// 旧版vuex 待废除 已启用模块化vuex
+
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
