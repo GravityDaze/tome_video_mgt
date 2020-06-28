@@ -1,4 +1,5 @@
 import { login, logout } from '@/api/user'
+import { resetRouter } from '@/router'
 
 const state = {
   token: localStorage.getItem('token') || '',
@@ -12,7 +13,7 @@ const mutations = {
   SET_USER_NAME(state, username) {
     state.username = username
   },
-  RESET(state) {
+  RESET_USER_INFO(state) {
     state.token = ''
     state.username = ''
   }
@@ -42,17 +43,20 @@ const actions = {
     return new Promise(async (resolve, reject) => {
       try {
         await logout({ name: username })
-        console.log(rootState)
-        commit('RESET')
-        localStorage.clear()
         resolve()
       } catch (err) {
-        commit('RESET')
-        localStorage.clear()
         reject(err)
-      }
+      } finally {
+        // 重置vuex中的数据
+        commit('RESET_USER_INFO')
+        commit('permission/RESET_ROUTER',[],{root:true})
+        localStorage.clear()
+        // 重新实例化vue-router清除动态路由的缓存
+        resetRouter()
+      } 
     })
   }
+
 }
 
 export default {

@@ -1,4 +1,4 @@
-import { getMenu } from '@/api/permission'
+import { getMenu } from '@/api/user'
 import { filterRouter }  from '@/utils/filterRouter'
 
 const state = {
@@ -12,6 +12,9 @@ const mutations = {
   },
   SET_ROUTER(state,routerMap){
     state.routerMap = routerMap
+  },
+  RESET_ROUTER(state){
+    state.routerMap = []
   }
 }
 
@@ -37,7 +40,6 @@ const actions = {
         commit('SET_ROUTER',filterRouter())
         resolve()
       }catch(err){
-        console.log(err)
         reject(err)
       }
     } )

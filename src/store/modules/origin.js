@@ -1,31 +1,14 @@
-// 旧版vuex 待废除 已启用模块化vuex
-
-import Vue from "vue";
-import Vuex from "vuex";
-import axios from "axios";
-import router from "../router";
-
-Vue.use(Vuex);
+// 上一个前端写的旧版vuex 待重构 因各处需要调用已去除命名空间
 
 const state = {
   //页码控制组件参数
   pageNumParam: 1,
   pageSizeParam: 10,
   totalParam: 90,
-  // routes:[],
   pageNumParam2: 1,
   pageSizeParam2: 10,
   totalParam2: 66,
-  //权限控制以后，获取到的菜单数据数组
-  menuList: localStorage.getItem("menuList")
-    ? localStorage.getItem("menuList")
-    : "",
-  // token
-  token: localStorage.getItem("token") ? localStorage.getItem("token") : "",
-  // 用户名
-  userName: localStorage.getItem("userName")
-    ? localStorage.getItem("userName")
-    : "",
+
   //模态框相关参数
   scenerymanage: false,
   scenerymanageInfo: false,
@@ -87,29 +70,11 @@ const state = {
 };
 const mutations = {
 
-  // 保存用户名
-  saveUserInfo(state,name){
-    localStorage.setItem("userName", name);
-    state.userName = name
-  },
-
-  // 将token存入localStorage
-  saveToken(state, token) {
-    localStorage.setItem('token',token)
-    state.token = token
-    
-  },
-
-  // 登录成功后，默认获取后台返回的菜单权限数据数组，并放入缓存
-  saveMenuList(state, menuList) {
-    localStorage.setItem("menuList", JSON.stringify(menuList));
-    state.menuList =  JSON.stringify(menuList)
-  }
 };
 const actions = {};
 
-export default new Vuex.Store({
+export default {
   state,
   mutations,
   actions
-});
+};

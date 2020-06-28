@@ -12,3 +12,6 @@ export const login = data => request.post('/v/sysLogin',data)
 
 // 注销
 export const logout = data=> request.post('/v/sysLogout',data)
+
+// 获取该用户的菜单信息
+export const  getMenu = ()=> request.get('/videomis/menu/auth')

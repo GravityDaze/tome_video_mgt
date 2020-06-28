@@ -6,8 +6,7 @@ import Vuex from "vuex";
 import axios from "axios";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
-// import store from "./store/store"; // 原vuex
-import store from "./store" //模块化vuex
+import store from "./store" 
 
 //引入rem转化
 // require("rem-init")({

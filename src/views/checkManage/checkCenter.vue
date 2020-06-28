@@ -1,12 +1,9 @@
 <template>
   <div class="checkCenter">
-    <searchs
-      @query="query"
-      :formData="formData"
-    />
+    <searchs @query="query" :formData="formData" />
     <my-tables
       v-loading="loading"
-       element-loading-text="下载中,请稍后"
+      element-loading-text="下载中,请稍后"
       :tableTitle="filterTitle"
       :tableData="tableData"
       :isShowEnabled="true"
@@ -16,8 +13,8 @@
       @queryInfoFn="queryInfo"
       @checkStart="checkStart"
       @download="download"
-      @checkPass="checkPass"
-      @checkRefuse="checkRefuse"
+      @checkPass="approved"
+      @checkRefuse="disapproved"
       @upload="upload"
       @preview="preview"
     />
@@ -44,41 +41,42 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancelDialog">取 消</el-button>
-        <el-button type="primary" :disabled="uploadDialogDisabled" @click="uploadReady">确 定</el-button>
+        <el-button type="primary" :disabled="uploadDialogDisabled" @click="uploadFinish">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 上传对话框 end -->
 
-
     <!-- 审核不通过对话框 begin -->
-      <el-dialog title="请填写拒绝备注" :visible.sync="refuseDialogvisible">
-        <el-form>
-          <el-form-item>
-              <el-input type="textarea" v-model="remark"></el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="refuseDialogvisible = false">取 消</el-button>
-          <el-button type="primary" @click="refuse">确 定</el-button>
-        </div>
-      </el-dialog>
+    <el-dialog title="请填写拒绝备注" :visible.sync="refuseDialogvisible">
+      <el-form>
+        <el-form-item>
+          <el-input type="textarea" v-model="remark"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="refuseDialogvisible = false">取 消</el-button>
+        <el-button type="primary" @click="refuse">确 定</el-button>
+      </div>
+    </el-dialog>
     <!-- 审核不通过对话框 end -->
   </div>
 </template>
 
 <script>
+import {
+  queryVideoList,
+  queryChecking,
+  checkStartApi,
+  getupLoadParmas,
+  uploadFinishApi,
+  postAuditStatus
+} from "@/api/checkManage";
 import { mapState } from "vuex";
 import { downVideo } from "@/utils/downVideo";
 import myTables from "@/components/myTables";
 import Searchs from "@/components/Searchs";
 export default {
   data() {
-
-    // 表单组件默认值
-    let status
-
-
-
     return {
       // 表头默认状态 0未审核 1正在审核  2:审核通过 3:审核不通过
       status: 0,
@@ -136,7 +134,7 @@ export default {
           prop: "statusUpload",
           label: "视频是否已重新上传",
           align: "center",
-          formatter: row => (row.statusUpload? "是" : "否")
+          formatter: row => (row.statusUpload ? "是" : "否")
         },
         {
           prop: "proName",
@@ -154,62 +152,58 @@ export default {
           align: "center"
         }
       ], //初始表头数据
-      formData:[
-                {
-                    type:'select',
-                    label:'状态',
-                    model:'status',
-                    placeholder:'请选择审核状态',
-                    options:[
-                        {
-                            label:'未审核',
-                            value:0
-                        },
-                        {
-                            label:'正在审核',
-                            value:1
-                        },
-                         {
-                            label:'审核成功',
-                            value:2
-                        },
-                         {
-                            label:'审核未通过',
-                            value:3
-                        }
-                    ]
-                },
-                {
-                    type:'input',
-                    label:'审批人',
-                    model:'examineUserName',
-                    placeholder:'请输入审批人'
-                },
-                {
-                    type:'datePicker',
-                    label:'时间范围',
-                    model:'createDatetime'
-                }
-      ],//初始表单数据
+      formData: [
+        {
+          type: "select",
+          label: "状态",
+          model: "status",
+          placeholder: "请选择审核状态",
+          options: [
+            {
+              label: "未审核",
+              value: 0
+            },
+            {
+              label: "正在审核",
+              value: 1
+            },
+            {
+              label: "审核成功",
+              value: 2
+            },
+            {
+              label: "审核未通过",
+              value: 3
+            }
+          ]
+        },
+        {
+          type: "input",
+          label: "审批人",
+          model: "examineUserName",
+          placeholder: "请输入审批人"
+        },
+        {
+          type: "datePicker",
+          label: "时间范围",
+          model: "createDatetime"
+        }
+      ], //初始表单数据
       tableData: [], //表格数据
       upLoadDiaglogVisible: false, //上传对话框状态
-      refuseDialogvisible:false, //审核不通过对话框状态
-      remark:'', //备注
+      refuseDialogvisible: false, //审核不通过对话框状态
+      remark: "", //备注
       uploadDialogDisabled: true, //对话框确定按钮状态
-      videoUrl:'', //上传成功后预览的视频地址
-      token:'',//当前视频token
-      id:'',//当前视频的id
-      tips:'',//上传提示信息
-      loading:false,
-      uploading:false,
-      videoInfo:{},//视频相关信息
-      timer: null, //定时器
-      pageNum: this.$store.state.pageNumParam,
-      pageSize: this.$store.state.pageSizeParam,
+      videoUrl: "", //上传成功后预览的视频地址
+      token: "", //当前视频token
+      id: "", //当前视频的id
+      tips: "", //上传提示信息
+      loading: false,
+      uploading: false,
+      videoInfo: {}, //视频相关信息
+      timer: null //定时器
     };
   },
-
-  computed: mapState(['pageNumParam','pageSizeParam']),
 
   watch: {
     status() {
@@ -219,285 +213,254 @@ export default {
 
   methods: {
     // 获取视频信息
-    async getVideoList(data = { status: this.status , pageNum:this.pageNumParam , pageSize:this.pageSizeParam }) {
-    
-      const res = await this.$axios.post("/videomis/examine/query", data);
+    async getVideoList( data = {
+        status: this.status,
+        pageNum: this.$store.state.pageNumParam,
+        pageSize: this.$store.state.pageSizeParam
+      }) {
+      
+      console.log( data )
+      const res = await queryVideoList(data);
       const { value, resultStatus } = res.data;
-      if (resultStatus.resultCode === "0000") {
-        
-        // 如果查询参数中有data.status,则更改
-        if (data.status !== undefined) {
-          this.status = data.status;
-          console.log(this.status);
-        }
-        //创建过滤数组
-        let filter;
-        switch (this.status) {
-          case 0:
-            filter = [
-              "proName",
-              "proCoverUrl",
-              "proUrl",
-              "remark",
-              "examineDatetime",
-              "examineUserName",
-              "statusUpload"
-            ];
-            break;
-
-          case 1:
-            filter = [
-              "proName",
-              "proCoverUrl",
-              "proUrl",
-              "remark",
-              "examineDatetime",
-              "examineUserName"
-            ];
-            break;
-
-          case 3:
-            filter = [
-              "proName",
-              "proCoverUrl",
-              "proUrl",
-              "examineUserName",
-              "examineDatetime",
-              "statusUpload"
-            ];
-            break;
-          default:
-            filter = [];
-        }
-
-        // 过滤表头
-        this.filterTitle = this.tableTitle.filter(
-          v => !filter.includes(v.prop)
-        );
-        // 查询完毕后判断是否需要关闭定时器
-        if (this.status !== 0 || data.createDatetime || data.examineUserName) {
-          clearInterval(this.timer);
-          this.timer = null;
-        } else if (this.timer === null) {
-          // 重新开启定时器
-          const count = () => {
-            this.getVideoList();
-            return count;
-          };
-          this.timer = setInterval(count(), 3000);
-        }
-
-        // 赋值
-        this.tableData = value.list;
-        // 完成分页
-        this.$store.state.totalParam = res.data.value.total
-
+      // 如果查询参数中有data.status,则更改
+      if (data.status !== undefined) {
+        this.status = data.status;
       }
+      //创建过滤数组
+      let filter;
+      switch (this.status) {
+        case 0:
+          filter = [
+            "proName",
+            "proCoverUrl",
+            "proUrl",
+            "remark",
+            "examineDatetime",
+            "examineUserName",
+            "statusUpload"
+          ];
+          break;
+
+        case 1:
+          filter = [
+            "proName",
+            "proCoverUrl",
+            "proUrl",
+            "remark",
+            "examineDatetime",
+            "examineUserName"
+          ];
+          break;
+
+        case 3:
+          filter = [
+            "proName",
+            "proCoverUrl",
+            "proUrl",
+            "examineUserName",
+            "examineDatetime",
+            "statusUpload"
+          ];
+          break;
+        default:
+          filter = [];
+      }
+
+      // 过滤表头
+      this.filterTitle = this.tableTitle.filter(v => !filter.includes(v.prop));
+      // 查询完毕后判断是否需要关闭定时器
+      if (this.status !== 0 || data.createDatetime || data.examineUserName) {
+        clearInterval(this.timer);
+        this.timer = null;
+      } else if (this.timer === null) {
+        // 重新开启定时器
+        const count = () => {
+          this.getVideoList();
+          return count;
+        };
+        this.timer = setInterval(count(), 3000);
+      }
+
+      // 赋值
+      this.tableData = value.list;
+      // 完成分页
+      this.$store.state.totalParam = res.data.value.total;
     },
 
     // 初始化查询是否有正在审核的视频
     async isChecking() {
-      const res = await this.$axios.get("/videomis/examine/existed");
+      const res = await queryChecking();
       const { resultStatus, value } = res.data;
-      if (resultStatus.resultCode === "0000") {
-        this.status = value.flag;
-      }
+      this.status = value.flag;
     },
     // 开启审核
     async checkStart(params) {
-      const res = await this.$axios.get("/videomis/examine/appoint", {
-        params
-      });
+      const res = await checkStartApi(params);
       const { resultStatus, value } = res.data;
-      if (resultStatus.resultCode === "0000") {
-        this.$message({
-          message: "已成功开启视频审核",
-          type: "success"
-        });
-        this.status = 1
-        this.getVideoList()
-
-      } else {
-        this.$message({
-          message: resultStatus.resultMessage,
-          type: "warning"
-        });
-      }
+      this.$message.success('已开启审核')
+      this.status = 1;
+      this.getVideoList();
     },
     // 预览视频
-    preview(data){
-      window.open(data.url)
+    preview(data) {
+      window.open(data.url);
     },
 
     // 下载视频
     download(data) {
-      this.loading = true
-      downVideo(data.url, data.name).then( ()=>{
-        this.loading=false
-      } ).catch( ()=>{
-        this.loading=false
-      } )
+      this.loading = true;
+      downVideo(data.url, data.name)
+        .then(() => {
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+        });
     },
 
     // 打开对话框并获取上传视频前必要的参数
-    async upload(params) { 
-      //通过id获取上传token  
-      const res = await this.$axios.get('/videomis/upload/uploadExamineAuth',{params})
-      if(res.data.resultStatus.resultCode === '0000'){
-          this.token = res.data.value.token
-          this.upLoadDiaglogVisible = true
-         
-      }else{
-          this.$message.error(res.data.resultStatus.resultMessage);
-      }  
-
+    async upload(params) {
+      //通过id获取上传token
+      const res = await getupLoadParmas(params);
+      this.token = res.data.value.token;
+      this.upLoadDiaglogVisible = true;
       //保存id
-      this.id = params.id 
-
-
+      this.id = params.id;
     },
 
-      // 关闭对话框
-    cancelDialog(){
-      this.$message.info('已取消上传')
+    // 关闭对话框
+    cancelDialog() {
+      this.$message.info("已取消上传");
       // 停止上传
-      this.$refs.upload.abort()
+      this.$refs.upload.abort();
       // 清空已上传的文件列表
-      this.$refs.upload.clearFiles()
+      this.$refs.upload.clearFiles();
       // 清除预览视频
-      this.videoUrl = ""
+      this.videoUrl = "";
       // 关闭对话框和加载动画
-      this.uploading = false
-      this.upLoadDiaglogVisible = false
+      this.uploading = false;
+      this.upLoadDiaglogVisible = false;
     },
 
-    
     // 上传视频之前检查是否是mp4格式
-    beforeUploadSuccess(file){
-        if (['video/mp4'].indexOf(file.type) == -1) { //'video/ogg', 'video/flv', 'video/avi', 'video/wmv', 'video/rmvb'
-            this.$message.error('请上传正确的视频格式');
-            return false
-        }else{
-            this.uploading = true
-        }
-    },
-
-    // 获取上传进度
-    onUploading(event){
-       this.tips = `正在上传中，请勿关闭对话框或刷新页面 ${parseInt(event.percent)}%`
-    },
-
-
-    // 上传视频成功
-    onUploadSuccess(res,file){
-      // 通过key获取到size和duration
-      const audioElement = new Audio(URL.createObjectURL(file.raw));
-      audioElement.addEventListener("loadedmetadata",  ()=> {
-        const proDuration = parseInt(audioElement.duration) 
-        const proSize = parseInt(file.size / 1000)
-        // 保存视频相关信息
-        this.videoInfo = {
-          id:this.id,
-          proName:res.key,
-          proUrl:`https://tomevideo.zhihuiquanyu.com/${res.key}`,
-          proSize,
-          proDuration
-        }
-        // 完成视频上传
-        this.$message({type:'success',message:'已上传视频，请点击确定按钮'})
-        this.uploading = false
-        this.videoUrl = URL.createObjectURL(file.raw)
-        this.uploadDialogDisabled = false
-
-      })
-    },
-
-    // 上传视频失败
-    onUploadError(res,file){
-      this.uploading = false
-       this.$confirm("上传视频失败,请刷新网页并尝试重新上传", "提示", {
-        type: "error"
-      }).then(()=>{}).catch(()=>{})
-    },
-
-
-    // 确认视频上传结果
-    async uploadReady() {
-      const res = await this.$axios.post('/videomis/examine/upload',this.videoInfo)
-      if(res.data.resultStatus.resultCode === '0000'){
-        // 清空数据
-        this.videoInfo = {}
-        this.videoUrl = ''
-        this.upLoadDiaglogVisible = false
-        this.$message({type:'success',message:'上传成功'})
-        // 查询一次当前列表更新数据
-        this.getVideoList()
+    beforeUploadSuccess(file) {
+      if (["video/mp4"].indexOf(file.type) == -1) {
+        //'video/ogg', 'video/flv', 'video/avi', 'video/wmv', 'video/rmvb'
+        this.$message.error("请上传正确的视频格式");
+        return false;
+      } else {
+        this.uploading = true;
       }
     },
 
+    // 获取上传进度
+    onUploading(event) {
+      this.tips = `正在上传中，请勿关闭对话框或刷新页面 ${parseInt(
+        event.percent
+      )}%`;
+    },
+
+    // 上传视频成功
+    onUploadSuccess(res, file) {
+      // 通过key获取到size和duration
+      const audioElement = new Audio(URL.createObjectURL(file.raw));
+      audioElement.addEventListener("loadedmetadata", () => {
+        const proDuration = parseInt(audioElement.duration);
+        const proSize = parseInt(file.size / 1000);
+        // 保存视频相关信息
+        this.videoInfo = {
+          id: this.id,
+          proName: res.key,
+          proUrl: `https://tomevideo.zhihuiquanyu.com/${res.key}`,
+          proSize,
+          proDuration
+        };
+        // 完成视频上传
+        this.$message.success('已上传视频，请点击确定按钮')
+        this.uploading = false;
+        this.videoUrl = URL.createObjectURL(file.raw);
+        this.uploadDialogDisabled = false;
+      });
+    },
+
+    // 上传视频失败
+    onUploadError(res, file) {
+      this.uploading = false;
+      this.$confirm("上传视频失败,请刷新网页并尝试重新上传", "提示", {
+        type: "error"
+      })
+        .then(() => {})
+        .catch(() => {});
+    },
+
+    // 确认视频上传结果
+    async uploadFinish() {
+      const res = await uploadFinishApi(this.videoInfo);
+      // 清空数据
+      this.videoInfo = {};
+      this.videoUrl = "";
+      this.upLoadDiaglogVisible = false;
+      this.$message({ type: "success", message: "上传成功" });
+      // 查询一次当前列表更新数据
+      this.getVideoList();
+    },
+
     // 审核通过
-    checkPass(data) {
+    approved(data) {
       // 检查是否已经重新上传视频
-      if( data.statusUpload === 0){
-        return this.$message.warning('请先上传视频')
+      if (data.statusUpload === 0) {
+        return this.$message.warning("请先上传视频");
       }
 
       this.$confirm("是否审核通过?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
-      })
-        .then(async () => {
-          // 审核通过逻辑
-          const res = await this.$axios.post('/videomis/examine/result',{id:data.id,result:1})
-          if(res.data.resultStatus.resultCode === "0000"){
-            this.$message({
-            type: "success",
-            message: "已通过!"
-          });
-          // 重新渲染未审核数据
-          this.status = 0
-          this.getVideoList();
-
-          }
-        })
-        .catch(() => {});
+      }).then(async () => {
+        // 审核通过逻辑
+        const res = await postAuditStatus({
+          id: data.id,
+          result: 1
+        });
+        this.$message.success("已通过");
+        // 重新渲染未审核数据
+        this.status = 0;
+        this.getVideoList();
+      });
     },
 
     // 打开审核不通过对话框
-    checkRefuse(data) {
-        // 审核拒绝逻辑
-        this.refuseDialogvisible = true
-        this.id = data.id
+    disapproved (data) {
+      // 审核拒绝逻辑
+      this.refuseDialogvisible = true;
+      this.id = data.id;
     },
 
     // 审核不通过逻辑
-    async refuse(data){
-      if( this.remark === '' ){
-         this.$message.warning('备注不能为空')
-      }else{
-        const res = await this.$axios.post('/videomis/examine/result',{id:this.id,remark:this.remark,result:0})
-        if(res.data.resultStatus.resultCode === '0000'){
-           this.$message({
-            type: "info",
-            message: "已拒绝!"
-          });
-          this.refuseDialogvisible = false
+    async refuse(data) {
+      if (this.remark === "") {
+        this.$message.warning("备注不能为空");
+      } else {
+        const res = await postAuditStatus({
+          id: this.id,
+          remark: this.remark,
+          result: 0
+        });
+          this.$message.info("已拒绝");
+          this.refuseDialogvisible = false;
           // 重新渲染未审核数据
-          this.status = 0
+          this.status = 0;
           this.getVideoList();
-        }
-      } 
+      }
     },
 
     // 按钮查询
     query(searchForm) {
-      this.getVideoList({ status: 0, ...searchForm });
+      this.getVideoList(searchForm);
     },
     // 分页查询
-    queryInfo(){
-      console.log('我触发了')
-      this.getVideoList()
+    queryInfo() {
+      this.getVideoList();
     }
   },
   created() {
@@ -520,28 +483,27 @@ export default {
 </script>
 
 <style>
-  .video-uploader .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .video-uploader .el-upload:hover {
-    border-color: #409EFF;
-  }
-  .video-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-  .video {
-    width: 178px;
-    height: 178px;
-    display: block;
-  }
-
+.video-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.video-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.video-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.video {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

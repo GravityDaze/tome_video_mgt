@@ -2,27 +2,34 @@ import Vue from "vue";
 import Router from "vue-router";
 Vue.use(Router);
 
-export const constantRouterMap = [
-  {
-    //登录页路由
-    path: "/login",
-    name: "login",
-    component: ()=>import('@/views/login')
-  },
-    // 首页布局
-  //  { 
-  //    path: "/",
-  //    name: "layout",
-  //    component: ()=>import('@/views/layout')
-  //  }
-]
+const createRouter = () => new Router({
+  routes: [
+    {
+      //登录页路由
+      path: "/login",
+      name: "login",
+      component: () => import('@/views/login')
+    }
+  ]
+})
 
-//实例化vue的时候只挂载constantRouter
-export default new Router({
-  routes: constantRouterMap
-});
+const router = createRouter()
 
+// 重置动态路由
+export const resetRouter = () => {
+  const newRouter = createRouter()
+  router.matcher = newRouter.matcher
+}
 
+// 解决ElementUI导航栏中的vue-router在3.0版本以上重复点菜单报错问题
+const originalPush = Router.prototype.push
+Router.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
+
+export default router
+
+// 原始全量路由表
 // const router = new Router({
 //   routes: [
 //     {
@@ -138,7 +145,3 @@ export default new Router({
 //     }
 //   ]
 // });
-
-
-
-// export default router
