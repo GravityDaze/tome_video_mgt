@@ -1,7 +1,7 @@
 import request from '../utils/request'
 
 /*  
- * 用户功能相关模块
+ * 用户功能api
  */
 
 // 获取登录验证码

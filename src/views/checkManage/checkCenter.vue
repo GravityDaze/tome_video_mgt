@@ -12,7 +12,7 @@
       :checkStatus="status"
       @queryInfoFn="queryInfo"
       @checkStart="checkStart"
-      @download="download"
+      @download="downloadVideo"
       @checkPass="approved"
       @checkRefuse="disapproved"
       @upload="upload"
@@ -67,12 +67,12 @@ import {
   queryVideoList,
   queryChecking,
   checkStartApi,
-  getupLoadParmas,
+  getupLoadParams,
   uploadFinishApi,
   postAuditStatus
 } from "@/api/checkManage";
 import { mapState } from "vuex";
-import { downVideo } from "@/utils/downVideo";
+import { download } from "@/utils/download";
 import myTables from "@/components/myTables";
 import Searchs from "@/components/Searchs";
 export default {
@@ -134,7 +134,7 @@ export default {
           prop: "statusUpload",
           label: "视频是否已重新上传",
           align: "center",
-          formatter: row => (row.statusUpload ? "是" : "否")
+          formatter: row => row.statusUpload ? "是" : "否"
         },
         {
           prop: "proName",
@@ -205,12 +205,6 @@ export default {
     };
   },
 
-  watch: {
-    status() {
-      console.log("status发生了变化,定时器已停止");
-    }
-  },
-
   methods: {
     // 获取视频信息
     async getVideoList( data = {
@@ -218,15 +212,14 @@ export default {
         pageNum: this.$store.state.pageNumParam,
         pageSize: this.$store.state.pageSizeParam
       }) {
-      
-      console.log( data )
+      console.log('定时器运行中')
       const res = await queryVideoList(data);
       const { value, resultStatus } = res.data;
-      // 如果查询参数中有data.status,则更改
+      // 如果查询参数中有status,则更改当前status
       if (data.status !== undefined) {
         this.status = data.status;
       }
-      //创建过滤数组
+      //创建表头过滤数组
       let filter;
       switch (this.status) {
         case 0:
@@ -274,16 +267,12 @@ export default {
         this.timer = null;
       } else if (this.timer === null) {
         // 重新开启定时器
-        const count = () => {
-          this.getVideoList();
-          return count;
-        };
-        this.timer = setInterval(count(), 3000);
+        this.startTimer()
       }
 
       // 赋值
       this.tableData = value.list;
-      // 完成分页
+      // 完成分页 ( 此处vuex代码不规范 待重构 )
       this.$store.state.totalParam = res.data.value.total;
     },
 
@@ -307,9 +296,9 @@ export default {
     },
 
     // 下载视频
-    download(data) {
+    downloadVideo(data) {
       this.loading = true;
-      downVideo(data.url, data.name)
+      download(data.url, data.name)
         .then(() => {
           this.loading = false;
         })
@@ -321,7 +310,7 @@ export default {
     // 打开对话框并获取上传视频前必要的参数
     async upload(params) {
       //通过id获取上传token
-      const res = await getupLoadParmas(params);
+      const res = await getupLoadParams(params);
       this.token = res.data.value.token;
       this.upLoadDiaglogVisible = true;
       //保存id
@@ -355,9 +344,7 @@ export default {
 
     // 获取上传进度
     onUploading(event) {
-      this.tips = `正在上传中，请勿关闭对话框或刷新页面 ${parseInt(
-        event.percent
-      )}%`;
+      this.tips = `正在上传中，请勿关闭对话框或刷新页面 ${parseFloat( event.percent ).toFixed(2)}%`;
     },
 
     // 上传视频成功
@@ -400,7 +387,7 @@ export default {
       this.videoInfo = {};
       this.videoUrl = "";
       this.upLoadDiaglogVisible = false;
-      this.$message({ type: "success", message: "上传成功" });
+      this.$message.success('上传成功')
       // 查询一次当前列表更新数据
       this.getVideoList();
     },
@@ -461,22 +448,23 @@ export default {
     // 分页查询
     queryInfo() {
       this.getVideoList();
-    }
-  },
-  created() {
-    this.isChecking().then(() => {
+    },
+    // 开启定时器
+    startTimer(){
       const count = () => {
         this.getVideoList();
         return count;
       };
       this.timer = setInterval(count(), 3000);
-    });
+    }
+  },
+  created() {
+    this.isChecking().then(() => this.startTimer() )
   },
   beforeDestroy() {
     clearInterval(this.timer);
   },
   components: {
-    myTables,
     Searchs
   }
 };

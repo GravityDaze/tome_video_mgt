@@ -1,8 +1,8 @@
 /*
-*  视频下载方法    
+*  用于视频下载的方法    
 */
 import request from './request'
-export function downVideo(url, name) {
+export function download(url, name) {
      return request({
           method: 'get',
           url,

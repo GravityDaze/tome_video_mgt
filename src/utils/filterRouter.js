@@ -12,7 +12,8 @@ export function filterRouter() { //遍历vuex中的菜单数组转换为路由�
             return {
                 path: v.url,
                 name: v.name,
-                component: _import(`${item.nameEn}${v.url}`)
+                component: _import(`${item.nameEn}${v.url}`),
+                meta:[item.name,v.name]
             }
         }))
     }

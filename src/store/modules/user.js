@@ -3,7 +3,7 @@ import { resetRouter } from '@/router'
 
 const state = {
   token: localStorage.getItem('token') || '',
-  username: localStorage.getItem('user') || ''
+  username: localStorage.getItem('name') || ''
 }
 
 const mutations = {
@@ -51,7 +51,8 @@ const actions = {
         commit('RESET_USER_INFO')
         commit('permission/RESET_ROUTER',[],{root:true})
         localStorage.clear()
-        // 重新实例化vue-router清除动态路由的缓存
+        sessionStorage.clear()
+        // 重新实例化vue-router重置动态路由
         resetRouter()
       } 
     })

@@ -49,7 +49,11 @@
         </div>
       </div>
       <div class="footer">
-        <div class="login_btn" @click="loginFn">登录</div>
+        <div class="login_btn" 
+        @click="loginFn"  
+        v-loading.fullscreen="fullscreenLoading"
+        element-loading-text="登录中"
+        >登录</div>
       </div>
       <div class="copy">
         <p style="padding:0;margin:0">—— 途咪小视频 后台管理系统 ——</p>
@@ -73,7 +77,8 @@ export default {
         code: "",
         token: ""
       },
-      curFocus: -1 //当前激活的输入框
+      curFocus: -1, //当前激活的输入框
+       fullscreenLoading:false
     };
   },
   created() {
@@ -84,7 +89,7 @@ export default {
     ...mapActions(
       { 
         login: "user/login" ,
-        getMenuList: "permission/getMenuList" 
+        getMenuList: "permission/getMenuList",
       }
     ),
 
@@ -97,6 +102,7 @@ export default {
 
     // 登录
     async loginFn() {
+       
       if (!this.loginForm.name) {
         this.$message.warning("请输入用户名！");
         return;
@@ -109,18 +115,22 @@ export default {
         this.$message.warning("请输入验证码！");
         return;
       }
-      // 登录actions
+       // 登录actions
+      this.fullscreenLoading = true;
       this.login(this.loginForm)
         .then(() => {
           // 获取菜单actions
           this.getMenuList()
             .then(resolve => {
               this.$router.push("/");
+               // 登录actions
+              this.fullscreenLoading = false
             })
             .catch(() => {});
         })
         .catch(() => {
           this.getCode();
+          this.fullscreenLoading = false
         });
     },
 
