@@ -19,7 +19,7 @@
         <template v-for="item in JSON.parse(this.menuList)">
           <el-submenu :index="item.id.toString()" :key="item.id">
             <template slot="title">
-              <i class="el-icon-location"></i>
+              <i :class="item.iconStyle"></i>
               <span>{{item.name}}</span>
             </template>
             <template v-for="(item1,index) in item.child">
@@ -32,31 +32,27 @@
 
     <el-container>
       <el-header>
-        <div class="left">
-          <i @click="collapse" id="collapse" :class="collapseClass"></i>
-          <el-breadcrumb separator="/" >
-            <el-breadcrumb-item>{{$route.meta[0]}}</el-breadcrumb-item>
-            <el-breadcrumb-item>{{$route.meta[$route.meta.length-1]}}</el-breadcrumb-item>
-          </el-breadcrumb>
+        <div class="top">
+          <div class="left">
+            <i @click="collapse" id="collapse" :class="collapseClass"></i>
+            <!-- 面包屑 -->
+            <el-breadcrumb separator="/">
+              <el-breadcrumb-item style="font-weight:bold">{{$route.meta.breadcrumb[0]}}</el-breadcrumb-item>
+              <el-breadcrumb-item>{{$route.meta.breadcrumb[$route.meta.breadcrumb.length-1]}}</el-breadcrumb-item>
+            </el-breadcrumb>
+          </div>
+          <div class="info">
+            <p class="wel">欢迎您，{{username}}</p>
+            <div class="logout" @click="handleLogout">
+              <i class="el-icon-switch-button"></i>
+              <span>注销</span>
+            </div>
+          </div>
         </div>
-        <div class="info">
-          <!-- 头像 -->
-          <el-dropdown>
-            <span class="el-dropdown-link">
-              <!-- 用户名 -->
-              <span class="username">{{username}}</span>
-              <el-avatar icon="el-icon-user-solid"></el-avatar>
-              <i class="el-icon-arrow-down el-icon--right"></i>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item disabled>个人资料</el-dropdown-item>
-              <el-dropdown-item @click.native="handleLogout" divided>注销</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </div>
+        <!-- 标签导航 -->
+        <tabs />
       </el-header>
       <el-main>
-        <tags />
         <transition name="fade-transform" mode="out-in">
           <router-view></router-view>
         </transition>
@@ -67,7 +63,7 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import Tags from "@/components/Tags";
+import Tabs from "@/components/Tabs";
 export default {
   name: "layout",
   data() {
@@ -113,7 +109,7 @@ export default {
     }
   },
   components: {
-    Tags
+    Tabs
   }
 };
 </script>
@@ -139,39 +135,58 @@ export default {
   height: 100%;
 
   .el-header {
-    display: flex;
-    padding: 0 20px;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #e8e9ed;
+    padding: 0;
+    height: auto !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 0 3px 0 rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid #d8dce5;
 
-    .left {
+    .top {
       display: flex;
+      box-sizing: border-box;
       align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e8e9ed;
+      padding: 10px 20px;
 
-      #collapse {
-        font-size: 24px;
-        cursor: pointer;
-        color: #606266;
-        margin-right:15px;
-      }
-    }
+      .left {
+        display: flex;
+        align-items: center;
 
-    .info {
-      // 头像
-      .el-dropdown {
-        cursor: pointer;
-        .el-dropdown-link {
-          display: flex;
-          align-items: center;
+        #collapse {
+          font-size: 24px;
+          cursor: pointer;
+          color: #606266;
+          margin-right: 15px;
         }
       }
 
-      // 用户名
-      .username {
-        font-size: 16px;
-        margin-right: 10px;
+      .info {
+        display: flex;
+        align-items: center;
+
+        .wel {
+          font-size: 14px;
+          color: #888;
+          margin-right: 10px;
+        }
+
+        .logout {
+          color: #999c9e !important;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          span {
+            margin-left: 5px;
+            font-weight: 600;
+            font-size: 14px;
+          }
+
+          i {
+            font-weight: 600;
+            color: #999c9e !important;
+            font-size: 18px;
+          }
+        }
       }
     }
   }
@@ -197,8 +212,7 @@ export default {
   }
 
   .el-main {
-    background: #f8f9fc;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 }
 </style>

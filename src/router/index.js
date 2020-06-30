@@ -8,7 +8,10 @@ const createRouter = () => new Router({
       //登录页路由
       path: "/login",
       name: "login",
-      component: () => import('@/views/login')
+      component: () => import('@/views/login'),
+      meta:{
+        title:'登录'
+      }
     }
   ]
 })

@@ -102,14 +102,13 @@
                   </el-col>
                 </el-form-item>
               </el-col>
-              <!-- 图标样式后台数据又该字段，但是目前还不支持该功能，先注释掉 -->
-              <!-- <el-col :span="18" :offset="2">
+              <el-col :span="18" :offset="2">
                 <el-form-item label="图标样式">
                   <el-col>
-                    <el-input v-model="ruleForm.iconStyle" disabled></el-input>
+                    <el-input v-model="ruleForm.iconStyle"></el-input>
                   </el-col>
                 </el-form-item>
-              </el-col>-->
+              </el-col>
               <el-col :span="18" :offset="2">
                 <el-form-item label="显示顺序" prop="sort">
                   <el-col>
@@ -156,6 +155,17 @@
 </template>
 
 <script>
+// 引入api
+import {
+  getMenuTree,
+  getSubMenu,
+  querySubMenu,
+  addMenu,
+  editMenu,
+  getMenuInfo,
+  enableMenu,
+  disableMenu
+} from "@/api/systemManage";
 export default {
   name: "menu-manage",
   data() {
@@ -220,7 +230,7 @@ export default {
           prop: "type",
           label: "类型",
           // width: '180',
-          align: "center",
+          align: "center"
           // formatter: function(row) {
           //   if (row.type == "0") {
           //     return "菜单";
@@ -239,7 +249,7 @@ export default {
           prop: "method",
           label: "HTTP方法",
           // width: '180',
-          align: "center",
+          align: "center"
           // formatter: function(row) {
           //   if (row.method == "0") {
           //     return "GET";
@@ -493,35 +503,11 @@ export default {
 
     //新增信息
     addFn() {
-      // console.log("开始提交新增信息");
       this.ruleForm.refreshable =
         this.ruleForm.refreshable == "可以" ? "1" : "0";
 
-        console.log(this.ruleForm)
-     
+      console.log(this.ruleForm);
 
-      // if (this.ruleForm.type == "菜单") {
-      //   this.ruleForm.type = "0";
-      // } else if (this.ruleForm.type == "按钮") {
-      //   this.ruleForm.type = "1";
-      // } else if (this.ruleForm.type == "资源") {
-      //   this.ruleForm.type = "2";
-      // } else if (this.ruleForm.type == "查询按钮") {
-      //   this.ruleForm.type = "3";
-      // } else if (this.ruleForm.type == "导出按钮") {
-      //   this.ruleForm.type = "4";
-      // }
-
-      // if (this.ruleForm.method == "GET") {
-      //   this.ruleForm.method = "0";
-      // } else if (this.ruleForm.method == "POST") {
-      //   this.ruleForm.method = "1";
-      // } else if (this.ruleForm.method == "PUT") {
-      //   this.ruleForm.method = "2";
-      // } else if (this.ruleForm.method == "DELETE") {
-      //   this.ruleForm.method = "3";
-      // }
-  
       this.$axios({
         method: "post",
         url: this.apiAdd,
@@ -542,98 +528,81 @@ export default {
         });
     },
 
-    beforeEditFn() {
+    async beforeEditFn() {
       if (this.commonId == "") {
         if (document.getElementsByClassName("el-message").length === 0) {
           this.$message.warning("请选择一条数据");
         }
       } else {
-        this.$axios({
-          method: "get",
-          url: this.apiGetEditInfo + "?id=" + this.commonId,
-          data: {}
-        })
-          .then(res => {
-            console.log("菜单管理点击获取的是什么信息", res.data.value);
-            if (res.data.resultStatus.resultCode === "0000") {
-              var nameParam = this.ruleForm.parentName;
-              this.ruleForm = res.data.value;
-              if (this.ruleForm.parentId == "1") {
-                this.ruleForm.parentName = "系统根";
-              } else {
-                this.ruleForm.parentName = nameParam;
-              }
-              this.ruleForm.refreshable =
-                this.ruleForm.refreshable == "0" ? "不可以" : "可以";
-              
-              const typeList = {
-                "0":"菜单",
-                "1":"按钮",
-                "2":"资源",
-                "3":"查询按钮",
-                "4":"导出按钮"
-              }
-              
-              const methodList = {
-                "0":'GET',
-                "1":"POST",
-                "2":"PUT",
-                "3":"DELETE"
-              }
-              // 展示数据
-              this.ruleForm.type = typeList[this.ruleForm.type]
-              this.ruleForm.method = methodList[this.ruleForm.method]
+        const res = await getMenuInfo({ id: this.commonId });
+        console.log("菜单管理点击获取的是什么信息", res.data.value);
+        var nameParam = this.ruleForm.parentName;
+        this.ruleForm = res.data.value;
+        if (this.ruleForm.parentId == "1") {
+          this.ruleForm.parentName = "系统根";
+        } else {
+          this.ruleForm.parentName = nameParam;
+        }
+        this.ruleForm.refreshable =
+          this.ruleForm.refreshable == "0" ? "不可以" : "可以";
 
-              this.$store.state.menuManageSign = true;
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-          })
-          .catch(error => {});
+        // 映射数据
+        const typeList = {
+          "0": "菜单",
+          "1": "按钮",
+          "2": "资源",
+          "3": "查询按钮",
+          "4": "导出按钮"
+        };
+        const methodList = {
+          "0": "GET",
+          "1": "POST",
+          "2": "PUT",
+          "3": "DELETE"
+        };
+        // 展示数据
+        this.ruleForm.type = typeList[this.ruleForm.type];
+        this.ruleForm.method = methodList[this.ruleForm.method];
+        this.$store.state.menuManageSign = true;
       }
     },
 
     //编辑信息之后提交信息
-    editFn() {
+    async editFn() {
       // console.log("开始提交编辑信息");
       this.ruleForm.refreshable =
         this.ruleForm.refreshable == "可以" ? "1" : "0";
 
       // 将数据改变回可发送请求的数据
       const typeList = {
-       "菜单":"0",
-       "按钮":"1",
-       "资源":"2",
-       "查询按钮":"3",
-       "导出按钮":"4"
-      }
-              
+        菜单: "0",
+        按钮: "1",
+        资源: "2",
+        查询按钮: "3",
+        导出按钮: "4"
+      };
+
       const methodList = {
-          'GET':"0",
-          "POST":"1",
-          "PUT":"2",
-          "DELETE":"3"
-      }
-      this.ruleForm.type = typeList[this.ruleForm.type]  ||  this.ruleForm.type 
-      this.ruleForm.method = methodList[this.ruleForm.method] ||  this.ruleForm.method 
-      console.log(this.ruleForm)
-      this.$axios({
-        method: "post",
-        url: this.apiEdit,
-        data: this.ruleForm
-      })
-        .then(res => {
-          console.log("编辑接口成功返回数据", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.$store.state.menuManageSign = false;
-            this.commonId = "";
-            this.getDefaultInfo();
-            this.getDefaultMenuTree();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
+        GET: "0",
+        POST: "1",
+        PUT: "2",
+        DELETE: "3"
+      };
+      this.ruleForm.type = typeList[this.ruleForm.type] || this.ruleForm.type;
+      this.ruleForm.method =
+      methodList[this.ruleForm.method] || this.ruleForm.method;
+      console.log(this.ruleForm);
+      // this.$axios({
+      //   method: "post",
+      //   url: this.apiEdit,
+      //   data: this.ruleForm
+      // })
+      const res = await editMenu(this.ruleForm)
+      console.log("编辑接口成功返回数据", res.data);
+      this.$store.state.menuManageSign = false;
+      this.commonId = "";
+      this.getDefaultInfo();
+      this.getDefaultMenuTree();
     },
 
     //启用
@@ -700,10 +669,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          // alert('submit!');
-          // this.$store.state.menuManageSign = false
           if (this.$store.state.titleHeader === "新增") {
-            // alert('触发了')
             this.addFn();
           } else if (this.$store.state.titleHeader === "编辑") {
             this.editFn();

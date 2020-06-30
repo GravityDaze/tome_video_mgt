@@ -8,6 +8,15 @@ import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
 import store from "./store" 
 
+
+// NProgress.configure({     
+//   easing: 'ease',  // 动画方式    
+//   speed: 500,  // 递增进度条的速度    
+//   showSpinner: false, // 是否显示加载ico    
+//   trickleSpeed: 200, // 自动递增间隔    
+//   minimum: 0.3 // 初始化时的最小百分比
+// })
+
 //引入rem转化
 // require("rem-init")({
 //   psd_width: 1920

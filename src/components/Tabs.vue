@@ -14,7 +14,7 @@
       :closable="item.close"
     ></el-tab-pane>
     <el-tooltip content="关闭所有标签" placement="top">
-      <span v-show="closeFlag" @click="closeAllTags" class="el-icon-close icon"></span>
+      <span v-show="closeFlag" @click="closeAllTags" class="el-icon-delete icon"></span>
     </el-tooltip>
     <el-tooltip content="刷新" placement="top">
       <span
@@ -47,7 +47,7 @@ export default {
       if (!obj) {
         let newTabName = ++this.tabIndex + "";
         this.editableTabs.push({
-          title: to.meta[to.meta.length - 1],
+          title: to.meta.breadcrumb[to.meta.breadcrumb.length - 1],
           name: newTabName,
           path: to.path,
           close: true
@@ -83,12 +83,12 @@ export default {
     getTagsStatus() {
       // 获取vuex路由表保存的第一个路由
       const defaultRouter = this.$store.getters.routerMap[0].children[0]
-
+      const { breadcrumb } = defaultRouter.meta
       this.editableTabs = JSON.parse(
         window.sessionStorage.getItem("editableTabs")
       ) || [
         {
-          title: defaultRouter.meta[0],
+          title: breadcrumb[breadcrumb.length-1],
           name: "1",
           path: defaultRouter.path,
           close: false
@@ -151,6 +151,7 @@ export default {
 .el-tabs {
   display: flex;
   align-items: center;
+  padding:0 20px;
 
   .icon {
     cursor: pointer;

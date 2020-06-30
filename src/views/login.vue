@@ -49,10 +49,11 @@
         </div>
       </div>
       <div class="footer">
-        <div class="login_btn" 
-        @click="loginFn"  
-        v-loading.fullscreen="fullscreenLoading"
-        element-loading-text="登录中"
+        <div
+          class="login_btn"
+          @click="loginFn"
+          v-loading.fullscreen="fullscreenLoading"
+          element-loading-text="登录中"
         >登录</div>
       </div>
       <div class="copy">
@@ -65,7 +66,7 @@
 
 <script>
 import { getCode } from "@/api/user";
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: "login",
   data() {
@@ -78,20 +79,19 @@ export default {
         token: ""
       },
       curFocus: -1, //当前激活的输入框
-       fullscreenLoading:false
+      fullscreenLoading: false
     };
   },
   created() {
     this.enter();
     this.getCode();
   },
+  computed:mapGetters(['username']),
   methods: {
-    ...mapActions(
-      { 
-        login: "user/login" ,
-        getMenuList: "permission/getMenuList",
-      }
-    ),
+    ...mapActions({
+      login: "user/login",
+      getMenuList: "permission/getMenuList"
+    }),
 
     // 获取验证码
     async getCode() {
@@ -102,7 +102,6 @@ export default {
 
     // 登录
     async loginFn() {
-       
       if (!this.loginForm.name) {
         this.$message.warning("请输入用户名！");
         return;
@@ -115,7 +114,7 @@ export default {
         this.$message.warning("请输入验证码！");
         return;
       }
-       // 登录actions
+      // 登录actions
       this.fullscreenLoading = true;
       this.login(this.loginForm)
         .then(() => {
@@ -123,14 +122,19 @@ export default {
           this.getMenuList()
             .then(resolve => {
               this.$router.push("/");
-               // 登录actions
-              this.fullscreenLoading = false
+              this.$notify({
+                title: `您好 ${this.username}`,
+                message: `今天是${new Date().toLocaleDateString()} 欢迎登录途咪小视频后台管理系统`,
+                type: "success"
+              });
+              // 登录actions
+              this.fullscreenLoading = false;
             })
             .catch(() => {});
         })
         .catch(() => {
           this.getCode();
-          this.fullscreenLoading = false
+          this.fullscreenLoading = false;
         });
     },
 
@@ -178,8 +182,8 @@ export default {
   background: rgba(255, 255, 255, 1);
 }
 .title {
-  background-image: url("http://demo.qfpffmp.cn/cssthemes6/tmag_4_Dashio/img/instagram.jpg");
-  background-size: cover;
+  background-image: url("https://www.guangkaishengshi.com/static_2019/main01/images/img/a3.png");
+  background-size: contain;
   height: 170px;
   display: flex;
   align-items: center;

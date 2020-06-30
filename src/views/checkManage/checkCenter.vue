@@ -1,5 +1,5 @@
 <template>
-  <div class="checkCenter">
+  <el-card class="checkCenter">
     <searchs @query="query" :formData="formData" />
     <my-tables
       v-loading="loading"
@@ -59,7 +59,7 @@
       </div>
     </el-dialog>
     <!-- 审核不通过对话框 end -->
-  </div>
+  </el-card>
 </template>
 
 <script>
@@ -212,7 +212,7 @@ export default {
         pageNum: this.$store.state.pageNumParam,
         pageSize: this.$store.state.pageSizeParam
       }) {
-      console.log('定时器运行中')
+      console.log(data)
       const res = await queryVideoList(data);
       const { value, resultStatus } = res.data;
       // 如果查询参数中有status,则更改当前status
