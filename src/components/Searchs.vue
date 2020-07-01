@@ -1,16 +1,8 @@
-/**
-    2020/6/18
-    原mySearchs组件封装过于臃肿,此为重新封装的版本
-    参数说明:
-        formData:{
-            type:表单类型 可选值 input select datePicker
-            label 文字说明
-            model 绑定数据
-            placeholder 占位符
-        }
-
-
-**/
+/* 
+    通用表单组件
+    Author:朱星杰
+    Date:2020/6/18
+*/
 
 <template>
   <div class="searchs">

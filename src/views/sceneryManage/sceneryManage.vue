@@ -25,7 +25,7 @@
       @queryInfoFn="queryInfoFn"
       class="my_searchs"
     ></mySearchs>
-    <myTables
+    <!-- <myTables
       :sign="sign"
       :showSceneryNum="showSceneryNum"
       :showState="showState"
@@ -37,7 +37,95 @@
       @queryInfoFn="queryInfoFn"
       @chooseInfo="chooseInfo"
       class="my_tables"
-    ></myTables>
+    ></myTables>-->
+    <tables :tableData="tableData" :tableCols="tableCols" />
+    <!-- 景区管理或新增模态框 -->
+    <el-dialog title="表单" :visible.sync="editSceneryDialog">
+      <el-form :model="editSceneryForm">
+        <el-form-item label="景区名" label-width="120px">
+          <el-input style="width:300px" v-model="editSceneryForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="景区经纬度" label-width="120px">
+          <el-input style="width:300px" v-model="editSceneryForm.lonLat"></el-input>
+          <el-button style="margin-left:10px">获取经纬度</el-button>
+        </el-form-item>
+        <el-form-item label="景区标识" label-width="120px">
+          <el-input style="width:300px" v-model="editSceneryForm.mark"></el-input>
+        </el-form-item>
+        <el-form-item label="景区标签" label-width="120px">
+          <el-tag
+            :key="tag"
+            v-for="tag in dynamicTags"
+            closable
+            :disable-transitions="false"
+            @close="handleClose(tag)"
+          >{{tag}}</el-tag>
+          <el-input
+            class="input-new-tag"
+            v-if="inputVisible"
+            v-model="inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleInputConfirm"
+            @blur="handleInputConfirm"
+          ></el-input>
+          <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+        </el-form-item>
+        <el-form-item label="服务器URL" label-width="120px">
+          <el-input style="width:300px" v-model="editSceneryForm.aiUrl"></el-input>
+        </el-form-item>
+        <el-form-item label="景区描述" label-width="120px">
+          <el-input
+            style="width:500px"
+            type="textarea"
+            v-model="editSceneryForm.describe"
+            maxlength="30"
+            show-word-limit
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="景区封面" label-width="120px">
+          <el-upload
+            class="avatar-uploader"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="景区广告图" label-width="120px">
+          <el-upload
+            class="avatar-uploader"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="景区详图" label-width="120px">
+          <el-upload
+            action="https://jsonplaceholder.typicode.com/posts/"
+            list-type="picture-card"
+            :on-preview="handlePictureCardPreview"
+            :on-remove="handleRemove"
+          >
+            <i class="el-icon-plus"></i>
+          </el-upload>
+          <el-dialog :visible.sync="dialogVisible">
+            <img width="100%" :src="dialogImageUrl" alt />
+          </el-dialog>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editSceneryDialog = false">取 消</el-button>
+        <el-button type="primary" @click="editSceneryDialog = false">确 定</el-button>
+      </div>
+    </el-dialog>
 
     <!--景区管理新增或者编辑-->
     <div id="publicAddEditorDialog">
@@ -64,7 +152,7 @@
                   <el-input v-model.trim="ruleForm.name"></el-input>
                 </el-col>
                 <!--<el-col v-if="$store.state.titleHeader=='编辑'">-->
-                <!--<el-input v-model="ruleForm.name" :disabled="true"></el-input>-->
+                <!--<el-input  v-model="ruleForm.name" :disabled="true"></el-input>-->
                 <!--</el-col>-->
               </el-form-item>
             </el-col>
@@ -208,7 +296,7 @@
             <el-col :span="18" :offset="2">
               <el-form-item label="景区名称">
                 <!--<el-col>-->
-                <!--<el-input v-model="ruleForm2.name"></el-input>-->
+                <!--<el-input  v-model="ruleForm2.name"></el-input>-->
                 <!--</el-col>-->
                 <el-col :offset="5">
                   <span>{{ruleForm2.name}}</span>
@@ -346,10 +434,87 @@
 </template>
 
 <script>
+// 网络接口
+import {
+  getSceneryList,
+  querySceneryDetail,
+  querySceneryInfo,
+  addScenery,
+  editScenery,
+  delScenery,
+  serviceEnable,
+  serviceDisable,
+  setHotScenery,
+  cancelHotScenery,
+  getSceneryTags,
+  editSceneryTags
+} from "@/api/sceneryManage";
+import Tables from "@/components/Tables";
 export default {
   name: "scenery-manage",
+  components: {
+    Tables
+  },
   data() {
     return {
+      tableCols: [
+        {
+          prop: "no",
+          label: "景区编号",
+          align: "center"
+        },
+        {
+          prop: "name",
+          label: "景区名称",
+          align: "center"
+        },
+        {
+          prop: "mark",
+          label: "标识",
+          align: "center"
+        },
+        
+        {
+          prop: "updator",
+          label: "最后更新者",
+          align: "center"
+        },
+        {
+          prop: "updateDatetime",
+          label: "最后更新时间",
+          align: "center"
+        },
+        {
+          prop: "hotStatus",
+          label: "热门景区",
+          align: "center",
+          type: "switch",
+          change: this.handleHotScenery
+        },
+        {
+          prop: "tripStatus",
+          label: "视频服务",
+          align: "center",
+          type: "switch",
+          change: this.handleService
+        },
+        {
+          label: "操作",
+          type: "button",
+          btnList: [
+            { type: "primary", label: "编辑", handle: this.editScenery },
+            { type: "danger", label: "删除", handle: this.deleteScenery }
+          ]
+        }
+      ],
+      editSceneryDialog: false, //景区修改或编辑模态框
+      editSceneryForm: {
+        region: "",
+        name: ""
+      }, //模态框表单
+      dynamicTags: ["标签一", "标签二", "标签三"],
+      inputVisible: false,
+      inputValue: "",
       apiUploadImage: "/videomis/upload/uploadImage",
       apiQuery: "videomis/scenery/query",
       apiAdd: "videomis/scenery/add",
@@ -492,12 +657,70 @@ export default {
       }
     };
   },
-  mounted() {
-     console.log(this.$store.state)
-    this.$store.state.pageNumParam = 1;
-    this.getDefaultInfoFn();
+  created() {
+    this.getSceneryList();
+    // this.getDefaultInfoFn();
   },
   methods: {
+    // 获取景区列表
+    async getSceneryList(query = { pageNum: 1, pageSize: 10 }) {
+      const { data } = await getSceneryList(query);
+      // 将后台返回的数据处理为符合tables组件的数据
+      this.tableData = data.value.list.map(v => {
+        // 将后台返回的0和1转换为布尔值
+        v.hotStatus = !!v.hotStatus;
+        v.tripStatus = !!v.tripStatus;
+        return v;
+      });
+      console.log(this.tableData);
+    },
+
+    // 开启/关闭热门景区
+    async handleHotScenery(row) {
+      try {
+        if (row.hotStatus) {
+          await setHotScenery({ id: row.id });
+          this.$message.success(`已将${row.name}设置为热门景区`);
+        } else {
+          await cancelHotScenery({ id: row.id });
+          this.$message.success(`已取消${row.name}的热门景区`);
+        }
+      } catch (err) {
+        // 错误时还原switch组件的状态
+        row.hotStatus = !row.hotStatus;
+      }
+    },
+
+    // 开启/关闭视频服务
+    async handleService(row) {
+      try {
+        if (row.tripStatus) {
+          await serviceEnable({ id: row.id });
+          this.$message.success(`已开启${row.name}的视频服务`);
+        } else {
+          await serviceDisable({ id: row.id });
+          this.$message.success(`已取消${row.name}的视频服务`);
+          row.hotStatus = false;
+        }
+      } catch (err) {
+        // 错误时还原switch组件的状态
+        row.tripStatus = !row.tripStatus;
+      }
+    },
+
+    // 编辑景区
+    editScenery(row) {
+      // 打开模态框
+      this.editSceneryDialog = true;
+    },
+
+    // 提交修改
+
+    // 删除景区
+    deleteScenery(row) {
+      console.log(row);
+    },
+
     //获取经纬度
     getLnglat() {
       window.open("http://api.map.baidu.com/lbsapi/getpoint/index.html");
@@ -1017,15 +1240,21 @@ export default {
 };
 </script>
 
-<style scoped>
-.lng_lat_outbox {
-  /*border:1px solid red;*/
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
+<style lang="less" scoped>
+// 景区标签
+.el-tag + .el-tag {
+  margin-left: 10px;
 }
-.lng_lat_outbox > button {
-  display: inline-block;
-  width: 50%;
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 </style>

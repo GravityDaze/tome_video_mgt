@@ -13,9 +13,7 @@ instance.interceptors.request.use(config => {
     const token = store.getters.token 
     token && (config.headers['Authorization'] = `Bearer ${token}`)
     return config
-}, err => {
-    return Promise.reject(err)
-})
+}, err => Promise.reject(err))
 
 // 响应拦截器
 instance.interceptors.response.use(response => {
