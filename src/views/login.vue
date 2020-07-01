@@ -182,8 +182,8 @@ export default {
   background: rgba(255, 255, 255, 1);
 }
 .title {
-  background-image: url("https://www.guangkaishengshi.com/static_2019/main01/images/img/a3.png");
-  background-size: contain;
+  background-image: url("../assets/images/login-bg.jpg");
+  background-size: cover;
   height: 170px;
   display: flex;
   align-items: center;
