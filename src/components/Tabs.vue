@@ -1,3 +1,10 @@
+/* 
+    动态标签页组件
+    Author:朱星杰
+    Date:2020/7/1
+*/
+
+
 <template>
   <el-tabs
     v-model="editableTabsValue"

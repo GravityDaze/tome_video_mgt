@@ -35,7 +35,7 @@ export const setHotScenery = params => request.get('/videomis/scenery/hot',{para
 export const cancelHotScenery = params => request.get('/videomis/scenery/hotCancel',{params})
 
 // 获取景区标签信息
-export const getSceneryTags = params => request.get('/videomis/scenery/getSceneryTags',{params})
+export const getSceneryTags = params => request.get('/videomis/scenery/tags',{params})
 
 // 编辑景区标签信息
-export const editSceneryTags =  params => request.get('/videomis/scenery/editTags',{params})
+export const editSceneryTags =  data => request.post('/videomis/scenery/editTags',data)

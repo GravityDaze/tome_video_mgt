@@ -13,9 +13,6 @@ export const queryChecking = () => request.get('/videomis/examine/existed')
 // 开启一个视频的审核
 export const checkStartApi = params => request.get('/videomis/examine/appoint', { params })
 
-// 获取上传视频参数
-export const getupLoadParams = params => request.get('/videomis/upload/uploadExamineAuth', { params })
-
 // 确认视频上传结果
 export const uploadFinishApi = data => request.post('/videomis/examine/upload', data)
 

@@ -67,10 +67,10 @@ import {
   queryVideoList,
   queryChecking,
   checkStartApi,
-  getupLoadParams,
   uploadFinishApi,
   postAuditStatus
 } from "@/api/checkManage";
+import { getUpLoadParams } from '@/api/qiniu'
 import { mapState } from "vuex";
 import { download } from "@/utils/download";
 import myTables from "@/components/myTables";
@@ -310,7 +310,7 @@ export default {
     // 打开对话框并获取上传视频前必要的参数
     async upload(params) {
       //通过id获取上传token
-      const res = await getupLoadParams(params);
+      const res = await getUpLoadParams(params);
       this.token = res.data.value.token;
       this.upLoadDiaglogVisible = true;
       //保存id

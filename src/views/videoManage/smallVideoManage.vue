@@ -986,6 +986,7 @@ export default {
     upMediaInfos(e) {
       this.mediaFilesInfo = e.target.files[0];
       this.ruleForm.originalName = this.mediaFilesInfo.name;
+      console.log(e.target.files[0])
       let tokenInfo = "";
       let formdata = new FormData();
       formdata.append("file", this.mediaFilesInfo);
