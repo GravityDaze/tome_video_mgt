@@ -1,7 +1,7 @@
 <template>
   <el-card class="checkCenter">
     <searchs @query="query" :formData="formData" />
-    <my-tables
+    <!-- <my-tables
       v-loading="loading"
       element-loading-text="下载中,请稍后"
       :tableTitle="filterTitle"
@@ -17,7 +17,11 @@
       @checkRefuse="disapproved"
       @upload="upload"
       @preview="preview"
-    />
+    /> -->
+    <tables
+      :tableData="tableData"
+      :tableCols="filterTitle"
+     />
 
     <!-- 上传对话框 begin -->
     <el-dialog title="上传视频" :show-close="false" :visible.sync="upLoadDiaglogVisible">
@@ -73,7 +77,7 @@ import {
 import { getUpLoadParams } from '@/api/qiniu'
 import { mapState } from "vuex";
 import { download } from "@/utils/download";
-import myTables from "@/components/myTables";
+import Tables from "@/components/Tables";
 import Searchs from "@/components/Searchs";
 export default {
   data() {
@@ -150,6 +154,17 @@ export default {
           prop: "proUrl",
           label: "视频新链接",
           align: "center"
+        },
+        {
+          label: "操作",
+          type: "button",
+          btnList: [
+            { type: "text", label: "预览", handle: this.preview },
+            { type: "text", label: "下载", handle: this.downloadVideo },
+            { type: "text", label: "上传", handle: this.upload },
+            { type: "text", label: "审核通过", handle: this.approved },
+            { type: "text", label: "拒绝", handle: this.disapproved },
+          ]
         }
       ], //初始表头数据
       formData: [
@@ -443,6 +458,7 @@ export default {
 
     // 按钮查询
     query(searchForm) {
+      // bug todo
       this.getVideoList(searchForm);
     },
     // 分页查询
@@ -465,7 +481,8 @@ export default {
     clearInterval(this.timer);
   },
   components: {
-    Searchs
+    Searchs,
+    Tables
   }
 };
 </script>

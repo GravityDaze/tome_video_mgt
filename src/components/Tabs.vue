@@ -4,7 +4,6 @@
     Date:2020/7/1
 */
 
-
 <template>
   <el-tabs
     v-model="editableTabsValue"

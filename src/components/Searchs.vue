@@ -7,7 +7,7 @@
 <template>
   <div class="searchs">
     <div class="top-area">
-      <el-form :inline="true" :model="searchForm" class="search-form">
+      <el-form size="small" :inline="true" :model="searchForm" class="search-form">
         <el-form-item :label="item.label" v-for="(item,index) in formData" :key="index">
           <el-input
             v-if="item.type === 'input'"
@@ -40,7 +40,9 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="query">查询</el-button>
+          <el-button type="primary" @click="add" icon='el-icon-edit'>新增</el-button>
+          <el-button type="primary" @click="query" icon="el-icon-search">查询</el-button>
+          <el-button @click="clear" icon="el-icon-delete">清空</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -97,14 +99,20 @@ export default {
   methods: {
     query() {
       this.$emit("query", this.searchForm);
-    }
+    },
+    clear(){
+      this.$emit("clear", this.searchForm);
+    },
+    add(){
+      this.$emit("add");
+    },
   }
 };
 </script>
 
 <style scoped>
 .searchs {
-  border: 1px solid lightgrey;
+  /* border: 1px solid lightgrey; */
   padding: 10px;
 }
 

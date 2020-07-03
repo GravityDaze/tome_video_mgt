@@ -5,8 +5,8 @@
 */
 
 <template>
-  <div class="tables">
-    <el-table :data="tableData" style="width: 100%">
+  <div class="tables" style="margin:20px 0">
+    <el-table  border :data="tableData" style="width: 100%">
       <el-table-column
         v-for="(item,index) in tableCols"
         :key="index"
@@ -41,13 +41,15 @@
     </el-table>
     <!-- 分页 -->
     <el-pagination
+      background
+      style="margin-top:20px"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
-      :current-page="pagination.num"
+      :current-page.sync="pagination.num"
       :page-sizes="[5, 8, 10, 20]"
       :page-size="pagination.size"
       layout="total, sizes, prev, pager, next, jumper"
-      :total="pagination.total"
+      :total.sync="pagination.total"
     ></el-pagination>
   </div>
 </template>
@@ -67,25 +69,40 @@ export default {
         return [];
       }
     },
-    pagination:{
-        type:Object,
-        default(){
-            return{
-                total:20,
-                size:10,
-                num:1
-            }
-        }
+    tools: {
+      type: Boolean,
+      default: true
+    },
+    toolsData: {
+      type: Array,
+      default() {
+        return [];
+      }
+    },
+    pagination: {
+      type: Object,
+      default() {
+        return {
+          total: 20,
+          size: 10,
+          num: 1
+        };
+      }
     }
   },
   methods: {
-    handleSizeChange(val){
-        this.$emit('sizeChange',val)
+    handleSizeChange(val) {
+      this.$emit("sizeChange", val);
     },
-    handleCurrentChange(val){   
-        this.$emit('numChange',val)
+    handleCurrentChange(val) {
+      this.$emit("numChange", val);
     }
-
   }
 };
 </script>
+
+<style lang="less">
+.tables{
+  // border-top: 1px solid lightgrey;
+}
+</style>
