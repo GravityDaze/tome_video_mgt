@@ -17,11 +17,16 @@
       @checkRefuse="disapproved"
       @upload="upload"
       @preview="preview"
-    /> -->
+    />-->
     <tables
       :tableData="tableData"
       :tableCols="filterTitle"
-     />
+      @sizeChange="sizeChange"
+      @numChange="numChange"
+      :pagination="pagination"
+      v-loading="loading"
+      element-loading-text="下载中,请稍后"
+    />
 
     <!-- 上传对话框 begin -->
     <el-dialog title="上传视频" :show-close="false" :visible.sync="upLoadDiaglogVisible">
@@ -74,7 +79,7 @@ import {
   uploadFinishApi,
   postAuditStatus
 } from "@/api/checkManage";
-import { getUpLoadParams } from '@/api/qiniu'
+import { getUpLoadParams } from "@/api/qiniu";
 import { mapState } from "vuex";
 import { download } from "@/utils/download";
 import Tables from "@/components/Tables";
@@ -138,7 +143,7 @@ export default {
           prop: "statusUpload",
           label: "视频是否已重新上传",
           align: "center",
-          formatter: row => row.statusUpload ? "是" : "否"
+          formatter: row => (row.statusUpload ? "是" : "否")
         },
         {
           prop: "proName",
@@ -163,7 +168,7 @@ export default {
             { type: "text", label: "下载", handle: this.downloadVideo },
             { type: "text", label: "上传", handle: this.upload },
             { type: "text", label: "审核通过", handle: this.approved },
-            { type: "text", label: "拒绝", handle: this.disapproved },
+            { type: "text", label: "拒绝", handle: this.disapproved }
           ]
         }
       ], //初始表头数据
@@ -173,6 +178,7 @@ export default {
           label: "状态",
           model: "status",
           placeholder: "请选择审核状态",
+          // default: 0,
           options: [
             {
               label: "未审核",
@@ -205,6 +211,7 @@ export default {
         }
       ], //初始表单数据
       tableData: [], //表格数据
+      isCheck:false,//当前是否有正在审核的视频
       upLoadDiaglogVisible: false, //上传对话框状态
       refuseDialogvisible: false, //审核不通过对话框状态
       remark: "", //备注
@@ -216,23 +223,37 @@ export default {
       loading: false,
       uploading: false,
       videoInfo: {}, //视频相关信息
-      timer: null //定时器
+      timer: null, //定时器
+      pagination: {
+        num: 1,
+        size: 10,
+        total: 0,
+        absTotal: 0
+      }
     };
+  },
+
+  created() {
+    this.isCheckingFn();
+  },
+  beforeDestroy() {
+    clearInterval(this.timer);
   },
 
   methods: {
     // 获取视频信息
-    async getVideoList( data = {
+    async getVideoList(
+      query = {
         status: this.status,
-        pageNum: this.$store.state.pageNumParam,
-        pageSize: this.$store.state.pageSizeParam
-      }) {
-      console.log(data)
-      const res = await queryVideoList(data);
-      const { value, resultStatus } = res.data;
+        pageNum: this.pagination.num,
+        pageSize: this.pagination.size
+      }
+    ) {
+      const { data } = await queryVideoList(query);
+      this.pagination.total = data.value.total;
       // 如果查询参数中有status,则更改当前status
-      if (data.status !== undefined) {
-        this.status = data.status;
+      if (query.status !== undefined) {
+        this.status = query.status;
       }
       //创建表头过滤数组
       let filter;
@@ -277,59 +298,86 @@ export default {
       // 过滤表头
       this.filterTitle = this.tableTitle.filter(v => !filter.includes(v.prop));
       // 查询完毕后判断是否需要关闭定时器
-      if (this.status !== 0 || data.createDatetime || data.examineUserName) {
+      if (this.status !== 0 || query.createDatetime || query.examineUserName) {
         clearInterval(this.timer);
         this.timer = null;
       } else if (this.timer === null) {
         // 重新开启定时器
-        this.startTimer()
+        this.startTimer();
       }
 
-      // 赋值
-      this.tableData = value.list;
-      // 完成分页 ( 此处vuex代码不规范 待重构 )
-      this.$store.state.totalParam = res.data.value.total;
+      // 赋值表格数据
+      this.tableData = data.value.list;
     },
 
     // 初始化查询是否有正在审核的视频
-    async isChecking() {
-      const res = await queryChecking();
-      const { resultStatus, value } = res.data;
-      this.status = value.flag;
+    async isCheckingFn() {
+      const { data } = await queryChecking();
+      this.isChecking = data.value.flag;
+      if (this.isChecking) {
+        this.$notify({
+          title: "您有一条待审核的视频",
+          customClass: "hover",
+          type: "warning",
+          message: this.$createElement(
+            "a",
+            {
+              on: {
+                click: this.checkVideo
+              }
+            },
+            "点击查看"
+          )
+        });
+      }
+      this.startTimer();
     },
+
+    // 通过提示信息跳转到审核界面
+    checkVideo() {
+      this.status = 1 
+      this.getVideoList()
+    },
+
+    // 开启定时器
+    startTimer() {
+      const count = () => {
+        this.getVideoList();
+        return count;
+      };
+      this.timer = setInterval(count(), 3000);
+    },
+
     // 开启审核
-    async checkStart(params) {
-      const res = await checkStartApi(params);
-      const { resultStatus, value } = res.data;
-      this.$message.success('已开启审核')
+    async checkStart({ id }) {
+      await checkStartApi({ id });
+      this.$message.success("已开启审核");
       this.status = 1;
       this.getVideoList();
     },
     // 预览视频
-    preview(data) {
-      window.open(data.url);
+    preview({ url }) {
+      window.open(url);
     },
 
     // 下载视频
-    downloadVideo(data) {
-      this.loading = true;
-      download(data.url, data.name)
-        .then(() => {
-          this.loading = false;
-        })
-        .catch(() => {
-          this.loading = false;
-        });
+    async downloadVideo({ url, name }) {
+      try {
+        this.loading = true;
+        await download(url, name);
+      } finally {
+        this.loading = false;
+      }
     },
 
     // 打开对话框并获取上传视频前必要的参数
-    async upload(params) {
+    async upload({ id }) {
       //通过id获取上传token
-      const res = await getUpLoadParams(params);
-      this.token = res.data.value.token;
+      const { data } = await getUpLoadParams({ id });
+      this.token = data.value.token;
       this.upLoadDiaglogVisible = true;
       //保存id
-      this.id = params.id;
+      this.id = id;
     },
 
     // 关闭对话框
@@ -347,8 +395,8 @@ export default {
     },
 
     // 上传视频之前检查是否是mp4格式
-    beforeUploadSuccess(file) {
-      if (["video/mp4"].indexOf(file.type) == -1) {
+    beforeUploadSuccess({ type }) {
+      if (["video/mp4"].indexOf(type) === -1) {
         //'video/ogg', 'video/flv', 'video/avi', 'video/wmv', 'video/rmvb'
         this.$message.error("请上传正确的视频格式");
         return false;
@@ -359,14 +407,16 @@ export default {
 
     // 获取上传进度
     onUploading(event) {
-      this.tips = `正在上传中，请勿关闭对话框或刷新页面 ${parseFloat( event.percent ).toFixed(2)}%`;
+      this.tips = `正在上传中，请勿关闭对话框或刷新页面 ${parseFloat(
+        event.percent
+      ).toFixed(2)}%`;
     },
 
     // 上传视频成功
     onUploadSuccess(res, file) {
-      // 通过key获取到size和duration
       const audioElement = new Audio(URL.createObjectURL(file.raw));
       audioElement.addEventListener("loadedmetadata", () => {
+        // 通过创建audio元素的方法获取到视频的时长
         const proDuration = parseInt(audioElement.duration);
         const proSize = parseInt(file.size / 1000);
         // 保存视频相关信息
@@ -378,9 +428,10 @@ export default {
           proDuration
         };
         // 完成视频上传
-        this.$message.success('已上传视频，请点击确定按钮')
-        this.uploading = false;
+        this.$message.success("已上传视频，请点击确定按钮");
+        // 创建上传框中的预览视频
         this.videoUrl = URL.createObjectURL(file.raw);
+        this.uploading = false;
         this.uploadDialogDisabled = false;
       });
     },
@@ -402,15 +453,15 @@ export default {
       this.videoInfo = {};
       this.videoUrl = "";
       this.upLoadDiaglogVisible = false;
-      this.$message.success('上传成功')
+      this.$message.success("上传成功");
       // 查询一次当前列表更新数据
       this.getVideoList();
     },
 
     // 审核通过
-    approved(data) {
+    approved({ id, statusUpload }) {
       // 检查是否已经重新上传视频
-      if (data.statusUpload === 0) {
+      if (statusUpload === 0) {
         return this.$message.warning("请先上传视频");
       }
 
@@ -418,42 +469,55 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
-      }).then(async () => {
-        // 审核通过逻辑
-        const res = await postAuditStatus({
-          id: data.id,
-          result: 1
-        });
-        this.$message.success("已通过");
-        // 重新渲染未审核数据
-        this.status = 0;
-        this.getVideoList();
-      });
+      })
+        .then(async () => {
+          // 审核通过逻辑
+          await postAuditStatus({
+            id,
+            result: 1
+          });
+          this.$message.success("已通过");
+          // 重新渲染未审核数据
+          this.status = 0;
+          this.getVideoList();
+        })
+        .catch(() => {});
     },
 
     // 打开审核不通过对话框
-    disapproved (data) {
-      // 审核拒绝逻辑
+    disapproved({ id }) {
       this.refuseDialogvisible = true;
-      this.id = data.id;
+      this.id = id; //记录当前id
     },
 
     // 审核不通过逻辑
-    async refuse(data) {
+    async refuse() {
       if (this.remark === "") {
         this.$message.warning("备注不能为空");
       } else {
-        const res = await postAuditStatus({
+        await postAuditStatus({
           id: this.id,
           remark: this.remark,
           result: 0
         });
-          this.$message.info("已拒绝");
-          this.refuseDialogvisible = false;
-          // 重新渲染未审核数据
-          this.status = 0;
-          this.getVideoList();
+        this.$message.info("已拒绝");
+        this.refuseDialogvisible = false;
+        // 重新渲染未审核数据
+        this.status = 0;
+        this.getVideoList();
       }
+    },
+
+    // 分页size改变
+    sizeChange(val) {
+      this.pagination.size = val;
+      this.getVideoList();
+    },
+
+    // 分页num改变
+    numChange(val) {
+      this.pagination.num = val;
+      this.getVideoList();
     },
 
     // 按钮查询
@@ -464,21 +528,7 @@ export default {
     // 分页查询
     queryInfo() {
       this.getVideoList();
-    },
-    // 开启定时器
-    startTimer(){
-      const count = () => {
-        this.getVideoList();
-        return count;
-      };
-      this.timer = setInterval(count(), 3000);
     }
-  },
-  created() {
-    this.isChecking().then(() => this.startTimer() )
-  },
-  beforeDestroy() {
-    clearInterval(this.timer);
   },
   components: {
     Searchs,
@@ -510,5 +560,9 @@ export default {
   width: 178px;
   height: 178px;
   display: block;
+}
+
+.hover {
+  cursor: pointer;
 }
 </style>

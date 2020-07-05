@@ -40,7 +40,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="add" icon='el-icon-edit'>新增</el-button>
+          <el-button type="primary" @click="add" icon="el-icon-edit">新增</el-button>
           <el-button type="primary" @click="query" icon="el-icon-search">查询</el-button>
           <el-button @click="clear" icon="el-icon-delete">清空</el-button>
         </el-form-item>
@@ -100,12 +100,29 @@ export default {
     query() {
       this.$emit("query", this.searchForm);
     },
-    clear(){
+    clear() {
       this.$emit("clear", this.searchForm);
     },
-    add(){
+    add() {
       this.$emit("add");
-    },
+    }
+  },
+  mounted() {
+    // 初始化时查询数据中是否有默认值
+    const defaultArr = this.formData.filter(v => v.default !== undefined);
+    for (let i = 0; i < defaultArr.length; i++) {
+      this.$set( this.searchForm , defaultArr[i].model, defaultArr[i].default )
+    }
+  },
+  watch: {
+    // 监听默认值的变化
+    formData: {
+      handler(res) {
+        console.log(res);
+      },
+      immediate: true,
+      deep: true
+    }
   }
 };
 </script>
