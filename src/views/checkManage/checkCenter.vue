@@ -1,23 +1,6 @@
 <template>
   <el-card class="checkCenter">
-    <searchs @query="query" :formData="formData" />
-    <!-- <my-tables
-      v-loading="loading"
-      element-loading-text="下载中,请稍后"
-      :tableTitle="filterTitle"
-      :tableData="tableData"
-      :isShowEnabled="true"
-      :isShowFacePic="true"
-      :isShowOperation="true"
-      :checkStatus="status"
-      @queryInfoFn="queryInfo"
-      @checkStart="checkStart"
-      @download="downloadVideo"
-      @checkPass="approved"
-      @checkRefuse="disapproved"
-      @upload="upload"
-      @preview="preview"
-    />-->
+    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
     <tables
       :tableData="tableData"
       :tableCols="filterTitle"
@@ -25,7 +8,7 @@
       @numChange="numChange"
       :pagination="pagination"
       v-loading="loading"
-      element-loading-text="下载中,请稍后"
+      :element-loading-text="loadingText"
     />
 
     <!-- 上传对话框 begin -->
@@ -84,6 +67,7 @@ import { mapState } from "vuex";
 import { download } from "@/utils/download";
 import Tables from "@/components/Tables";
 import Searchs from "@/components/Searchs";
+import _ from "lodash";
 export default {
   data() {
     return {
@@ -164,6 +148,7 @@ export default {
           label: "操作",
           type: "button",
           btnList: [
+            { type: "primary", label: "开启审核", handle: this.checkStart },
             { type: "text", label: "预览", handle: this.preview },
             { type: "text", label: "下载", handle: this.downloadVideo },
             { type: "text", label: "上传", handle: this.upload },
@@ -210,8 +195,17 @@ export default {
           model: "createDatetime"
         }
       ], //初始表单数据
+      searchForm:{},
+      searchBtn: [
+        {
+          type: "primary",
+          label: "查询",
+          handle: this.query,
+          icon: "el-icon-search"
+        }
+      ], //search组件的按钮组
       tableData: [], //表格数据
-      isCheck:false,//当前是否有正在审核的视频
+      isCheck: false, //当前是否有正在审核的视频
       upLoadDiaglogVisible: false, //上传对话框状态
       refuseDialogvisible: false, //审核不通过对话框状态
       remark: "", //备注
@@ -221,6 +215,7 @@ export default {
       id: "", //当前视频的id
       tips: "", //上传提示信息
       loading: false,
+      loadingText: "", //表格加载时的提示信息
       uploading: false,
       videoInfo: {}, //视频相关信息
       timer: null, //定时器
@@ -246,77 +241,44 @@ export default {
       query = {
         status: this.status,
         pageNum: this.pagination.num,
-        pageSize: this.pagination.size
+        pageSize: this.pagination.size,
+        ...this.searchForm
       }
     ) {
-      const { data } = await queryVideoList(query);
-      this.pagination.total = data.value.total;
-      // 如果查询参数中有status,则更改当前status
-      if (query.status !== undefined) {
-        this.status = query.status;
-      }
-      //创建表头过滤数组
-      let filter;
-      switch (this.status) {
-        case 0:
-          filter = [
-            "proName",
-            "proCoverUrl",
-            "proUrl",
-            "remark",
-            "examineDatetime",
-            "examineUserName",
-            "statusUpload"
-          ];
-          break;
-
-        case 1:
-          filter = [
-            "proName",
-            "proCoverUrl",
-            "proUrl",
-            "remark",
-            "examineDatetime",
-            "examineUserName"
-          ];
-          break;
-
-        case 3:
-          filter = [
-            "proName",
-            "proCoverUrl",
-            "proUrl",
-            "examineUserName",
-            "examineDatetime",
-            "statusUpload"
-          ];
-          break;
-        default:
-          filter = [];
-      }
-
-      // 过滤表头
-      this.filterTitle = this.tableTitle.filter(v => !filter.includes(v.prop));
-      // 查询完毕后判断是否需要关闭定时器
-      if (this.status !== 0 || query.createDatetime || query.examineUserName) {
-        clearInterval(this.timer);
-        this.timer = null;
-      } else if (this.timer === null) {
-        // 重新开启定时器
-        this.startTimer();
-      }
-
-      // 赋值表格数据
-      this.tableData = data.value.list;
+      try {
+        const { data } = await queryVideoList(query);
+        this.pagination.total = data.value.total;
+        // 如果查询参数中有status,则更改当前status
+        if (query.status !== undefined) {
+          this.status = query.status;
+        }
+        // 过滤表头
+        this.filterTitle = this.filterTableCols();
+        // 查询完毕后判断是否需要关闭定时器
+        if (
+          this.status !== 0 ||
+          query.createDatetime ||
+          query.examineUserName
+        ) {
+          clearInterval(this.timer);
+          this.timer = null;
+        } else if (this.timer === null) {
+          // 重新开启定时器
+          this.startTimer();
+        }
+        // 赋值表格数据
+        this.tableData = data.value.list;
+      } catch (err) {}
     },
 
     // 初始化查询是否有正在审核的视频
     async isCheckingFn() {
+      this.loading = true;
       const { data } = await queryChecking();
       this.isChecking = data.value.flag;
       if (this.isChecking) {
-        this.$notify({
-          title: "您有一条待审核的视频",
+         this.instance = this.$notify({
+          title: "您有一条正在审核的视频",
           customClass: "hover",
           type: "warning",
           message: this.$createElement(
@@ -330,13 +292,72 @@ export default {
           )
         });
       }
+      this.loading = false;
       this.startTimer();
+    },
+
+    // 表头过滤方法
+    filterTableCols() {
+      let filter;
+      let btnFilter;
+      switch (this.status) {
+        case 0:
+          filter = [
+            "proName",
+            "proCoverUrl",
+            "proUrl",
+            "remark",
+            "examineDatetime",
+            "examineUserName",
+            "statusUpload"
+          ];
+          btnFilter = ["预览", "下载", "上传", "审核通过", "拒绝"];
+          break;
+
+        case 1:
+          filter = [
+            "proName",
+            "proCoverUrl",
+            "proUrl",
+            "remark",
+            "examineDatetime",
+            "examineUserName"
+          ];
+          btnFilter = ["开启审核"];
+          break;
+
+        case 3:
+          filter = [
+            "proName",
+            "proCoverUrl",
+            "proUrl",
+            "examineUserName",
+            "examineDatetime",
+            "statusUpload",
+            "button"
+          ];
+          break;
+        default:
+          filter = ["button"];
+      }
+      // 获取到过滤后的表头
+      const mainCols = _.cloneDeep(
+        this.tableTitle.filter(v => !filter.includes(v.prop || v.type))
+      );
+      // 对按钮组进行单独过滤
+      return mainCols.map(v => {
+        if (v.type === "button") {
+          v.btnList = v.btnList.filter(btn => !btnFilter.includes(btn.label));
+        }
+        return v;
+      });
     },
 
     // 通过提示信息跳转到审核界面
     checkVideo() {
-      this.status = 1 
-      this.getVideoList()
+      this.instance.close()
+      this.status = 1;
+      this.getVideoList();
     },
 
     // 开启定时器
@@ -350,10 +371,12 @@ export default {
 
     // 开启审核
     async checkStart({ id }) {
-      await checkStartApi({ id });
-      this.$message.success("已开启审核");
-      this.status = 1;
-      this.getVideoList();
+      try {
+        await checkStartApi({ id });
+        this.$message.success("已开启审核");
+        this.status = 1;
+        this.getVideoList();
+      } catch (err) {}
     },
     // 预览视频
     preview({ url }) {
@@ -364,9 +387,11 @@ export default {
     async downloadVideo({ url, name }) {
       try {
         this.loading = true;
+        this.loadingText = "下载中请稍后";
         await download(url, name);
       } finally {
         this.loading = false;
+        this.loadingText = "";
       }
     },
 
@@ -522,8 +547,13 @@ export default {
 
     // 按钮查询
     query(searchForm) {
-      // bug todo
-      this.getVideoList(searchForm);
+      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
+
+      // 查询时 pageNum必须恢复为1
+      this.searchForm = searchForm;
+      // 查询时,num默认从1开始
+      this.pagination.num = 1;
+      this.getVideoList();
     },
     // 分页查询
     queryInfo() {

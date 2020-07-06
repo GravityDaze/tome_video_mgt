@@ -27,7 +27,7 @@ Vue.use(ElementUI);
 Vue.use(Vuex);
 Vue.prototype.$axios = axios;
 
-// baseURL  ( request.js 待废除 2020/6/24) 
+// baseURL  ( 待废除 see request.js 2020/6/24) 
 axios.defaults.baseURL =  "https://tome3pay.zhihuiquanyu.com"
 
 
@@ -36,14 +36,18 @@ import myTables from "./components/myTables";
 import mySearchs from "./components/mySearchs";
 import priceSets from "./components/priceSets";
 import treeviewComponent from "./components/treeviewComponent";
+import Tables from "./components/Tables";
+import Searchs from "./components/Searchs";
 
 //注册组件(全局)
 Vue.component("myTables", myTables);
 Vue.component("mySearchs", mySearchs);
 Vue.component("priceSets", priceSets);
 Vue.component("treeviewComponent", treeviewComponent);
+Vue.component('tables',Tables)
+Vue.component('searchs',Searchs)
 
-// 添加请求拦截器，在请求头中加token (拦截器已放入request.js 本代码块待废除 2020/6/24)
+// 添加请求拦截器，在请求头中加token (待废除 see request.js 2020/6/24)
 axios.interceptors.request.use(
   config => {
     if (localStorage.getItem("token")) {

@@ -39,10 +39,9 @@
           ></el-date-picker>
         </el-form-item>
 
+        <!-- 按钮组 -->
         <el-form-item>
-          <el-button type="primary" @click="add" icon="el-icon-edit">新增</el-button>
-          <el-button type="primary" @click="query" icon="el-icon-search">查询</el-button>
-          <el-button @click="clear" icon="el-icon-delete">清空</el-button>
+          <el-button v-for="(item,index) in searchBtn" :key="index" :type="item.type" @click="item.handle(searchForm)" :icon="item.icon">{{item.label}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -56,6 +55,12 @@ export default {
       type: Array,
       default: () => {
         return [];
+      }
+    },
+    searchBtn:{
+      type:Array,
+      default:()=>{
+        return[]
       }
     }
   },
@@ -96,17 +101,6 @@ export default {
       }
     };
   },
-  methods: {
-    query() {
-      this.$emit("query", this.searchForm);
-    },
-    clear() {
-      this.$emit("clear", this.searchForm);
-    },
-    add() {
-      this.$emit("add");
-    }
-  },
   mounted() {
     // 初始化时查询数据中是否有默认值
     const defaultArr = this.formData.filter(v => v.default !== undefined);
@@ -129,7 +123,6 @@ export default {
 
 <style scoped>
 .searchs {
-  /* border: 1px solid lightgrey; */
   padding: 10px;
 }
 

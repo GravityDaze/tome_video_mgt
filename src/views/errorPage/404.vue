@@ -18,9 +18,15 @@ export default {
     back() {
       // 根据sessionStorage中保存的tabs记录获取到跳转前的path
       const editableTabsValue = sessionStorage.getItem("editableTabsValue");
-      const editableTabs = JSON.parse(sessionStorage.getItem("editableTabs"));
-      const backPath = editableTabs.filter(v => v.name === editableTabsValue)[0].path;
-      this.$router.push(backPath);
+      if (editableTabsValue) {
+        const editableTabs = JSON.parse(sessionStorage.getItem("editableTabs"));
+        const backPath = editableTabs.filter(
+          v => v.name === editableTabsValue
+        )[0].path;
+        this.$router.push(backPath);
+      } else {
+        this.$router.push("/");
+      }
     }
   }
 };

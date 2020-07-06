@@ -1,0 +1,216 @@
+<template>
+  <div>
+    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
+    <tables
+      :tableData="tableData"
+      :tableCols="tableCols"
+      :pagination="pagination"
+      @sizeChange="sizeChange"
+      @numChange="numChange"
+    />
+  </div>
+</template>
+
+<script>
+import { queryDemand } from "@/api/demandManage";
+import _ from "lodash";
+export default {
+  name: "demand-manage",
+  data() {
+    return {
+      tableCols: [
+        {
+          prop: "no",
+          label: "需求编号",
+          align: "center"
+        },
+        {
+          prop: "sceneryName",
+          label: "所属景区",
+          align: "center"
+        },
+        {
+          prop: "nickName",
+          label: "用户昵称",
+          // width: '180',
+          align: "center"
+        },
+        {
+          prop: "createDatetime",
+          label: "提交时间",
+          // width: '180',
+          align: "center"
+        },
+        {
+          prop: "type",
+          label: "需求类型",
+          // width: '180',
+          align: "center",
+          formatter: row => (row.type === 1 ? "标准制作" : "定制合成")
+        },
+        {
+          prop: "status",
+          label: "需求状态",
+          align: "center",
+          formatter: row => {
+            switch (row.status) {
+              case 0:
+                return "等待合成";
+                break;
+              case 1:
+                return "正在合成";
+                break;
+              case 2:
+                return "合成成功";
+                break;
+              default:
+                return "合成失败";
+            }
+          }
+        },
+        {
+          prop: "commitStatus",
+          label: "推送通知",
+          align: "center",
+          formatter: row => (row.commitStatus === 1 ? "已提交" : "未提交")
+        },
+        {
+          prop: "updateDatetime",
+          label: "最后更新时间",
+          align: "center"
+        }
+      ],
+      tableData: [],
+      formData: [
+        {
+          type: "input",
+          label: "所属景区",
+          model: "sceneryName",
+          placeholder: "请输入景区名称"
+        },
+        {
+          type: "input",
+          label: "用户昵称",
+          model: "nickName",
+          placeholder: "请输入用户昵称"
+        },
+        {
+          label: "提交时间",
+          type: "datePicker",
+          model: "createDatetime"
+        },
+        {
+          label: "需求类型",
+          type: "select",
+          model: "type",
+          options: [
+            {
+              label: "全部",
+              value: undefined
+            },
+            {
+              label: "标准制作",
+              value: 1
+            },
+            {
+              label: "定制合成",
+              value: 2
+            }
+          ]
+        },
+        {
+          type: "select",
+          label: "需求状态",
+          model: "status",
+          options: [
+            {
+              label: "全部",
+              value: undefined
+            },
+            {
+              label: "等待合成",
+              value: 0
+            },
+            {
+              label: "正在合成",
+              value: 1
+            },
+            {
+              label: "合成成功",
+              value: 2
+            },
+            {
+              label: "合成失败",
+              value: 3
+            }
+          ]
+        }
+      ],
+      searchBtn: [
+        {
+          type: "primary",
+          label: "查询",
+          handle: this.query,
+          icon: "el-icon-search"
+        }
+      ],
+      pagination: {
+        num: 1,
+        size: 10,
+        total: 0
+      },
+      searchForm: {}
+    };
+  },
+  created() {
+    this.getDemandList();
+  },
+  methods: {
+    async getDemandList(
+      query = {
+        ...this.searchForm,
+        pageNum: this.pagination.num,
+        pageSize: this.pagination.size
+      }
+    ) {
+      try {
+        const { data } = await queryDemand(query);
+        this.tableData = data.value.list;
+        this.pagination.total = data.value.total;
+      } catch (err) {}
+    },
+
+    // 按钮查询
+    query(searchForm) {
+      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
+      // 将searchForm中的时间数组转换为后台需要接收的格式
+      console.log(this.searchForm);
+      if (searchForm.createDatetime && searchForm.createDatetime.length) {
+        searchForm.startDate = searchForm.createDatetime[0];
+        searchForm.endDate = searchForm.createDatetime[1];
+        delete searchForm.createDatetime;
+      } else if (searchForm.startDate || searchForm.endDate) {
+        delete searchForm.startDate;
+        delete searchForm.endDate;
+      }
+      this.searchForm = searchForm;
+      // 查询时,num默认从1开始
+      this.pagination.num = 1;
+      this.getDemandList();
+    },
+
+    // 分页size改变
+    sizeChange(val) {
+      this.pagination.size = val;
+      this.getDemandList();
+    },
+
+    // 分页num改变
+    numChange(val) {
+      this.pagination.num = val;
+      this.getDemandList();
+    }
+  }
+};
+</script>
+

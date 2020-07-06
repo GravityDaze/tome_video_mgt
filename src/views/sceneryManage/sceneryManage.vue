@@ -1,5 +1,5 @@
 <template>
-  <el-card>
+  <el-card class="scenery-manage">
     <searchs @query="query" @clear="clear" :formData="formData" @add="add" />
     <tables
       v-loading="tablesLoading"
@@ -303,7 +303,7 @@ export default {
         const { data } = await getSceneryList(query);
         // 获取当前查询结果下的分页条数
         this.pagination.total = data.value.total;
-        // 当查询结果为空时的分页条数
+        // 当查询结果为空时获取分页条数
         if (!Object.keys(this.searchForm).length) {
           this.pagination.absTotal = data.value.total;
         }
@@ -315,7 +315,7 @@ export default {
           return v;
         });
       } catch (err) {
-        console.log(err)
+        console.log(err);
       } finally {
         this.tablesLoading = false;
       }
@@ -554,6 +554,7 @@ export default {
 
     // 按钮查询相关
     query(searchForm) {
+      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
       this.searchForm = searchForm;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
@@ -563,7 +564,10 @@ export default {
     // 清空查询结果
     clear(searchForm) {
       for (const v in searchForm) {
-        if (typeof searchForm[v] === "number" || typeof searchForm[v] === "undefined") {
+        if (
+          typeof searchForm[v] === "number" ||
+          typeof searchForm[v] === "undefined"
+        ) {
           searchForm[v] = undefined;
         } else {
           searchForm[v] = "";
@@ -593,28 +597,30 @@ export default {
   vertical-align: bottom;
 }
 
-// 上传框
-.uploader .el-upload {
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.uploader .el-upload:hover {
-  border-color: #409eff;
-}
-.uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 157px;
-  height: 48px;
-  line-height: 48px;
-  text-align: center;
-}
-.upload-img {
-  width: 157px;
-  height: 48px;
-  display: block;
+.scenery-manage {
+  // 上传框
+  .uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .uploader .el-upload:hover {
+    border-color: #409eff;
+  }
+  .uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 157px;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+  }
+  .upload-img {
+    width: 157px;
+    height: 48px;
+    display: block;
+  }
 }
 </style>
