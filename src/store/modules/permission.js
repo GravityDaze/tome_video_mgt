@@ -28,6 +28,7 @@ const actions = {
         localStorage.setItem('menuList', JSON.stringify(data.value))
         resolve()
       } catch (err) {
+       
         reject(err)
       }
     })

@@ -143,6 +143,7 @@ import { getPublicUploadParams } from "@/api/qiniu";
 import { restore } from "@/utils/restoreModel";
 import Tables from "@/components/Tables";
 import Searchs from "@/components/Searchs";
+import _ from 'lodash'
 export default {
   name: "scenery-manage",
   components: {
@@ -297,9 +298,8 @@ export default {
         pageSize: this.pagination.size
       }
     ) {
-      this.tablesLoading = true;
-
       try {
+        this.tablesLoading = true;
         const { data } = await getSceneryList(query);
         // 获取当前查询结果下的分页条数
         this.pagination.total = data.value.total;
