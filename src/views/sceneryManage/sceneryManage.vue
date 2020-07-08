@@ -141,15 +141,10 @@ import {
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
-import Tables from "@/components/Tables";
-import Searchs from "@/components/Searchs";
-import _ from 'lodash'
+import initData from "@/mixins/initData";
 export default {
+  mixins:[initData],
   name: "scenery-manage",
-  components: {
-    Tables,
-    Searchs
-  },
   data() {
     return {
       tableCols: [
@@ -202,13 +197,6 @@ export default {
           ]
         }
       ],
-      tableData: [],
-      pagination: {
-        num: 1,
-        size: 10,
-        total: 0,
-        absTotal: 0
-      },
       formData: [
         {
           type: "input",
@@ -263,7 +251,6 @@ export default {
           ]
         }
       ], //查询表单
-      searchForm: {},
       sceneryDialog: false, //景区修改或新增模态框
       sceneryForm: {
         name: "",
@@ -287,11 +274,11 @@ export default {
     };
   },
   created() {
-    this.getSceneryList();
+    this.getTableData();
   },
   methods: {
     // 获取景区列表
-    async getSceneryList(
+    async getTableData(
       query = {
         ...this.searchForm,
         pageNum: this.pagination.num,
@@ -498,7 +485,7 @@ export default {
           this.pagination.total = this.pagination.absTotal; //更新total
           //  清空查询数据
           this.clear(this.searchForm);
-          this.getSceneryList();
+          this.getTableData();
           this.$message.success(`已添加景区 ${this.sceneryForm.name}`);
           this.sceneryDialog = false;
         } else {
@@ -530,7 +517,7 @@ export default {
           if (edge < num) {
             this.pagination.num--;
           }
-          this.getSceneryList();
+          this.getTableData();
         })
         .catch(() => {});
     },
@@ -540,25 +527,13 @@ export default {
       window.open("http://api.map.baidu.com/lbsapi/getpoint/index.html");
     },
 
-    // 分页size改变
-    sizeChange(val) {
-      this.pagination.size = val;
-      this.getSceneryList();
-    },
-
-    // 分页num改变
-    numChange(val) {
-      this.pagination.num = val;
-      this.getSceneryList();
-    },
-
     // 按钮查询相关
     query(searchForm) {
       if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
       this.searchForm = searchForm;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
-      this.getSceneryList();
+      this.getTableData();
     },
 
     // 清空查询结果

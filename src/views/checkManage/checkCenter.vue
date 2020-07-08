@@ -63,12 +63,10 @@ import {
   postAuditStatus
 } from "@/api/checkManage";
 import { getUpLoadParams } from "@/api/qiniu";
-import { mapState } from "vuex";
 import { download } from "@/utils/download";
-import Tables from "@/components/Tables";
-import Searchs from "@/components/Searchs";
-import _ from "lodash";
+import initData from "@/mixins/initData";
 export default {
+  mixins:[initData],
   data() {
     return {
       // 表头默认状态 0未审核 1正在审核  2:审核通过 3:审核不通过
@@ -237,7 +235,7 @@ export default {
 
   methods: {
     // 获取视频信息
-    async getVideoList(
+    async getTableData(
       query = {
         status: this.status,
         pageNum: this.pagination.num,
@@ -357,13 +355,13 @@ export default {
     checkVideo() {
       this.instance.close()
       this.status = 1;
-      this.getVideoList();
+      this.getTableData();
     },
 
     // 开启定时器
     startTimer() {
       const count = () => {
-        this.getVideoList();
+        this.getTableData();
         return count;
       };
       this.timer = setInterval(count(), 3000);
@@ -375,7 +373,7 @@ export default {
         await checkStartApi({ id });
         this.$message.success("已开启审核");
         this.status = 1;
-        this.getVideoList();
+        this.getTableData();
       } catch (err) {}
     },
     // 预览视频
@@ -480,7 +478,7 @@ export default {
       this.upLoadDiaglogVisible = false;
       this.$message.success("上传成功");
       // 查询一次当前列表更新数据
-      this.getVideoList();
+      this.getTableData();
     },
 
     // 审核通过
@@ -504,7 +502,7 @@ export default {
           this.$message.success("已通过");
           // 重新渲染未审核数据
           this.status = 0;
-          this.getVideoList();
+          this.getTableData();
         })
         .catch(() => {});
     },
@@ -529,20 +527,8 @@ export default {
         this.refuseDialogvisible = false;
         // 重新渲染未审核数据
         this.status = 0;
-        this.getVideoList();
+        this.getTableData();
       }
-    },
-
-    // 分页size改变
-    sizeChange(val) {
-      this.pagination.size = val;
-      this.getVideoList();
-    },
-
-    // 分页num改变
-    numChange(val) {
-      this.pagination.num = val;
-      this.getVideoList();
     },
 
     // 按钮查询
@@ -553,16 +539,9 @@ export default {
       this.searchForm = searchForm;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
-      this.getVideoList();
-    },
-    // 分页查询
-    queryInfo() {
-      this.getVideoList();
+      this.getTableData();
     }
-  },
-  components: {
-    Searchs,
-    Tables
+
   }
 };
 </script>

@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <searchs :formData="formData" @query="query" @add="add" :searchBtn="searchBtn"/>
+  <el-card>
+    <searchs :formData="formData" @query="query" @add="add" :searchBtn="searchBtn" />
     <tables
       :tableCols="tableCols"
       :tableData="tableData"
@@ -11,7 +11,7 @@
     />
 
     <!-- 编辑对话框 -->
-    <el-dialog :title="tempDialogTitle" :visible.sync="tempDialog">
+    <el-dialog :title="tempDialogTitle" :visible.sync="tempDialog" @close="dialogClose">
       <el-form :model="tempForm">
         <el-form-item label="景区" label-width="120px">
           <el-select v-model="tempForm.sceneryId" placeholder="请选择景区">
@@ -43,13 +43,28 @@
           <el-input-number v-model="tempForm.sort" label="描述文字"></el-input-number>
           <!-- <el-input v-model="tempForm.sort" autocomplete="off" type="number"></el-input> -->
         </el-form-item>
+        <el-form-item v-show="tempDialogTitle === '编辑'" label="点位信息" label-width="120px">
+          <el-button @click="checkTempPoint">点击查看</el-button>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="tempDialog = false">取 消</el-button>
         <el-button type="primary" @click="submit(tempForm)">确 定</el-button>
       </div>
     </el-dialog>
-  </div>
+
+    <!-- 模板点位信息对话框 -->
+    <el-dialog  @close="tempPointClose" width="70%" title="模板点位信息列表" :visible.sync="tempPointDialog">
+      <tables
+        :tableData="tempPointData"
+        :tableCols="tempPointCols"
+        :pagination="tempPointPagination"
+        @sizeChange="tempPointSizeChange"
+        @numChange="tempPointNumChange"
+       
+      />
+    </el-dialog>
+  </el-card>
 </template>
 
 <script>
@@ -70,7 +85,7 @@ import {
   getSceneryList
 } from "@/api/videoManage";
 import initData from "@/mixins/initData";
-import _ from "lodash";
+import { restore } from "@/utils/restoreModel";
 export default {
   name: "scenery-shot-template",
   mixins: [initData],
@@ -192,7 +207,7 @@ export default {
           ]
         }
       ],
-       searchBtn: [
+      searchBtn: [
         {
           type: "primary",
           label: "新增",
@@ -207,17 +222,64 @@ export default {
         }
       ],
       tempDialogTitle: "", //对话框标题
-      sceneryList: [] //景区下拉框
+      sceneryList: [], //景区下拉框
+      tempPointDialog: false, //模板点位对话框
+      tempPointData: [],
+      tempPointCols: [
+        {
+          label: "模板名称",
+          prop: "templetName"
+        },
+        {
+          label: "点位名称",
+          prop: "name"
+        },
+        {
+          label: "位置",
+          prop: "location"
+        },
+        {
+          label: "描述",
+          prop: "describe"
+        },
+        {
+          label: "时长",
+          prop: "duration"
+        },
+        {
+          label: "序号",
+          prop: "sequence"
+        },
+        {
+          label: "创建者",
+          prop: "creator"
+        },
+        {
+          label: "创建时间",
+          prop: "createDatetime"
+        },
+        {
+          label: "状态",
+          type: "switch",
+          prop: "status",
+          change: this.tempPointStatusChange
+        }
+      ],
+      tempPointPagination: {
+        num: 1,
+        size: 5,
+        total: 0
+      }
     };
   },
 
   created() {
-    this.getTempList();
+    this.getTableData();
   },
 
   methods: {
     // 获取模板信息
-    async getTempList(
+    async getTableData(
       query = {
         ...this.searchForm,
         pageNum: this.pagination.num,
@@ -280,26 +342,84 @@ export default {
       try {
         if (this.tempDialogTitle === "编辑") {
           await editTemplate({ ...form, id: this.id });
-          this.getTempList();
+          this.getTableData();
           this.$message.success("修改成功");
           this.tempDialog = false;
         } else {
           await addTemplate({ ...form });
-          this.getTempList();
+          this.getTableData();
           this.$message.success("新增成功");
-          this.getTempList = false;
+          this.getTableData = false;
         }
       } catch (err) {}
     },
 
     // 新增
-    add(){
+    add() {
       // 打开对话框
       this.tempDialog = true;
       this.tempDialogTitle = "新增";
     },
 
-    // 按钮查询 
+    // 关闭对话框
+    dialogClose() {
+      this.tempForm = restore(this.tempForm);
+    },
+
+    // 查看模板点位信息
+    checkTempPoint() {
+      this.tempPointDialog = true;
+      this.getTempPoint();
+    },
+
+    // 获取模板点位信息
+    async getTempPoint() {
+      const { data } = await queryTemplatePoint({
+        pageNum: this.tempPointPagination.num,
+        pageSize: this.tempPointPagination.size,
+        templetId: this.id
+      });
+      this.tempPointData = data.value.list.map(v => {
+        v.status = !!v.status;
+        return v;
+      });
+      this.tempPointPagination.total = data.value.total;
+    },
+
+    // 模板点位状态改变
+    async tempPointStatusChange(row) {
+      try {
+        if (row.status) {
+          // 启用
+          await enableTemplatePoint({ id: row.id });
+          this.$message.success("已启用");
+        } else {
+          // 禁用
+          await disableTemplatePoint({ id: row.id });
+          this.$message.success("已禁用");
+        }
+      } catch (err) {
+        row.status = !row.status;
+      }
+    },
+
+    // 模板点位表格分页
+    tempPointSizeChange(val) {
+      this.tempPointPagination.size = val;
+      this.getTempPoint();
+    },
+    tempPointNumChange(val) {
+      this.tempPointPagination.num = val;
+      this.getTempPoint();
+    },
+
+    // 关闭模板点位对话框
+    tempPointClose(){
+      this.tempPointPagination.total = 0
+      this.tempPointData = []
+    },
+
+    // 按钮查询
     query(searchForm) {
       if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
       // 将searchForm中的时间数组转换为后台需要的字符串格式 bug toFix
@@ -312,20 +432,9 @@ export default {
         delete searchForm.endDatetime;
       }
       this.searchForm = searchForm;
-      console.log(this.searchForm)
       // 查询时,num默认从1开始
       this.pagination.num = 1;
-      this.getTempList();
-    },
-
-    // 分页功能
-    sizeChange(val) {
-      this.pagination.size = val;
-      this.getTempList();
-    },
-    numChange(val) {
-      this.pagination.num = val;
-      this.getTempList();
+      this.getTableData();
     }
   }
 };

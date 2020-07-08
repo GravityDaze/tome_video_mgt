@@ -13,8 +13,9 @@
 
 <script>
 import { queryDemand } from "@/api/demandManage";
-import _ from "lodash";
+import initData from "@/mixins/initData";
 export default {
+  mixins:[initData],
   name: "demand-manage",
   data() {
     return {
@@ -80,7 +81,6 @@ export default {
           align: "center"
         }
       ],
-      tableData: [],
       formData: [
         {
           type: "input",
@@ -153,20 +153,14 @@ export default {
           handle: this.query,
           icon: "el-icon-search"
         }
-      ],
-      pagination: {
-        num: 1,
-        size: 10,
-        total: 0
-      },
-      searchForm: {}
+      ]
     };
   },
   created() {
-    this.getDemandList();
+    this.getTableData();
   },
   methods: {
-    async getDemandList(
+    async getTableData(
       query = {
         ...this.searchForm,
         pageNum: this.pagination.num,
@@ -184,7 +178,6 @@ export default {
     query(searchForm) {
       if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
       // 将searchForm中的时间数组转换为后台需要接收的格式
-      console.log(this.searchForm);
       if (searchForm.createDatetime && searchForm.createDatetime.length) {
         searchForm.startDate = searchForm.createDatetime[0];
         searchForm.endDate = searchForm.createDatetime[1];
@@ -196,20 +189,8 @@ export default {
       this.searchForm = searchForm;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
-      this.getDemandList();
+      this.getTableData();
     },
-
-    // 分页size改变
-    sizeChange(val) {
-      this.pagination.size = val;
-      this.getDemandList();
-    },
-
-    // 分页num改变
-    numChange(val) {
-      this.pagination.num = val;
-      this.getDemandList();
-    }
   }
 };
 </script>

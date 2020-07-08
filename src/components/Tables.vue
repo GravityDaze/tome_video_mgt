@@ -6,7 +6,7 @@
 
 <template>
   <div class="tables" style="margin:20px 0">
-    <el-table  border :data="tableData" style="width: 100%">
+    <el-table border :data="tableData" style="width: 100%">
       <el-table-column
         v-for="(item,index) in tableCols"
         :key="index"
@@ -32,6 +32,7 @@
               :icon="btn.icon"
               @click="btn.handle(scope.row)"
               size="small"
+              v-show="showButton(btn.showRule,scope.row)"
             >{{btn.label}}</el-button>
           </div>
           <!-- 默认以文本方式显示 -->
@@ -91,6 +92,17 @@ export default {
     }
   },
   methods: {
+    // 控制表格内的某个按钮是否显示
+    showButton(showRule, row) {
+      if (!showRule) {
+        // 如果不存在这个函数直接返回true
+        return true;
+      } else {
+        // 如果存在
+        return showRule(row);
+      }
+    },
+
     handleSizeChange(val) {
       this.$emit("sizeChange", val);
     },
@@ -100,9 +112,3 @@ export default {
   }
 };
 </script>
-
-<style lang="less">
-.tables{
-  // border-top: 1px solid lightgrey;
-}
-</style>

@@ -117,7 +117,6 @@ import {
   cancelRecommend
 } from "@/api/videoManage";
 import { getPublicUploadParams } from "@/api/qiniu";
-import _ from "lodash";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
 import initData from "@/mixins/initData";
@@ -312,11 +311,12 @@ export default {
     };
   },
 
-  created() {
-    this.getVideoList();
+  created(){
+    this.getTableData()
   },
+
   methods: {
-    async getVideoList(
+    async getTableData(
       query = {
         ...this.searchForm,
         pageNum: this.pagination.num,
@@ -496,7 +496,6 @@ export default {
 
     // 确认提交
     async submit(form) {
-      console.log(form);
       try {
         if (this.videoDialogTitle === "新增视频") {
           await addVideo({ ...form });
@@ -506,7 +505,7 @@ export default {
         this.handleVideoDialog = false;
         this.$message.success("修改成功");
         // 更新数据
-        this.getVideoList();
+        this.getTableData();
       } catch (err) {
         console.log(err);
       }
@@ -557,19 +556,7 @@ export default {
       this.searchForm = searchForm;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
-      this.getVideoList();
-    },
-
-    // 分页size改变
-    sizeChange(val) {
-      this.pagination.size = val;
-      this.getVideoList();
-    },
-
-    // 分页num改变
-    numChange(val) {
-      this.pagination.num = val;
-      this.getVideoList();
+      this.getTableData();
     }
   }
 };
