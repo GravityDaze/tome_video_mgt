@@ -25,15 +25,16 @@
           ></el-switch>
           <!-- 按钮 -->
           <div v-else-if="item.type==='button'">
+            <template  v-for="(btn,btnIndex) in item.btnList">
             <el-button
-              v-for="(btn,btnIndex) in item.btnList"
               :key="btnIndex"
               :type="btn.type"
               :icon="btn.icon"
               @click="btn.handle(scope.row)"
               size="small"
-              v-show="showButton(btn.showRule,scope.row)"
+              v-if="showButton(btn.showRule,scope.row)"
             >{{btn.label}}</el-button>
+            </template>
           </div>
           <!-- 默认以文本方式显示 -->
           <span v-else>{{(item.formatter && item.formatter(scope.row)) || scope.row[item.prop]}}</span>

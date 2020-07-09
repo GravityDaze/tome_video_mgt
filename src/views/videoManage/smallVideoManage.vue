@@ -115,7 +115,7 @@ import {
   cancelSticky,
   recommendFn,
   cancelRecommend
-} from "@/api/videoManage";
+} from "@/api/management/videoManage";
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";

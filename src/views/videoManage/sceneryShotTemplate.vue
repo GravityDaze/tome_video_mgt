@@ -83,7 +83,7 @@ import {
   disableTemplatePoint,
   enableTemplatePoint,
   getSceneryList
-} from "@/api/videoManage";
+} from "@/api/management/videoManage";
 import initData from "@/mixins/initData";
 import { restore } from "@/utils/restoreModel";
 export default {

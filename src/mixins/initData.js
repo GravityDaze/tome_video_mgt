@@ -1,5 +1,8 @@
+/*
+    此混入为Tables的分页功能提供了一个统一函数
+*/
 import _ from "lodash";
-import { restore } from '@/utils/restoreModel'
+
 const initData = {
     data() {
         return {

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <el-card>
     <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
     <tables
       :tableData="tableData"
@@ -8,11 +8,11 @@
       @sizeChange="sizeChange"
       @numChange="numChange"
     />
-  </div>
+  </el-card>
 </template>
 
 <script>
-import { queryDemand } from "@/api/demandManage";
+import { queryDemand } from "@/api/management/demandManage";
 import initData from "@/mixins/initData";
 export default {
   mixins:[initData],
@@ -73,7 +73,7 @@ export default {
           prop: "commitStatus",
           label: "推送通知",
           align: "center",
-          formatter: row => (row.commitStatus === 1 ? "已提交" : "未提交")
+          formatter: row => row.commitStatus === 1 ? "已提交" : "未提交"
         },
         {
           prop: "updateDatetime",

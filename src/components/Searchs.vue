@@ -9,12 +9,13 @@
     <div class="top-area">
       <el-form size="small" :inline="true" :model="searchForm" class="search-form">
         <el-form-item :label="item.label" v-for="(item,index) in formData" :key="index">
+          <!-- 输入框 -->
           <el-input
             v-if="item.type === 'input'"
             v-model="searchForm[item.model]"
             :placeholder="item.placeholder"
           ></el-input>
-
+          <!-- 下拉选择框 -->
           <el-select
             v-if="item.type === 'select'"
             v-model="searchForm[item.model]"
@@ -24,7 +25,7 @@
               <el-option :key="option.value" :label="option.label" :value="option.value"></el-option>
             </template>
           </el-select>
-
+          <!-- 日期时间选择器 -->
           <el-date-picker
             v-if="item.type === 'datePicker'"
             v-model="searchForm[item.model]"
@@ -37,11 +38,23 @@
             format="yyyy-MM-dd HH:mm:ss"
             value-format="yyyy-MM-dd"
           ></el-date-picker>
+
+          <!-- 月选择器 -->
+          <el-date-picker v-if="item.type === 'monthPicker'"  value-format="MM" v-model="searchForm[item.model]" type="month" placeholder="选择月"></el-date-picker>
+
+          <!-- 年选择器 -->
+          <el-date-picker v-if="item.type === 'yearPicker'"  value-format="yyyy" v-model="searchForm[item.model]" type="year" placeholder="选择年"></el-date-picker>
         </el-form-item>
 
         <!-- 按钮组 -->
         <el-form-item>
-          <el-button v-for="(item,index) in searchBtn" :key="index" :type="item.type" @click="item.handle(searchForm)" :icon="item.icon">{{item.label}}</el-button>
+          <el-button
+            v-for="(item,index) in searchBtn"
+            :key="index"
+            :type="item.type"
+            @click="item.handle(searchForm)"
+            :icon="item.icon"
+          >{{item.label}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -57,10 +70,10 @@ export default {
         return [];
       }
     },
-    searchBtn:{
-      type:Array,
-      default:()=>{
-        return[]
+    searchBtn: {
+      type: Array,
+      default: () => {
+        return [];
       }
     }
   },
@@ -105,7 +118,7 @@ export default {
     // 初始化时查询数据中是否有默认值
     const defaultArr = this.formData.filter(v => v.default !== undefined);
     for (let i = 0; i < defaultArr.length; i++) {
-      this.$set( this.searchForm , defaultArr[i].model, defaultArr[i].default )
+      this.$set(this.searchForm, defaultArr[i].model, defaultArr[i].default);
     }
   },
   watch: {

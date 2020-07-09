@@ -137,7 +137,7 @@ import {
   cancelHotScenery,
   getSceneryTags,
   editSceneryTags
-} from "@/api/sceneryManage";
+} from "@/api/management/sceneryManage";
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
@@ -316,7 +316,7 @@ export default {
           this.$message.success(`已将${row.name}设置为热门景区`);
         } else {
           await cancelHotScenery({ id: row.id });
-          this.$message.success(`已将${row.name}取消热门景区`);
+          this.$message.info(`已将${row.name}取消热门景区`);
         }
       } catch (err) {
         // 错误时还原switch组件的状态
@@ -332,7 +332,7 @@ export default {
           this.$message.success(`已开启${row.name}的视频服务`);
         } else {
           await serviceDisable({ id: row.id });
-          this.$message.success(`已取消${row.name}的视频服务`);
+          this.$message.info(`已取消${row.name}的视频服务`);
           row.hotStatus = false;
         }
       } catch (err) {

@@ -61,7 +61,7 @@ import {
   checkStartApi,
   uploadFinishApi,
   postAuditStatus
-} from "@/api/checkManage";
+} from "@/api/management/checkManage";
 import { getUpLoadParams } from "@/api/qiniu";
 import { download } from "@/utils/download";
 import initData from "@/mixins/initData";

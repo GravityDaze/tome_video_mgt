@@ -23,7 +23,15 @@ export const orderQuery = data => request.post('/videomis/order/query',data)
 export const changeOrderStatus = data => request.post('/videomis/order/pay',data)
 
 // 订单已退金额
-export const refundPrice = params => request.get('/videomis/order/pay',{ params })
+export const refundPrice = params => request.get('/videomis/order/refundPrice',{ params })
 
 // 订单退款
-export const refund = data => request.post('/videomis/order/pay',data)
+export const refund = data => request.post('/videomis/order/refund',data)
+
+// 订单结算模块 => order
+
+// 订单结算查询
+export const queryOrderSettlement = data => request.post('/videomis/orderCount/query',data)
+
+// 订单结算明细查询
+export const queryOrderDetail = data => request.post('/videomis/orderCount/detail',data)

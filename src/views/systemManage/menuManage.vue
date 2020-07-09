@@ -165,7 +165,7 @@ import {
   getMenuInfo,
   enableMenu,
   disableMenu
-} from "@/api/systemManage";
+} from "@/api/management/systemManage";
 export default {
   name: "menu-manage",
   data() {
