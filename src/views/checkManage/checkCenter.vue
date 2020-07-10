@@ -145,6 +145,7 @@ export default {
         {
           label: "操作",
           type: "button",
+          align:"center",
           btnList: [
             { type: "primary", label: "开启审核", handle: this.checkStart },
             { type: "text", label: "预览", handle: this.preview },

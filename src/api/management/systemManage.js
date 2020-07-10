@@ -29,3 +29,36 @@ export const enableMenu = params => request.get('/videomis/menu/enable', { param
 
 // 菜单禁用
 export const disableMenu = params => request.get('/videomis/menu/disable', { params })
+
+// 操作员管理 => operatorManage.vue
+
+// 操作员查询
+export const queryOperator = data => request.post('/videomis/user/query', data )
+
+// 操作员新增
+export const addOperator = data => request.post('/videomis/user/add', data )
+
+// 操作员信息
+export const operatorInfo = params => request.get('/videomis/user/get', { params } )
+
+// 操作员编辑
+export const editOperator = data => request.post('/videomis/user/edit', data )
+
+// 操作员授权角色信息
+export const operatorGetAuth = params => request.get('/videomis/user/getAuth', { params } )
+
+// 操作员授权角色
+export const operatorAuth = data => request.post('/videomis/user/auth', data )
+
+// 操作员启用
+export const enableOperator = params => request.get('/videomis/user/enable', { params } )
+
+// 操作员禁用
+export const disableOperator = params => request.get('/videomis/user/disable', { params })
+
+// 操作员弃用
+export const closeOperator = params => request.get('/videomis/user/close', { params })
+
+// 操作员重置密码
+export const resetPw = params => request.get('/videomis/user/resetPw', { params })
+

@@ -1,203 +1,95 @@
 <template>
-  <div>
-    <mySearchs
-      :isLoginName="isLoginName"
-      :isPhoneNum="isPhoneNum"
-      :isState="isState"
-      :addBtn="addBtn"
-      :editBtn="editBtn"
-      :enabledBtn="enabledBtn"
-      :disabledBtn="disabledBtn"
-      :abandonBtn="abandonBtn"
-      :impowerBtn="impowerBtn"
-      :resetPsdBtn="resetPsdBtn"
-      @beforeAddFn="beforeAddFn"
-      @beforeEditFn="beforeEditFn"
-      @queryInfoFn="queryInfoFn"
-      @enabledFn="enabledFn"
-      @disabledFn="disabledFn"
-      @abandonFn="abandonFn"
-      @resetPsdFn="resetPsdFn"
-      @getImpowerInfoFn="getImpowerInfoFn"
-      class="my_searchs"
-    ></mySearchs>
-    <myTables
-      :tableTitle="tableTitle"
+  <el-card>
+    <searchs :formData="formData" :searchBtn="searchBtn" />
+    <tables
+      v-loading="tablesLoading"
       :tableData="tableData"
-      @queryInfoFn="queryInfoFn"
-      @chooseInfo="chooseInfo"
-      class="my_tables"
-    ></myTables>
+      :tableCols="tableCols"
+      :pagination="pagination"
+      @sizeChange="sizeChange"
+      @numChange="numChange"
+    />
 
-    <!--第一个是操作员管理的新增编辑模态框-->
-    <div id="addEditorForm">
-      <el-dialog
-        :title="$store.state.titleHeader"
-        :visible.sync="$store.state.operatorManageSign"
-        width="30%"
-        align="left"
-        :close-on-click-modal="false"
+    <!--新增 & 编辑模态框-->
+    <el-dialog
+      :title="operatorDialogTitle"
+      :visible.sync="operatorDialog"
+      width="25%"
+      @close="dialogClose('operatorForm')"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        style="width:320px"
+        :model="operatorForm"
+        :rules="rules"
+        ref="operatorForm"
+        label-width="100px"
+        size="small"
+        :hide-required-asterisk="false"
       >
-        <el-form
-          :model="ruleForm"
-          :rules="rules"
-          ref="ruleForm"
-          label-width="100px"
-          class="demo-ruleForm"
-          size="small"
-          :hide-required-asterisk="false"
-        >
-          <el-row>
-            <el-col class="position_center">
-              <div class="my_headpic">
-                <div
-                  class="upload_header"
-                  :style="{backgroundImage:'url('+headerUrl+')',backgroundSize:'100% 100%'}"
-                >
-                  <input class="my_hover my_inputt" type="file" @change="chooseHeaderPicture" />
-                </div>
-                <!--<input class="upload_input my_hover" type="file" @change="chooseHeaderPicture">-->
-              </div>
-            </el-col>
-            <!--<el-col class="position_center">-->
-            <!--<span class="upload_btn my_hover">上传头像</span>-->
-            <!--</el-col>-->
-            <el-col class="position_center">
-              <span class="tip_info">{{tipInfo}}</span>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="登录名" prop="name">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.name" v-if="$store.state.titleHeader == '新增'"></el-input>
-                  <el-input
-                    v-model.trim="ruleForm.name"
-                    v-if="$store.state.titleHeader == '编辑'"
-                    :disabled="true"
-                  ></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="真实姓名" prop="realName">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.realName"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="18" :offset="2">
-              <el-form-item label="性别">
-                <el-radio-group v-model="ruleForm.sex">
-                  <el-radio label="男"></el-radio>
-                  <el-radio label="女"></el-radio>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="联系电话" prop="phone">
-                <el-col>
-                  <el-input v-model.number="ruleForm.phone"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="生日">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.birthday" placeholder="2018-9-20"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="E-MAIL">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.email"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-form-item>
-            <el-col :span="10" :offset="6" style="display: flex;flex-wrap: nowrap">
-              <el-button @click="cancelForm('ruleForm')">关闭</el-button>
-              <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
-            </el-col>
-          </el-form-item>
-        </el-form>
-      </el-dialog>
-    </div>
-
-    <!--第二个是授权模态框-->
-    <div id="userInfoForm">
-      <el-dialog
-        title="授权"
-        :visible.sync="$store.state.operatorImpowerSign"
-        width="35%"
-        align="left"
-        :close-on-click-modal="false"
-      >
-        <el-form
-          :model="ruleFormOperatorImpower"
-          ref="ruleFormOperatorImpower"
-          label-width="100px"
-          class="demo-ruleForm"
-          size="small"
-          :hide-required-asterisk="false"
-        >
-          <el-row>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="操作员">
-                <el-col>
-                  <!--<el-input v-model="ruleFormOperatorImpower.operatorMan"></el-input>-->
-                  <span style="color: red">{{ruleFormOperatorImpower.name}}</span>
-                  <!--<span>{{ruleFormOperatorImpower.realName}}</span>-->
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="已有角色">
-                <el-col>
-                  <!--<el-checkbox-group v-model="ruleFormOperatorImpower.ownRole">-->
-
-                  <!--<template v-for="item in roleArr">-->
-                  <!--<el-checkbox :label="item.name"></el-checkbox>-->
-                  <!--</template>-->
-                  <!--</el-checkbox-group>-->
-                  <span v-for="item in roleArr" :key="item.name">
-                    <el-button type="success" style="margin: 0 5px;">{{item.name}}</el-button>
-                  </span>
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="可授角色">
-                <el-col>
-                  <el-checkbox-group v-model="ruleFormOperatorImpower.ImpowerRole">
-                    <!--<el-checkbox label="ADMIN"></el-checkbox>-->
-                    <!--<el-checkbox label="技术支撑"></el-checkbox>-->
-                    <!--<el-checkbox label="片区管理员"></el-checkbox>-->
-                    <!--<el-checkbox label="景区管理员"></el-checkbox>-->
-
-                    <template v-for="item in canChooseRoleArr">
-                      <el-checkbox :label="item.name" :key="item.name"></el-checkbox>
-                    </template>
-                  </el-checkbox-group>
-                </el-col>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-form-item>
-            <el-col :span="10" :offset="6" style="display: flex;flex-wrap: nowrap">
-              <el-button @click="cancelForm('ruleFormOperatorImpower')">关闭</el-button>
-              <el-button type="primary" @click="submitForm('ruleFormOperatorImpower')">提交</el-button>
-            </el-col>
-          </el-form-item>
-        </el-form>
-      </el-dialog>
-    </div>
-  </div>
+        <el-form-item label="登录名" prop="name">
+          <el-input
+            placeholder="请输入登录名"
+            v-if="operatorDialogTitle==='新增'"
+            v-model.trim="operatorForm.name"
+          ></el-input>
+          <span v-else>{{operatorForm.name}}</span>
+        </el-form-item>
+        <el-form-item v-if="operatorDialogTitle==='编辑'" label="角色授权" prop="name">
+          <el-tag type="success" v-for="tag in beAuth" :key="tag.name">{{tag.name}}</el-tag>
+          <el-button v-if="!beAuth.length" @click="reAuth">{{needReAuth?'取消':'授权'}}</el-button>
+          <el-button v-else style="margin-left:10px" @click="reAuth">{{needReAuth?'取消':'重新授权'}}</el-button>
+        </el-form-item>
+        <el-form-item label="可授角色" v-if="needReAuth">
+          <el-checkbox-group v-model="roleIds">
+            <el-checkbox v-for="item in canAuth" :key="item.id" :label="item.id">{{item.name}}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+        <el-form-item label="真实姓名" prop="realName">
+          <el-input placeholder="请输入真实姓名" v-model.trim="operatorForm.realName"></el-input>
+        </el-form-item>
+        <el-form-item label="联系电话" prop="phone">
+          <el-input placeholder="请输入联系电话" v-model.number="operatorForm.phone"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" prop="sex">
+          <el-radio-group v-model="operatorForm.sex">
+            <el-radio :label="1">男</el-radio>
+            <el-radio :label="2">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <!-- <el-form-item label="生日">
+            <el-input v-model.trim="operatorForm.birthday"></el-input>
+        </el-form-item>-->
+        <el-form-item label="E-MAIL">
+          <el-input v-model.trim="operatorForm.email"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('operatorForm')">提交</el-button>
+          <el-button type="primary" v-if="operatorDialogTitle==='编辑'" @click="resetPWD">重置密码</el-button>
+          <el-button @click="operatorDialog = false">关闭</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </el-card>
 </template>
 
 <script>
+import {
+  queryOperator,
+  addOperator,
+  operatorInfo,
+  editOperator,
+  operatorGetAuth,
+  operatorAuth,
+  enableOperator,
+  disableOperator,
+  closeOperator,
+  resetPw
+} from "@/api/management/systemManage";
+import initData from "@/mixins/initData";
+import { restore } from "@/utils/restoreModel";
 export default {
+  mixins: [initData],
   name: "operator-manage",
   data() {
     // 自定义联系电话规则
@@ -212,40 +104,16 @@ export default {
       callback();
     };
     return {
-      apiQuery: "/videomis/user/query",
-      apiAdd: "/videomis/user/add",
-      apiGetEditInfo: "/videomis/user/get",
-      apiEdit: "/videomis/user/edit",
-      apiEnabled: "/videomis/user/enable",
-      apiDisabled: "/videomis/user/disable",
-      apiAbandon: "/videomis/user/close",
-      apiUploadImage: "/mis/upload/uploadImage",
-      apiResetPsd: "/videomis/user/resetPw",
-      apiGetImpowerInfo: "/videomis/user/getAuth",
-      apiImpower: "/videomis/user/auth",
-      sign: "operatormanage",
-      isLoginName: true,
-      isPhoneNum: true,
-      isState: true,
-      addBtn: true,
-      editBtn: true,
-      enabledBtn: true,
-      disabledBtn: true,
-      abandonBtn: true,
-      impowerBtn: true,
-      resetPsdBtn: true,
-      tipInfo: "头像推荐尺寸为 280(宽) * 280(高)，大小不超过 500KB.",
-      commonId: "",
-      headerUrl: "../../../static/addIcon.png",
-      operatorStatus: "",
-      ruleForm: {
+      operatorDialogTitle: "",
+      operatorDialog: false,
+      operatorForm: {
         //个人信息参数
         realName: "", //真实姓名
         name: "", //登录名
         phone: "", //联系电话
         sex: "", //性别
         email: "", //电子邮箱
-        birthday: "", //出生日期
+        // birthday: "", //出生日期
         headPicPath: "" //头像url
       },
       // 验证规则
@@ -253,456 +121,293 @@ export default {
         name: [
           {
             required: true,
-            message: "请输入操作员登录名不能为空",
+            message: "操作员登录名不能为空",
             tigger: "blur"
           }
         ],
         realName: [
           { required: true, message: "请输入操作员真实姓名", tigger: "blur" }
         ],
+        sex: [{ required: true, message: "请选择性别" }],
         phone: [{ required: true, validator: checkPhone, trigger: "blur" }]
       },
-      tableTitle: [
+      tableCols: [
         {
           prop: "name",
           label: "登录名",
-          // width: '100',
           align: "center"
         },
         {
           prop: "realName",
           label: "真实姓名",
-          // width: '180',
           align: "center"
         },
         {
           prop: "phone",
           label: "联系电话",
-          // width: '100',
           align: "center"
         },
         {
           prop: "sex",
           label: "性别",
-          // width: '180',
           align: "center",
-          formatter: function(row) {
-            if (row.sex == "1") {
-              return "男";
-            } else if (row.sex == "2") {
-              return "女";
-            }
-          }
+          formatter: row => (row.sex === 1 ? "男" : "女")
         },
         {
           prop: "email",
           label: "E-MAIL",
-          // width: '180',
           align: "center"
         },
         {
           prop: "createDatetime",
           label: "创建时间",
-          // width: '180',
           align: "center"
         },
         {
           prop: "loginDatetime",
           label: "最后登录时间",
-          // width: '180',
           align: "center"
         },
         {
           prop: "editPassDatetime",
           label: "最后修改时间",
-          // width: '180',
           align: "center"
+        },
+        {
+          prop: "status",
+          label: "状态",
+          align: "center",
+          type: "switch",
+          change: this.statusChange
+        },
+        {
+          label: "操作",
+          align: "center",
+          type: "button",
+          btnList: [
+            { type: "primary", label: "编辑", handle: this.editOperator },
+            { type: "danger", label: "删除", handle: this.deleteOperator }
+          ]
         }
       ],
-      tableData: [],
-
-      ruleFormOperatorImpower: {
-        name: "",
-        realName: "",
-        ownRole: [],
-        ImpowerRole: []
-      },
-      //已有角色数组
-      roleArr: [],
-
-      //可以选择角色的数组
-      canChooseRoleArr: []
+      formData: [
+        {
+          type: "input",
+          label: "登录名",
+          model: "name",
+          placeholder: "请输入登录名"
+        },
+        {
+          type: "input",
+          label: "手机号码",
+          model: "phone",
+          placeholder: "请输入手机号码"
+        },
+        {
+          type: "select",
+          label: "状态",
+          model: "status",
+          options: [
+            {
+              label: "全部",
+              value: undefined
+            },
+            {
+              label: "启用",
+              value: 1
+            },
+            {
+              label: "禁用",
+              value: 0
+            }
+          ]
+        }
+      ],
+      searchBtn: [
+        {
+          type: "primary",
+          label: "新增",
+          handle: this.add,
+          icon: "el-icon-edit"
+        },
+        {
+          type: "primary",
+          label: "查询",
+          handle: this.query,
+          icon: "el-icon-search"
+        }
+      ],
+      tablesLoading: false,
+      beAuth: [], //已授权角色
+      canAuth: [], //可授权角色
+      needReAuth: false, //是否重新授权
+      operatorDialogTitle: "",
+      roleIds: [] //角色ID集合
     };
   },
-  mounted() {
-    this.$store.state.pageNumParam = 1;
-    this.getDefaultInfoFn();
+  created() {
+    this.getTableData();
   },
   methods: {
-    getDefaultInfoFn() {
-      this.$axios({
-        method: "post",
-        url: this.apiQuery,
-        data: {
-          pageNum: this.$store.state.pageNumParam,
-          pageSize: this.$store.state.pageSizeParam,
-          name: "",
-          phone: "",
-          status: ""
-        }
-      })
-        .then(res => {
-          if (res.data.resultStatus.resultCode === "0000") {
-            if (res.data.value.list.length != "0") {
-              this.tableData = [...res.data.value.list];
-              this.$store.state.totalParam = res.data.value.total;
-            } else {
-              this.tableData = [];
-              this.$store.state.totalParam = 0;
-            }
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
-    },
-
-    queryInfoFn() {
-      this.$axios({
-        method: "post",
-        url: this.apiQuery,
-        data: {
-          pageNum: this.$store.state.pageNumParam,
-          pageSize: this.$store.state.pageSizeParam,
-          name: this.$store.state.loginNameParam,
-          phone: this.$store.state.phoneParam,
-          status: this.$store.state.stateParam
-        }
-      })
-        .then(res => {
-          if (res.data.resultStatus.resultCode === "0000") {
-            if (res.data.value.list.length != "0") {
-              this.tableData = [...res.data.value.list];
-              this.$store.state.totalParam = res.data.value.total;
-            } else {
-              this.tableData = [];
-              this.$store.state.totalParam = 0;
-            }
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
-    },
-
-    chooseInfo(n) {
-      this.commonId = n.id;
-      this.ruleFormOperatorImpower.name = n.name;
-      this.ruleFormOperatorImpower.realName = n.realName;
-      this.operatorStatus = n.status;
-    },
-
-    enabledFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else if (this.operatorStatus == 9) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此用户已被弃用，为最终状态，无法被更改");
-        }
-      } else if (this.operatorStatus == 1) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此用户已被启用，无需操作");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiEnabled + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          // console.log("启用返回信息，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            // this.$store.state.pageNumParam = 1;
-            this.commonId = "";
-            this.getDefaultInfoFn();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
+    // 获取景区列表
+    async getTableData(
+      query = {
+        ...this.searchForm,
+        pageNum: this.pagination.num,
+        pageSize: this.pagination.size
+      }
+    ) {
+      try {
+        this.tablesLoading = true;
+        const { data } = await queryOperator(query);
+        this.pagination.total = data.value.total;
+        // 将后台返回的数据处理为符合switch组件的数据
+        this.tableData = data.value.list.map(v => {
+          // 将0和1转换为布尔值
+          v.status = !!v.status;
+          return v;
         });
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.tablesLoading = false;
       }
     },
 
-    disabledFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else if (this.operatorStatus == 9) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此用户已被弃用，为最终状态，无法被更改");
-        }
-      } else if (this.operatorStatus == 0) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此用户已被禁用，无需操作");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiDisabled + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          // console.log("禁用返回的数据信息，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            // this.$store.state.pageNumParam = 1;
-            this.commonId = "";
-            this.getDefaultInfoFn();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
-      }
-    },
-
-    abandonFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else if (this.operatorStatus == 9) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此用户已被弃用，无需操作");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiAbandon + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          // console.log("弃用返回的数据，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            // this.$store.state.pageNumParam = 1;
-            this.commonId = "";
-            this.getDefaultInfoFn();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
-      }
-    },
-
-    //上传图
-    chooseHeaderPicture(e) {
-      this.ruleForm.headPicPath = e.target.files[0];
-      var formdata = new FormData();
-      formdata.append("file", this.ruleForm.headPicPath);
-      this.$axios({
-        method: "post",
-        url: this.apiUploadImage,
-        data: formdata
-      })
-        .then(res => {
-          // console.log("景区图层管理上传图片返回了什么", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.ruleForm.headPicPath = res.data.value.url;
-            this.headerUrl = res.data.value.url;
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
-    },
-
-    beforeAddFn() {
-      for (let item in this.ruleForm) {
-        this.ruleForm[item] = "";
-      }
-
-      this.headerUrl = "../../../static/addIcon.png";
-      this.$store.state.operatorManageSign = true;
-    },
-
-    addFn() {
-      this.ruleForm.sex = this.ruleForm.sex == "男" ? "1" : "2";
-
-      this.$axios({
-        method: "post",
-        url: this.apiAdd,
-        data: this.ruleForm
-      }).then(res => {
-        // console.log("新增返回数据", res.data);
-        if (res.data.resultStatus.resultCode === "0000") {
-          this.$store.state.operatorManageSign = false;
-          this.$store.state.pageNumParam = 1;
-          this.getDefaultInfoFn();
+    // 切换操作员状态
+    async statusChange(row) {
+      try {
+        if (row.status) {
+          await enableOperator({ id: row.id });
+          this.$message.success(`已启用${row.name}`);
         } else {
-          this.$message.warning(res.data.resultStatus.resultMessage);
+          await disableOperator({ id: row.id });
+          this.$message.info(`已禁用${row.name}`);
         }
-      });
-    },
-
-    beforeEditFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiGetEditInfo + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          // console.log("编辑前获取相关数据，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.ruleForm = res.data.value;
-            this.ruleForm.sex = res.data.value.sex == "1" ? "男" : "女";
-            this.ruleForm.headPicPath = res.data.value.headPicPath;
-            this.headerUrl = res.data.value.headPicPath;
-
-            this.$store.state.operatorManageSign = true;
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
+      } catch (err) {
+        // 错误时恢复
+        row.status = !row.status;
       }
     },
 
-    editFn() {
-      this.ruleForm.sex = this.ruleForm.sex == "男" ? "1" : "2";
-      this.$axios({
-        method: "post",
-        url: this.apiEdit,
-        data: this.ruleForm
-      }).then(res => {
-        if (res.data.resultStatus.resultCode === "0000") {
-          this.$store.state.operatorManageSign = false;
-          // this.$store.state.pageNumParam = 1;
-          this.commonId = "";
-          this.getDefaultInfoFn();
-        } else {
-          this.$message.warning(res.data.resultStatus.resultMessage);
-        }
-      });
+    // 获取操作员信息
+    async getOperatorInfo() {
+      const { data } = await operatorInfo({ id: this.id });
+      this.operatorForm = data.value;
+      console.log(this.operatorForm);
     },
 
-    checkOwerFn(arr, obj) {
-      for (var i = 0; i < arr.length; i++) {
-        if (arr[i] == obj) {
-          return ture;
-        }
-      }
+    // 获取操作员授权信息
+    async getOperatorAuth() {
+      const { data } = await operatorGetAuth({ id: this.id });
+      this.beAuth = data.value.beAuth;
+      this.canAuth = data.value.canAuth;
     },
 
-    //授权操作(获取已经有哪些权利角色，和有哪些角色可以选择授权)
-    getImpowerInfoFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else {
-        this.ruleFormOperatorImpower.ImpowerRole = [];
-        this.$axios({
-          method: "get",
-          url: this.apiGetImpowerInfo + "?id=" + this.commonId,
-          data: {}
-        })
-          .then(res => {
-            // console.log("默认获取对应授权角色信息返回数据，", res.data);
-            if (res.data.resultStatus.resultCode === "0000") {
-              this.roleArr = [...res.data.value.beAuth];
-              this.canChooseRoleArr = [...res.data.value.canAuth];
-              this.$store.state.operatorImpowerSign = true;
-              // console.log("有哪些角色可以授权：", res.data);
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-          })
-          .catch(error => {});
-      }
+    // 编辑操作员
+    editOperator(row) {
+      this.operatorDialogTitle = "编辑";
+      this.operatorDialog = true;
+      this.id = row.id;
+      // 回填数据
+      this.getOperatorInfo();
+      this.getOperatorAuth();
     },
 
-    //确认提交授权
-    sureImpowerInfo() {
-      // console.log("canChooseRoleArr:", this.canChooseRoleArr);
-      var skt = [];
-      // console.log("选了哪些+++++，", this.ruleFormOperatorImpower.ImpowerRole);
-      let myChooseRole = this.ruleFormOperatorImpower.ImpowerRole;
-
-      for (let s = 0; s < myChooseRole.length; s++) {
-        for (let r = 0; r < this.canChooseRoleArr.length; r++) {
-          // console.log(myChooseRole[s],'?????',this.canChooseRoleArr[r].name)
-          if (myChooseRole[s] == this.canChooseRoleArr[r].name) {
-            skt.push(this.canChooseRoleArr[r].id);
-          }
-        }
-      }
-
-      this.$axios({
-        method: "post",
-        url: this.apiImpower,
-        data: {
-          id: this.commonId,
-          roleIds: skt
-        }
-      })
-        .then(res => {
-          // console.log("最终授权结果反馈：", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.$store.state.operatorImpowerSign = false;
-            // this.getDefaultInfo()
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
+    // 重新授权按钮
+    reAuth() {
+      this.needReAuth = !this.needReAuth;
     },
 
-    resetPsdFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiResetPsd + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          // console.log("重置密码返回数据，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.$message.success("重置密码成功");
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
-      }
+    // 新增操作员
+    add() {
+      this.operatorDialogTitle = "新增";
+      this.operatorDialog = true;
     },
 
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+    // 提交编辑&新增
+    submitForm(form) {
+      this.$refs[form].validate(async valid => {
         if (valid) {
-          if (formName === "ruleForm") {
-            if (this.$store.state.titleHeader === "新增") {
-              this.addFn();
-            } else if (this.$store.state.titleHeader === "编辑") {
-              this.editFn();
+          try {
+            if (this.operatorDialogTitle === "编辑") {
+              if (this.needReAuth) {
+                await Promise.all[
+                  (editOperator({ id: this.id, ...this[form] }),
+                  operatorAuth({ id: this.id, roleIds: this.roleIds }))
+                ];
+              } else {
+                await editOperator({ id: this.id, ...this[form] });
+              }
+              this.$message.success("修改成功");
+              this.operatorDialog = false;
+              this.getTableData();
+            } else {
+              await addOperator(this[form]);
+              this.$message.success("新增成功");
+              this.operatorDialog = false;
+              this.getTableData();
             }
-          } else if (formName === "ruleFormOperatorImpower") {
-            this.sureImpowerInfo();
+          } catch (err) {
+            console.log(err);
           }
-        } else {
-          // console.log("error submit!!");
-          return false;
         }
       });
     },
-    cancelForm(formName) {
-      if (formName === "ruleForm") {
-        this.$refs[formName].resetFields();
-        this.$store.state.operatorManageSign = false;
-      } else if (formName === "ruleFormOperatorImpower") {
-        this.$store.state.operatorImpowerSign = false;
-      }
+
+    // 删除操作员
+    deleteOperator(row) {
+      this.$confirm("此操作将永久删除该操作员, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
+          try {
+            await closeOperator({ id: row.id });
+            this.$message.info("删除成功");
+            this.getTableData();
+          } catch (err) {}
+        })
+        .catch();
+    },
+
+    // 重置密码
+    resetPWD(){
+       this.$confirm("是否重置该操作员的密码?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
+          try {
+            await resetPw({ id: this.id });
+            this.$message.success("重置密码成功");
+            this.operatorDialog = false
+            this.getTableData();
+          } catch (err) {}
+        })
+        .catch();
+    },
+
+    // 关闭对话框
+    dialogClose(formName) {
+      // 数据和校验规则还原
+      this.beAuth = [];
+      this.canAuth = [];
+      this.operatorForm = restore(this.operatorForm);
+      this.needReAuth = false;
+      this.$refs[formName].resetFields();
+      this.roleIds = [];
+    },
+
+    // 按钮查询
+    query(searchForm) {
+      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
+      this.searchForm = searchForm;
+      // 查询时,num默认从1开始
+      this.pagination.num = 1;
+      this.getTableData();
     }
   }
 };

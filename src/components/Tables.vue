@@ -43,6 +43,7 @@
     </el-table>
     <!-- 分页 -->
     <el-pagination
+      :hide-on-single-page="hideOnSinglePage"
       background
       style="margin-top:20px"
       @size-change="handleSizeChange"
@@ -90,10 +91,14 @@ export default {
           num: 1
         };
       }
+    },
+    hideOnSinglePage:{
+      type:Boolean,
+      default:false
     }
   },
   methods: {
-    // 控制表格内的某个按钮是否显示
+    // 控制表格操作栏的某个按钮是否显示
     showButton(showRule, row) {
       if (!showRule) {
         // 如果不存在这个函数直接返回true

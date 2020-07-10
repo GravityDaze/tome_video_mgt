@@ -143,7 +143,7 @@ import { getPublicUploadParams } from "@/api/qiniu";
 import { restore } from "@/utils/restoreModel";
 import initData from "@/mixins/initData";
 export default {
-  mixins:[initData],
+  mixins: [initData],
   name: "scenery-manage",
   data() {
     return {
@@ -572,9 +572,9 @@ export default {
   vertical-align: bottom;
 }
 
-.scenery-manage {
+// .scenery-manage {
   // 上传框
-  .uploader .el-upload {
+   .uploader .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     cursor: pointer;
@@ -597,5 +597,5 @@ export default {
     height: 48px;
     display: block;
   }
-}
+// }
 </style>

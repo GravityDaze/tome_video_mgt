@@ -172,7 +172,7 @@ export default {
           prop: "shareStatus",
           label: "发布",
           align: "center",
-          formatter: row => (row.shareStatus === 0 ? "未发布" : "已发布")
+          formatter: row => row.shareStatus === 0 ? "未发布" : "已发布"
         },
         {
           prop: "topStatus",
