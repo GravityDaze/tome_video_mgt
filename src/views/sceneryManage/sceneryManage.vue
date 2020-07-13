@@ -37,7 +37,7 @@
             :disable-transitions="false"
             @close="handleClose(tag)"
           >{{tag}}</el-tag>
-          <el-input
+          <!-- <el-input
             class="input-new-tag"
             v-if="inputVisible"
             v-model="inputValue"
@@ -45,7 +45,19 @@
             size="small"
             @keyup.enter.native="handleInputConfirm"
             @blur="handleInputConfirm"
-          ></el-input>
+          ></el-input>-->
+          <el-autocomplete
+            v-if="inputVisible"
+            class="input-new-tag"
+            v-model="inputValue"
+            :fetch-suggestions="getAllTags"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleInputConfirm"
+            @blur="handleInputConfirm"
+            @select="handleSelect"
+          ></el-autocomplete>
+
           <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新增</el-button>
         </el-form-item>
         <el-form-item label="服务器URL" label-width="120px">
@@ -138,6 +150,7 @@ import {
   getSceneryTags,
   editSceneryTags
 } from "@/api/management/sceneryManage";
+import { tagsSelect } from "@/api/management/systemManage";
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
@@ -370,9 +383,59 @@ export default {
         if (tags.data.value.length) {
           this.tags = tags.data.value.map(v => v.tagName);
         }
+
+        // 获取到全部标签的数据
+      const { data } = await tagsSelect({ type: 1 });
+      this.tagsArr = data.value.map(v => ({
+        value: v.tagName,
+        tagId: v.tagId
+      }));
+
+
+
       } catch (err) {
         console.log(err);
       }
+    },
+
+    // 编辑标签时获取到所有标签
+    async getAllTags(queryStr, callback) {
+      // 与输入文字进行匹配
+      const res = queryStr
+        ? this.tagsArr.filter(v => v.value.indexOf(queryStr) !== -1)
+        : this.tagsArr;
+      // 调用 callback 返回建议列表的数据
+      callback(res);
+    },
+
+    handleSelect(item) {
+      console.log(item);
+      this.inputValue = item.value;
+    },
+
+    // 显示标签输入框
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+
+    // 标签提交
+    handleInputConfirm() {
+      // 开启定时器防止blur事件导致select事件失效
+      setTimeout(() => {
+        if (this.inputValue) {
+          if (this.tags.includes(this.inputValue)) {
+            this.inputVisible = false;
+            this.inputValue = "";
+            return this.$message.error("禁止添加相同的标签");
+          }
+          this.tags.push(this.inputValue);
+        }
+        this.inputVisible = false;
+        this.inputValue = "";
+      }, 200);
     },
 
     // 新增景区
@@ -449,24 +512,6 @@ export default {
       this.tags.splice(this.tags.indexOf(tag), 1);
     },
 
-    // 显示标签输入框
-    showInput() {
-      this.inputVisible = true;
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
-    },
-
-    // 标签提交
-    handleInputConfirm() {
-      let inputValue = this.inputValue;
-      if (inputValue) {
-        this.tags.push(inputValue);
-      }
-      this.inputVisible = false;
-      this.inputValue = "";
-    },
-
     // 模态框提交
     async submit(id) {
       try {
@@ -478,7 +523,7 @@ export default {
             sceneryId: data.value.sceneryId,
             tags: this.tags
           });
-          // 新增景区后跳转到表格的最后一页
+          // 由于后台返回的数据是正序 所以新增景区后跳转到表格的最后一页
           const { absTotal, size } = this.pagination;
           this.pagination.absTotal++; // 在有查询数据的情况下使用total 将会出现异常 所以使用absTotal
           this.pagination.num = Math.ceil((absTotal + 1) / size);
@@ -489,9 +534,21 @@ export default {
           this.$message.success(`已添加景区 ${this.sceneryForm.name}`);
           this.sceneryDialog = false;
         } else {
+          // 将tags数组中的已经存在于数据库的标签转换为KEY , 不存在的直接返回标签名
+          const newTags = this.tags.map(tagName => {
+            const index = this.tagsArr.findIndex(
+              item => item.value === tagName
+            );
+            if (index !== -1) {
+              return this.tagsArr[index].tagId;
+            } else {
+              return tagName;
+            }
+          });
+          console.log(newTags)
           await Promise.all([
             editScenery({ ...this.sceneryForm, id: this.id }),
-            editSceneryTags({ sceneryId: this.id, tags: this.tags })
+            editSceneryTags({ sceneryId: this.id, tags: newTags })
           ]);
           this.$message.success(`修改成功`);
           this.sceneryDialog = false;
@@ -514,9 +571,7 @@ export default {
           // 删除时如果是该页最后一条数据则回到上一页
           const { total, size, num } = this.pagination;
           const edge = Math.ceil((total - 1) / size);
-          if (edge < num) {
-            this.pagination.num--;
-          }
+          edge < num && this.pagination.num--;
           this.getTableData();
         })
         .catch(() => {});
@@ -573,29 +628,29 @@ export default {
 }
 
 // .scenery-manage {
-  // 上传框
-   .uploader .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .uploader .el-upload:hover {
-    border-color: #409eff;
-  }
-  .uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 157px;
-    height: 48px;
-    line-height: 48px;
-    text-align: center;
-  }
-  .upload-img {
-    width: 157px;
-    height: 48px;
-    display: block;
-  }
+// 上传框
+.uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 157px;
+  height: 48px;
+  line-height: 48px;
+  text-align: center;
+}
+.upload-img {
+  width: 157px;
+  height: 48px;
+  display: block;
+}
 // }
 </style>

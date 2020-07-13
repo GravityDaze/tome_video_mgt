@@ -147,7 +147,7 @@ export default {
           type: "button",
           align:"center",
           btnList: [
-            { type: "primary", label: "开启审核", handle: this.checkStart },
+            { type: "text", label: "开启审核", handle: this.checkStart },
             { type: "text", label: "预览", handle: this.preview },
             { type: "text", label: "下载", handle: this.downloadVideo },
             { type: "text", label: "上传", handle: this.upload },
@@ -231,6 +231,9 @@ export default {
     this.isCheckingFn();
   },
   beforeDestroy() {
+    // 关闭通知栏
+    this.instance.close()
+    // 清除定时器
     clearInterval(this.timer);
   },
 
@@ -295,7 +298,7 @@ export default {
       this.startTimer();
     },
 
-    // 表头过滤方法
+    // 表头过滤方法 , 数组中保存的是每个状态下应该被过滤的表头数据
     filterTableCols() {
       let filter;
       let btnFilter;
@@ -310,7 +313,7 @@ export default {
             "examineUserName",
             "statusUpload"
           ];
-          btnFilter = ["预览", "下载", "上传", "审核通过", "拒绝"];
+          btnFilter = ["下载", "上传", "审核通过", "拒绝"];
           break;
 
         case 1:

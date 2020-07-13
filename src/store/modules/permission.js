@@ -25,10 +25,11 @@ const actions = {
       try {
         const { data } = await getMenu()
         commit('SET_MENU', JSON.stringify(data.value))
+        console.log( data )
         localStorage.setItem('menuList', JSON.stringify(data.value))
         resolve()
       } catch (err) {
-       
+        console.log(err)
         reject(err)
       }
     })
@@ -41,6 +42,7 @@ const actions = {
         commit('SET_ROUTER',filterRouter())
         resolve()
       }catch(err){
+        console.log(err)
         reject(err)
       }
     } )

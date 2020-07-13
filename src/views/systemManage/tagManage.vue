@@ -1,396 +1,260 @@
 <template>
-  <div>
-    <mySearchs
-      :sign="sign"
-      :isTagName="isTagName"
-      :isState="isState"
-      :isTagType="isTagType"
-      :addBtn="addBtn"
-      :editBtn="editBtn"
-      :enabledBtn="enabledBtn"
-      :disabledBtn="disabledBtn"
-      @beforeAddFn="beforeAddFn"
-      @addFn="addFn"
-      @beforeEditFn="beforeEditFn"
-      @editFn="editFn"
-      @queryInfoFn="queryInfoFn"
-      @enabledFn="enabledFn"
-      @disabledFn="disabledFn"
-      class="my_searchs"
-    ></mySearchs>
-    <myTables
-      :sign="sign"
-      :tableTitle="tableTitle"
+  <el-card>
+    <searchs :formData="formData" :searchBtn="searchBtn" />
+    <tables
+      v-loading="tablesLoading"
       :tableData="tableData"
-      @queryInfoFn="queryInfoFn"
-      @chooseInfo="chooseInfo"
-      class="my_tables"
-    ></myTables>
+      :tableCols="tableCols"
+      :pagination="pagination"
+      @sizeChange="sizeChange"
+      @numChange="numChange"
+    />
 
-    <!--标签管理新增或者编辑-->
-    <div id="publicAddEditorDialog">
-      <el-dialog
-        :title="$store.state.titleHeader"
-        :visible.sync="$store.state.tagManageSign"
-        width="30%"
-        align="left"
-        :close-on-click-modal="false"
+    <!--新增 & 编辑模态框-->
+    <el-dialog
+      :title="tagsDialogTitle"
+      :visible.sync="tagsDialog"
+      width="25%"
+      @close="dialogClose('tagsForm')"
+      :close-on-click-modal="false"
+      top="15%"
+    >
+      <el-form
+        style="width:300px"
+        :model="tagsForm"
+        ref="tagsForm"
+        label-width="100px"
+        size="small"
+        :hide-required-asterisk="false"
       >
-        <el-form
-          :model="ruleForm"
-          :rules="rules"
-          ref="ruleForm"
-          label-width="100px"
-          class="demo-ruleForm"
-          size="small"
-          :hide-required-asterisk="false"
+        <el-form-item
+          label="标签名称"
+          prop="name"
+          :rules="[
+              { required: true, message: '标签不能为空',trigger: 'blur'},
+            ]"
         >
-          <el-row>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="标签名称" prop="name">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.name" placeholder="请输入标签名称"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="18" :offset="2">
-              <el-form-item label="标签类型" prop="type">
-                <el-col class="select_style" v-if="$store.state.titleHeader=='新增'">
-                  <el-select v-model.trim="ruleForm.type" placeholder="请选择类型" class="select_style1">
-                    <el-option
-                      v-for="item in typeArr"
-                      :key="item.id"
-                      :label="item.name"
-                      :value="item.value"
-                    ></el-option>
-                  </el-select>
-                </el-col>
-                <el-col class="select_style" v-if="$store.state.titleHeader=='编辑'">
-                  <el-select v-model.trim="ruleForm.type" placeholder="请选择类型" class="select_style1">
-                    <el-option
-                      v-for="item in typeArr"
-                      :key="item.id"
-                      :label="item.name"
-                      :value="item.value"
-                    ></el-option>
-                  </el-select>
-                </el-col>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-form-item>
-            <el-col :span="10" :offset="6" style="display: flex;flex-wrap: nowrap">
-              <el-button @click="cancelForm('ruleForm')">关闭</el-button>
-              <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
-            </el-col>
-          </el-form-item>
-        </el-form>
-      </el-dialog>
-    </div>
-  </div>
+          <el-input v-model.trim="tagsForm.name" placeholder="请输入标签名称"></el-input>
+        </el-form-item>
+        <el-form-item label="标签类型">
+          <el-select v-model="tagsForm.type" disabled>
+            <el-option label="景区标签" :value="1"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('tagsForm')">提交</el-button>
+          <el-button @click="tagsDialog = false">关闭</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </el-card>
 </template>
 
 <script>
+import {
+  queryTags,
+  addTag,
+  enableTag,
+  disableTag,
+  tagsSelect,
+  editTag
+} from "@/api/management/systemManage";
+import initData from "@/mixins/initData";
 export default {
-  name: "tag-manage",
+  mixins: [initData],
   data() {
     return {
-      apiQuery: "videomis/tags/query", //标签列表查询
-      apiAdd: "videomis/tags/add", //标签新增
-      apiGetInfo: "videomis/tags/get", //标签单个信息获取
-      apiEdit: "videomis/tags/edit", //标签编辑
-      apiEnabled: "videomis/tags/enable", //标签启用
-      apiDisabled: "videomis/tags/disable", //标签禁用
-      commonId: "", //选择当前数据行是，对应需要的id
-      sign: "tagmanage",
-      isTagName: true,
-      isState: true,
-      isTagType: true,
-      addBtn: true,
-      editBtn: true,
-      enabledBtn: true,
-      disabledBtn: true,
-      tagStatus: "",
-      tableTitle: [
+      tableCols: [
         {
           prop: "name",
           label: "标签名称",
-          // width: '100',
           align: "center"
         },
         {
           prop: "type",
           label: "标签类型",
-          // width: '180',
           align: "center",
-          formatter: function(row) {
-            return row.type == "1" ? "景区标签" : "";
-          }
+          formatter: row => (row.type === 1 ? "景区标签" : "未知")
         },
         {
           prop: "createDatetime",
           label: "创建时间",
-          // width: '180',
           align: "center"
         },
         {
           prop: "updateDatetime",
           label: "最后更新时间",
-          // width: '180',
           align: "center"
+        },
+        {
+          type: "switch",
+          prop: "status",
+          label: "状态",
+          align: "center",
+          change: this.statusChange
+        },
+        {
+          label: "操作",
+          align: "center",
+          width: "120",
+          type: "button",
+          btnList: [{ type: "primary", label: "编辑", handle: this.editTag }]
         }
       ],
-      tableData: [],
-      ruleForm: {
-        name: "",
-        type: ""
-      },
-      // 验证规则
-      rules: {
-        name: [{ required: true, message: "请输入标签名称", tigger: "blur" }],
-        type: [{ required: true, message: "请选择标签类型", tigger: "blur" }]
-      },
-      typeArr: [
+      formData: [
         {
-          id: "0",
-          name: "景区标签",
-          value: "1"
+          type: "input",
+          label: "标签名称",
+          model: "name",
+          placeholder: "请输入标签名"
+        },
+        {
+          type: "select",
+          label: "状态",
+          model: "status",
+          options: [
+            {
+              label: "全部",
+              value: undefined
+            },
+            {
+              label: "启用",
+              value: 1
+            },
+            {
+              label: "禁用",
+              value: 0
+            }
+          ]
         }
-      ]
+      ],
+      searchBtn: [
+        {
+          type: "primary",
+          label: "新增",
+          handle: this.add,
+          icon: "el-icon-edit"
+        },
+        {
+          type: "primary",
+          label: "查询",
+          handle: this.query,
+          icon: "el-icon-search"
+        }
+      ],
+      tagsForm: {
+        type: 1,
+        name: ""
+      },
+      tagsDialog: false,
+      tagsDialogTitle: "",
+      tablesLoading: false
     };
   },
-  mounted() {
-    this.$store.state.pageNumParam = 1;
-    this.getDefaultInfoFn();
+  created() {
+    this.getTableData();
   },
   methods: {
-    getDefaultInfoFn() {
-      this.$axios({
-        method: "post",
-        url: this.apiQuery,
-        data: {
-          pageNum: this.$store.state.pageNumParam,
-          pageSize: this.$store.state.pageSizeParam,
-          name: "",
-          type: "",
-          status: ""
-        }
-      })
-        .then(res => {
-          if (res.data.resultStatus.resultCode === "0000") {
-            if (res.data.value.list.length != "0") {
-              this.tableData = [...res.data.value.list];
-              this.$store.state.totalParam = res.data.value.total;
-            } else {
-              this.tableData = [];
-              this.$store.state.totalParam = 0;
-            }
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
-    },
-
-    queryInfoFn() {
-      this.$axios({
-        method: "post",
-        url: this.apiQuery,
-        data: {
-          pageNum: this.$store.state.pageNumParam,
-          pageSize: this.$store.state.pageSizeParam,
-          name: this.$store.state.tagNameParam,
-          type: this.$store.state.tagTypeParam,
-          status: this.$store.state.stateParam
-        }
-      })
-        .then(res => {
-          if (res.data.resultStatus.resultCode === "0000") {
-            if (res.data.value.list.length != "0") {
-              this.tableData = [...res.data.value.list];
-              this.$store.state.totalParam = res.data.value.total;
-            } else {
-              this.tableData = [];
-              this.$store.state.totalParam = 0;
-            }
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {
-          this.$message.warning("出错了");
+    // 获取标签列表
+    async getTableData(
+      query = {
+        ...this.searchForm,
+        pageNum: this.pagination.num,
+        pageSize: this.pagination.size
+      }
+    ) {
+      try {
+        this.tablesLoading = true;
+        const { data } = await queryTags(query);
+        this.pagination.total = data.value.total;
+        // 将后台返回的数据处理为符合switch组件的数据
+        console.log(data.value.list);
+        this.tableData = data.value.list.map(v => {
+          // 将0和1转换为布尔值
+          v.status = !!v.status;
+          return v;
         });
-    },
-
-    //获取当前点击行的相关信息
-    chooseInfo(n) {
-      this.commonId = n.id;
-      this.tagStatus = n.status;
-    },
-
-    // 新增前清空数据方法
-    beforeAddFn() {
-      this.ruleForm.name = "";
-      this.ruleForm.type = "";
-      this.$store.state.tagManageSign = true;
-    },
-
-    //标签新增
-    addFn() {
-      this.$axios({
-        method: "post",
-        url: this.apiAdd,
-        data: {
-          name: this.ruleForm.name,
-          type: this.ruleForm.type
-        }
-      }).then(res => {
-        if (res.data.resultStatus.resultCode === "0000") {
-          this.$store.state.tagManageSign = false;
-          this.getDefaultInfoFn();
-        } else {
-          this.$message.warning(res.data.resultStatus.resultMessage);
-        }
-      });
-    },
-
-    //标签编辑前读取旧信息
-    beforeEditFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiGetInfo + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.ruleForm.name = res.data.value.name;
-            this.ruleForm.type = res.data.value.type == "1" ? "景区标签" : "";
-            this.$store.state.tagManageSign = true;
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.tablesLoading = false;
       }
     },
 
-    //标签编辑
-    editFn() {
-      if (isNaN(this.ruleForm.type)) {
-        if (this.ruleForm.type == "景区标签") {
-          this.ruleForm.type = "1";
+    // 切换标签
+    async statusChange(row) {
+      try {
+        if (row.status) {
+          await enableTag({ id: row.id });
+          this.$message.success(`已启用标签${row.name}`);
+        } else {
+          await disableTag({ id: row.id });
+          this.$message.info(`已禁用标签${row.name}`);
         }
+      } catch (err) {
+        // 错误时恢复
+        row.status = !row.status;
       }
-      this.$axios({
-        method: "post",
-        url: this.apiEdit,
-        data: {
-          id: this.commonId,
-          name: this.ruleForm.name,
-          type: this.ruleForm.type
-        }
-      }).then(res => {
-        if (res.data.resultStatus.resultCode === "0000") {
-          this.$store.state.tagManageSign = false;
-          this.commonId = "";
-          this.getDefaultInfoFn();
-        } else {
-          this.$message.warning(res.data.resultStatus.resultMessage);
-        }
-      });
     },
 
-    //提交方法（新增、编辑）
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
-        if (valid) {
-          if (this.$store.state.titleHeader === "新增") {
-            this.addFn();
-          } else if (this.$store.state.titleHeader === "编辑") {
-            this.editFn();
-          }
-        } else {
-          return false;
-        }
-      });
+    // 编辑标签
+    editTag(row) {
+      this.tagsDialogTitle = "编辑";
+      this.tagsDialog = true;
+      this.id = row.id;
+      // 回填数据
+      for (const item in this.tagsForm) {
+        this.tagsForm[item] = row[item];
+      }
     },
 
-    //关闭弹窗
-    cancelForm(formName) {
+    // 新增标签
+    add() {
+      this.tagsDialogTitle = "新增";
+      this.tagsDialog = true;
+    },
+
+    // 对话框关闭时
+    dialogClose(formName) {
+      this[formName].type = 1;
+      this[formName].name = "";
       this.$refs[formName].resetFields();
-      this.$store.state.tagManageSign = false;
     },
 
-    //启用标签
-    enabledFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else if (this.tagStatus == 1) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此标签已被启用，无需操作");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiEnabled + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          if (res.data.resultStatus.resultCode === "0000") {
-            // this.$store.state.pageNumParam = 1
-            this.commonId = "";
-            this.getDefaultInfoFn();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
+    // 提交
+    submitForm(formName) {
+      this.$refs[formName].validate(async valid => {
+        if (valid) {
+          try {
+            // 判断是新增还是编辑
+            if (this.tagsDialogTitle === "编辑") {
+              await editTag({ id: this.id, ...this.tagsForm });
+              this.$message.success("修改成功");
+              this.tagsDialog = false;
+              this.getTableData();
+            } else {
+              await addTag(this.tagsForm);
+              this.$message.success("新增成功");
+              this.tagsDialog = false;
+              this.getTableData();
+            }
+          } catch (err) {
+            console.log(err);
           }
-        });
-      }
+        }
+      });
     },
 
-    //禁用标签
-    disabledFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else if (this.tagStatus == 0) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此标签已被禁用，无需操作");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiDisabled + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          if (res.data.resultStatus.resultCode === "0000") {
-            // this.$store.state.pageNumParam = 1
-            this.commonId = "";
-            this.getDefaultInfoFn();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
-      }
+    // 查询标签
+    query(searchForm) {
+      this.searchForm = searchForm;
+      // 查询时,num默认从1开始
+      this.pagination.num = 1;
+      this.getTableData();
     }
   }
 };
 </script>
 
-<style scoped>
-.lng_lat_outbox {
-  /*border:1px solid red;*/
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-}
-.lng_lat_outbox > button {
-  display: inline-block;
-  width: 50%;
-}
+<style>
 </style>

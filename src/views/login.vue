@@ -130,7 +130,7 @@ export default {
               // 登录actions
               this.fullscreenLoading = false;
             })
-            .catch(() => {});
+            .catch((err) => console.log(err));
         })
         .catch(() => {
           this.getCode();

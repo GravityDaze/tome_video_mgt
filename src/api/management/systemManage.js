@@ -62,3 +62,51 @@ export const closeOperator = params => request.get('/videomis/user/close', { par
 // 操作员重置密码
 export const resetPw = params => request.get('/videomis/user/resetPw', { params })
 
+// 标签管理 => tagManage.vue
+
+// 标签列表查询
+export const queryTags = data => request.post('/videomis/tags/query',data)
+
+// 新增标签
+export const addTag = data => request.post('/videomis/tags/add',data)
+
+// 标签编辑
+export const editTag = data => request.post('/videomis/tags/edit',data)
+
+// 启用标签
+export const enableTag = params => request.get('/videomis/tags/enable',{ params })
+
+// 禁用标签
+export const disableTag = params => request.get('/videomis/tags/disable',{ params })
+
+// 标签选择查询
+export const tagsSelect = params => request.get('/videomis/tags/select',{ params })
+
+// 角色管理 => roleManage.vue
+
+// 角色列表查询
+export const queryRole = data => request.post('/videomis/role/query',data)
+
+// 角色新增
+export const addRole = data => request.post('/videomis/role/add',data)
+
+// 角色编辑
+export const editRole = data => request.post('/videomis/role/edit',data)
+
+// 角色启用
+export const enableRole = params => request.get('/videomis/role/enable',{ params })
+
+// 角色禁用
+export const disableRole = params => request.get('/videomis/role/disable',{ params })
+
+// 分配角色授权信息
+export const getAssignableAuth = params => request.get('/videomis/role/getAssignableAuth',{ params })
+
+// 分配角色授权
+export const assignableAuth = data => request.post('/videomis/role/assignableAuth',data)
+
+// 功能授权信息
+export const getMenuAuth = params => request.get('/videomis/role/getMenuAuth',{ params })
+
+// 功能授权
+export const menuAuth = data => request.post('/videomis/role/menuAuth',data)

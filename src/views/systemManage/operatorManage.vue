@@ -331,10 +331,13 @@ export default {
         if (valid) {
           try {
             if (this.operatorDialogTitle === "编辑") {
+              // 如果在编辑时同时进行了重授权
               if (this.needReAuth) {
                 await Promise.all[
-                  (editOperator({ id: this.id, ...this[form] }),
-                  operatorAuth({ id: this.id, roleIds: this.roleIds }))
+                  editOperator(
+                    { id: this.id, ...this[form] },
+                    operatorAuth({ id: this.id, roleIds: this.roleIds })
+                  )
                 ];
               } else {
                 await editOperator({ id: this.id, ...this[form] });
@@ -343,6 +346,7 @@ export default {
               this.operatorDialog = false;
               this.getTableData();
             } else {
+              // 新增时 首先获取ID
               await addOperator(this[form]);
               this.$message.success("新增成功");
               this.operatorDialog = false;
@@ -366,6 +370,10 @@ export default {
           try {
             await closeOperator({ id: row.id });
             this.$message.info("删除成功");
+            // 删除时如果是该页最后一条数据则回到上一页
+            const { total, size, num } = this.pagination;
+            const edge = Math.ceil((total - 1) / size);
+            edge < num && this.pagination.num--;
             this.getTableData();
           } catch (err) {}
         })
@@ -373,8 +381,8 @@ export default {
     },
 
     // 重置密码
-    resetPWD(){
-       this.$confirm("是否重置该操作员的密码?", "提示", {
+    resetPWD() {
+      this.$confirm("是否重置该操作员的密码?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -383,7 +391,7 @@ export default {
           try {
             await resetPw({ id: this.id });
             this.$message.success("重置密码成功");
-            this.operatorDialog = false
+            this.operatorDialog = false;
             this.getTableData();
           } catch (err) {}
         })
