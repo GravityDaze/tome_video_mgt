@@ -110,3 +110,4 @@ export const getMenuAuth = params => request.get('/videomis/role/getMenuAuth',{ 
 
 // 功能授权
 export const menuAuth = data => request.post('/videomis/role/menuAuth',data)
+

@@ -6,7 +6,15 @@
 
 <template>
   <div class="tables" style="margin:20px 0">
-    <el-table border :data="tableData" style="width: 100%">
+    <el-table 
+    border 
+    :data="tableData" 
+    style="width: 100%"
+    row-key="id"
+    lazy
+    :load="load"
+    :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+    >
       <el-table-column
         v-for="(item,index) in tableCols"
         :key="index"
@@ -22,6 +30,7 @@
             v-model="scope.row[item.prop]"
             v-if="item.type==='switch'"
             @change="item.change && item.change(scope.row)"
+            :disabled="item.disabled && item.disabled(scope.row)"
           ></el-switch>
           <!-- 按钮 -->
           <div v-else-if="item.type==='button'">
@@ -32,10 +41,17 @@
               :icon="btn.icon"
               @click="btn.handle(scope.row)"
               size="small"
-              v-if="showButton(btn.showRule,scope.row)"
+              v-if="!btn.show || btn.show(scope.row)"
             >{{btn.label}}</el-button>
             </template>
           </div>
+          <!-- 弹出框 -->
+          <el-popover v-else-if="item.type==='popover'" trigger="hover" placement="top">
+            <p>{{scope.row[item.prop]}}</p>
+          <div style="cursor:pointer" slot="reference" class="name-wrapper">
+            <el-tag size="medium">{{ item.title }}</el-tag>
+          </div>
+        </el-popover>
           <!-- 默认以文本方式显示 -->
           <span v-else>{{(item.formatter && item.formatter(scope.row)) || scope.row[item.prop]}}</span>
         </template>
@@ -98,23 +114,16 @@ export default {
     }
   },
   methods: {
-    // 控制表格操作栏的某个按钮是否显示
-    showButton(showRule, row) {
-      if (!showRule) {
-        // 如果不存在这个函数直接返回true
-        return true;
-      } else {
-        // 如果存在
-        return showRule(row);
-      }
-    },
-
     handleSizeChange(val) {
       this.$emit("sizeChange", val);
     },
     handleCurrentChange(val) {
       this.$emit("numChange", val);
-    }
+    },
+    // 用于加载树形表格
+    load(tree, treeNode, resolve){
+      this.$emit('load',{tree,treeNode,resolve})
+    },
   }
 };
 </script>

@@ -151,13 +151,13 @@ export default {
               type: "text",
               label: "修改支付状态",
               handle: this.changeStatus,
-              showRule: row => row.payStatus === 0
+              show: row => row.payStatus === 0
             },
             {
               type: "primary",
               label: "退款",
               handle: this.handleRefund,
-              showRule: row => row.payStatus === 1
+              show: row => row.payStatus === 1
             }
           ]
         }

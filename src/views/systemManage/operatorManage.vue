@@ -57,9 +57,6 @@
             <el-radio :label="2">女</el-radio>
           </el-radio-group>
         </el-form-item>
-        <!-- <el-form-item label="生日">
-            <el-input v-model.trim="operatorForm.birthday"></el-input>
-        </el-form-item>-->
         <el-form-item label="E-MAIL">
           <el-input v-model.trim="operatorForm.email"></el-input>
         </el-form-item>

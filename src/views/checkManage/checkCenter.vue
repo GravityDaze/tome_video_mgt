@@ -298,7 +298,7 @@ export default {
       this.startTimer();
     },
 
-    // 表头过滤方法 , 数组中保存的是每个状态下应该被过滤的表头数据
+    // 表头过滤方法 , 数组中保存的是每个状态下应该被过滤掉的表头数据
     filterTableCols() {
       let filter;
       let btnFilter;
