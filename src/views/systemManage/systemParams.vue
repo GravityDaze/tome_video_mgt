@@ -1,123 +1,73 @@
 <template>
-  <div>
-    <mySearchs
-      :isParamKey="isParamKey"
-      :isParamValue="isParamValue"
-      :isCanEdit="isCanEdit"
-      :addBtn="addBtn"
-      :editBtn="editBtn"
-      :RedisBtn="RedisBtn"
-      @queryInfoFn="queryInfoFn"
-      @beforeAddFn="beforeAddFn"
-      @beforeEditFn="beforeEditFn"
-      @sureRedisFn="sureRedisFn"
-      class="my_searchs"
-    ></mySearchs>
-    <myTables
-      :tableTitle="tableTitle"
+  <el-card>
+    <!-- <searchs :formData="formData" :searchBtn="searchBtn" /> -->
+    <tables
+      v-loading="tablesLoading"
       :tableData="tableData"
-      :isShowEnabled="isShowEnabled"
-      @queryInfoFn="queryInfoFn"
-      @chooseInfo="chooseInfo"
-      class="my_tables"
-    ></myTables>
+      :tableCols="tableCols"
+      :pagination="pagination"
+      @sizeChange="sizeChange"
+      @numChange="numChange"
+    />
 
-    <div id="addEditorForm">
-      <el-dialog
-        :title="$store.state.titleHeader"
-        :visible.sync="$store.state.systemParamSign"
-        width="30%"
-        align="left"
-        :close-on-click-modal="false"
+    <!--新增 & 编辑模态框-->
+    <el-dialog
+      :title="paramsDialogTitle"
+      :visible.sync="paramsDialog"
+      width="25%"
+      @close="dialogClose('paramsForm')"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        style="width:320px"
+        :model="paramsForm"
+        :rules="rules"
+        ref="paramsForm"
+        label-width="100px"
+        size="small"
+        :hide-required-asterisk="false"
       >
-        <el-form
-          :model="ruleForm"
-          :rules="rules"
-          ref="ruleForm"
-          label-width="100px"
-          class="demo-ruleForm"
-          size="small"
-          :hide-required-asterisk="false"
-        >
-          <el-row>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="参数键" prop="paramKey">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.paramKey"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="参数值" prop="value">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.value"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="参数值规则" prop="regularExpression">
-                <el-col>
-                  <el-input v-model.trim="ruleForm.regularExpression"></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="可否编辑" prop="edit">
-                <el-radio-group v-model="ruleForm.edit">
-                  <el-radio label="可以"></el-radio>
-                  <el-radio label="不可以"></el-radio>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-            <el-col :span="18" :offset="2">
-              <el-form-item label="描述">
-                <el-col>
-                  <el-input
-                    type="textarea"
-                    maxlength="100"
-                    show-word-limit
-                    :autosize="{minRows:4,maxRows:6}"
-                    v-model.trim="ruleForm.description"
-                  ></el-input>
-                </el-col>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-form-item>
-            <!--<el-col :span="4" :offset="2">-->
-            <!--<el-button @click="resetForm('ruleForm')">重置</el-button>-->
-            <!--</el-col>-->
-            <el-col :span="10" :offset="6" style="display: flex;flex-wrap: nowrap">
-              <el-button @click="cancelForm('ruleForm')">关闭</el-button>
-              <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
-            </el-col>
-          </el-form-item>
-        </el-form>
-      </el-dialog>
-    </div>
-  </div>
+        <el-form-item label="参数键" prop="paramKey">
+          <el-input placeholder="请输入参数键" v-model.trim="paramsForm.paramKey"></el-input>
+        </el-form-item>
+        <el-form-item label="参数值" prop="value">
+          <el-input placeholder="请输入参数值" v-model.trim="paramsForm.value"></el-input>
+        </el-form-item>
+        <el-form-item label="参数值规则" prop="regularExpression">
+          <el-input placeholder="请输入参数值规则" v-model.number="paramsForm.regularExpression"></el-input>
+        </el-form-item>
+        <el-form-item label="可否编辑" prop="edit">
+          <el-radio-group v-model="paramsForm.edit">
+            <el-radio :label="0">可以</el-radio>
+            <el-radio :label="1">不可以</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input type="textarea" v-model.trim="paramsForm.description"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('paramsForm')">提交</el-button>
+          <el-button @click="paramsDialog = false">关闭</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </el-card>
 </template>
 
 <script>
+import {
+  queryParams,
+  addParams,
+  editParams,
+  paramsSync
+} from "@/api/management/systemManage";
+import initData from "@/mixins/initData";
 export default {
+  mixins: [initData],
   name: "system-params",
   data() {
     return {
-      apiQuery: "/videomis/param/query",
-      apiAdd: "/videomis/param/add",
-      apiGetEditInfo: "/videomis/param/get",
-      apiEdit: "/videomis/param/edit",
-      apiRedis: "/videomis/param/sycn",
-      sign: "systemparams",
-      isParamKey: true,
-      isParamValue: true,
-      isCanEdit: true,
-      addBtn: true,
-      editBtn: true,
-      RedisBtn: true,
-      isShowEnabled: true,
-      commonId: "",
-      ruleForm: {
+      paramsForm: {
         id: "",
         paramKey: "",
         value: "",
@@ -140,245 +90,94 @@ export default {
           }
         ]
       },
-      tableTitle: [
+      tableCols: [
         {
           prop: "paramKey",
           label: "参数键",
-          // width: '100',
           align: "center"
         },
         {
           prop: "value",
           label: "参数值",
-          // width: '180',
           align: "center"
         },
         {
           prop: "regularExpression",
           label: "参数值规则",
-          // width: '100',
           align: "center"
         },
         {
           prop: "description",
           label: "描述",
-          // width: '180',
           align: "center"
         },
         {
           prop: "edit",
           label: "是否可编辑",
-          // width: '180',
           align: "center",
-          formatter: function(row) {
-            return row.edit == "1" ? "可编辑" : "不可编辑";
-          }
+          formatter: row => (row.edit ? "可编辑" : "不可编辑")
+        },
+        {
+          label: "操作",
+          align: "center",
+          type: "button",
+          btnList: [
+            {
+              type: "primary",
+              label: "编辑",
+              handle: this.editParams,
+              disabled: row => !row.edit
+            }
+          ]
         }
       ],
-      tableData: [
-        // {
-        //   paramKey: 'key_8',
-        //   paramValue: '00080',
-        //   valueRegulation: '我是规则实例一',
-        //   discrible: '描述一',
-        //   isEdit:1,
-        // },
-      ]
+      tablesLoading: false,
+      paramsDialog:false,
+      paramsDialogTitle:''
     };
   },
-  mounted() {
-    this.$store.state.pageNumParam = 1;
-    this.getDefaultInfoFn();
+  created() {
+    this.getTableData();
   },
   methods: {
-    getDefaultInfoFn() {
-      this.$axios({
-        method: "post",
-        url: this.apiQuery,
-        data: {
-          pageNum: this.$store.state.pageNumParam,
-          pageSize: this.$store.state.pageSizeParam,
-          paramKey: "",
-          value: "",
-          edit: ""
-        }
-      })
-        .then(res => {
-          // console.log("列表信息", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            if (res.data.value.list.length != "0") {
-              this.tableData = [...res.data.value.list];
-              this.$store.state.totalParam = res.data.value.total;
-            } else {
-              this.tableData = [];
-              this.$store.state.totalParam = 0;
-            }
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
-    },
-
-    queryInfoFn() {
-      this.$axios({
-        method: "post",
-        url: this.apiQuery,
-        data: {
-          pageNum: this.$store.state.pageNumParam,
-          pageSize: this.$store.state.pageSizeParam,
-          paramKey: this.$store.state.paramKeyParam,
-          value: this.$store.state.paramValueParam,
-          edit: this.$store.state.editParam
-        }
-      })
-        .then(res => {
-          // console.log("查询按钮或者翻页按钮信息", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            if (res.data.value.list.length != "0") {
-              this.tableData = [...res.data.value.list];
-              this.$store.state.totalParam = res.data.value.total;
-            } else {
-              this.tableData = [];
-              this.$store.state.totalParam = 0;
-            }
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
-    },
-
-    //点击列表对应行，获取相关数据id
-    chooseInfo(n) {
-      this.commonId = n.id;
-    },
-
-    beforeAddFn() {
-      for (let item in this.ruleForm) {
-        this.ruleForm[item] = "";
+    async getTableData(
+      query = {
+        ...this.searchForm,
+        pageNum: this.pagination.num,
+        pageSize: this.pagination.size
       }
-      // this.ruleForm.edit = "可以";
-      this.$store.state.systemParamSign = true;
-    },
-    addFn() {
-      if (
-        this.checkParamFn(this.ruleForm.value, this.ruleForm.regularExpression)
-      ) {
-        this.$message.warning("参数值与参数值规则不匹配，请修改后再提交");
-      } else {
-        this.ruleForm.edit = this.ruleForm.edit == "可以" ? "1" : "0";
-        this.$axios({
-          method: "post",
-          url: this.apiAdd,
-          data: this.ruleForm
-        }).then(res => {
-          // console.log("新增信息结果反馈，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.$store.state.systemParamSign = false;
-            this.$store.state.pageNumParam = 1;
-            this.getDefaultInfoFn();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
+    ) {
+      try {
+        this.tablesLoading = true;
+        const { data } = await queryParams(query);
+        this.pagination.total = data.value.total;
+        this.tableData = data.value.list;
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.tablesLoading = false;
       }
     },
 
-    beforeEditFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiGetEditInfo + "?id=" + this.commonId,
-          data: {}
-        }).then(res => {
-          // console.log("获取编辑信息接口返回数据，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.ruleForm = res.data.value;
-            if (this.ruleForm.edit == 0) {
-              this.$message.warning("此参数信息不可被编辑");
-            } else {
-              this.ruleForm.edit =
-                res.data.value.edit == "0" ? "不可以" : "可以";
-              this.$store.state.systemParamSign = true;
-            }
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
+    // 编辑参数
+    editParams(row) {
+      this.paramsDialog = true
+      this.id = row.id
+      this.paramsDialogTitle = '编辑'
+      // 回填数据
+      for( const item in this.paramsForm ){
+        this.paramsForm[item] = row[item]
       }
     },
 
-    editFn() {
-      if (
-        this.checkParamFn(this.ruleForm.value, this.ruleForm.regularExpression)
-      ) {
-        this.$message.warning("参数值与参数值规则不匹配，请修改后再提交");
-      } else {
-        this.ruleForm.edit = this.ruleForm.edit == "可以" ? "1" : "0";
-        this.$axios({
-          method: "post",
-          url: this.apiEdit,
-          data: this.ruleForm
-        }).then(res => {
-          // console.log("提交编辑信息返回数据，", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            this.$store.state.systemParamSign = false;
-            // this.$store.state.pageNumParam = 1;
-            this.commonId = "";
-            this.getDefaultInfoFn();
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        });
-      }
-    },
 
-    checkParamFn(value, regularExpression) {
-      var regex = new RegExp(regularExpression);
-      // 参数值不符合正则表达式
-      return !regex.test(value);
-    },
 
-    sureRedisFn() {
-      this.$axios({
-        method: "get",
-        url: this.apiRedis,
-        data: {}
-      }).then(res => {
-        if (res.data.resultStatus.resultCode === "0000") {
-          this.$message.success("同步成功");
-        } else {
-          this.$message.warning(res.data.resultStatus.resultMessage);
-        }
-      });
-    },
 
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
-        if (valid) {
-          // alert('submit!');
-          // this.$store.state.systemParamSign = false
-          if (this.$store.state.titleHeader === "新增") {
-            // alert('触发了')
-            this.addFn();
-          } else if (this.$store.state.titleHeader === "编辑") {
-            this.editFn();
-          }
-        } else {
-          // console.log("error submit!!");
-          return false;
-        }
-      });
-    },
-    cancelForm(formName) {
-      this.$refs[formName].resetFields();
-      this.$store.state.systemParamSign = false;
+    // 关闭对话框回调
+    dialogClose(){
+      //todo
     }
+  
   }
 };
 </script>

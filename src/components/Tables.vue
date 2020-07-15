@@ -42,6 +42,7 @@
               @click="btn.handle(scope.row)"
               size="small"
               v-if="!btn.show || btn.show(scope.row)"
+              :disabled="!btn.disabled || btn.disabled(scope.row)"
             >{{btn.label}}</el-button>
             </template>
           </div>

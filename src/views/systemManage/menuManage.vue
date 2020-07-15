@@ -33,19 +33,12 @@
         </el-form-item>
         <el-form-item label="菜单类型">
           <el-select v-model="menuForm.type">
-            <el-option label="菜单" :value="0"></el-option>
-            <el-option label="按钮" :value="1"></el-option>
-            <el-option label="资源" :value="2"></el-option>
-            <el-option label="查询按钮" :value="3"></el-option>
-            <el-option label="导出按钮" :value="4"></el-option>
+            <el-option v-for="(value,key) in typeMap.values()" :key="key" :label="value" :value="key"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="HTTP方法">
           <el-select v-model="menuForm.method">
-            <el-option label="GET" :value="0"></el-option>
-            <el-option label="POST" :value="1"></el-option>
-            <el-option label="PUT" :value="2"></el-option>
-            <el-option label="DELETE" :value="3"></el-option>
+            <el-option v-for="(value,key) in methodMap.values()" :key="key" :label="value" :value="key"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="中文名称">
@@ -91,7 +84,6 @@
 // 引入api
 import {
   getMenuTree,
-  getSubMenu,
   querySubMenu,
   addMenu,
   editMenu,
@@ -262,12 +254,11 @@ export default {
         [2, "PUT"],
         [3, "DELETE"]
       ]),
-      treeMap: new Map() //解决懒加载树形表格动态更新问题,详见:https://blog.csdn.net/IM507/article/details/103297208
+      treeMap: new Map() //记录懒加载树形表格id,详见:https://blog.csdn.net/IM507/article/details/103297208
     };
   },
   created() {
     this.getTableData();
-    // this.getTreeData();
   },
   methods: {
     // 获取表格数据
@@ -278,32 +269,34 @@ export default {
       }
     ) {
       try {
-        this.tablesLoading = true;
+        // 获取默认表格数据
         const { data } = await querySubMenu(query);
         this.pagination.total = data.value.total;
-        // 将后台返回的数据处理为符合switch组件的数据
-        console.log(data.value.list);
+        // 处理后台返回的数据
         this.tableData = data.value.list.map(v => {
-          // 为表格的每一项开启懒加载树形控件
-          v.hasChildren = true;
-          // 将0和1转换为布尔值
+          // hasChildren字段为true时会将该行表格转换为树形
+          v.hasChildren = !!v.hasChildren
           v.status = !!v.status;
           return v;
         });
       } catch (err) {
         console.log(err);
-      } finally {
-        this.tablesLoading = false;
       }
     },
 
-    // 获取树形控件数据
+    // 懒加载子节点数据
     async load({ tree, treeNode, resolve }) {
-      this.parentId = tree.id // 
-      this.treeMap.set(this.parentId,{tree,treeNode,resolve})
+      this.treeId = tree.id 
+      this.treeParentId = tree.parentId
+      // 记录当前点击菜单的id
+      this.treeMap.set(this.treeId,{tree,treeNode,resolve})
+      // 记录当前菜单的父元素id
+      this.treeMap.set(this.treeParentId,{tree,treeNode,resolve})
       const { data } = await querySubMenu({ parentId: tree.id });
+      // 加载数据
       resolve(
         data.value.list.map(v => {
+          v.hasChildren = !!v.hasChildren
           v.status = !!v.status;
           return v;
         })
@@ -323,6 +316,16 @@ export default {
       } catch (err) {
         // 错误时恢复
         row.status = !row.status;
+      }finally{
+        // 刷新根节点
+        this.getTableData()
+        // 刷新根节点下的所有子节点
+        if([...this.treeMap].length){
+          for(const item of this.treeMap){
+            const { tree,treeNode,resolve } = this.treeMap.get(item[0])
+            this.load({tree,treeNode,resolve})
+          }
+        }
       }
     },
 
@@ -354,11 +357,14 @@ export default {
       this.menuDialogTitle = "新增子菜单";
       this.menuDialog = true;
       this.menuForm.parentName = row.name
+      this.parentId = row.id;
     },
 
     // 对话框关闭时
     dialogClose(formName) {
+      // 重置表单验证
       this.$refs[formName].resetFields();
+      // 重置表单数据
       this[formName] = restore(this[formName]);
     },
 
@@ -376,21 +382,19 @@ export default {
               });
               this.$message.success("修改成功");
               this.menuDialog = false;
-              this.getTableData();
-              // 更新树形数据
-              const { tree,treeNode,resolve } = this.treeMap.get(this.parentId)
-              this.load({tree,treeNode,resolve})
             } else {
               await addMenu({parentId:this.parentId,...this[formName]});
               this.$message.success("新增成功");
               this.menuDialog = false;
-              this.getTableData();
-                // 更新树形数据
-              const { tree,treeNode,resolve } = this.treeMap.get(this.parentId)
-              this.load({tree,treeNode,resolve})
             }
           } catch (err) {
             console.log(err);
+          }finally{
+              // 更新根节点数据
+              this.getTableData();
+              // 更新子节点数据
+              const { tree,treeNode,resolve } = this.treeMap.get(this.treeId)
+              this.load({tree,treeNode,resolve})
           }
         }
       });
