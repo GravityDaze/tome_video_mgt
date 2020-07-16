@@ -13,9 +13,9 @@
 
 <script>
 import { queryDemand } from "@/api/management/demandManage";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 export default {
-  mixins:[initData],
+  mixins:[initPagination],
   name: "demand-manage",
   data() {
     return {
@@ -162,7 +162,7 @@ export default {
   methods: {
     async getTableData(
       query = {
-        ...this.searchForm,
+        ...this.searchData,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size
       }
@@ -175,18 +175,18 @@ export default {
     },
 
     // 按钮查询
-    query(searchForm) {
-      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
-      // 将searchForm中的时间数组转换为后台需要接收的格式
-      if (searchForm.createDatetime && searchForm.createDatetime.length) {
-        searchForm.startDate = searchForm.createDatetime[0];
-        searchForm.endDate = searchForm.createDatetime[1];
-        delete searchForm.createDatetime;
-      } else if (searchForm.startDate || searchForm.endDate) {
-        delete searchForm.startDate;
-        delete searchForm.endDate;
+    query(searchData) {
+      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
+      // 将searchData中的时间数组转换为后台需要接收的格式
+      if (searchData.createDatetime && searchData.createDatetime.length) {
+        searchData.startDate = searchData.createDatetime[0];
+        searchData.endDate = searchData.createDatetime[1];
+        delete searchData.createDatetime;
+      } else if (searchData.startDate || searchData.endDate) {
+        delete searchData.startDate;
+        delete searchData.endDate;
       }
-      this.searchForm = searchForm;
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();

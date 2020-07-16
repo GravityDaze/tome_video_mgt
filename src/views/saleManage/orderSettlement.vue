@@ -22,9 +22,9 @@
 
 <script>
 import { queryOrderSettlement, queryOrderDetail } from "@/api/management/saleManage";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 export default {
-  mixins: [initData],
+  mixins: [initPagination],
   data() {
     return {
       tableCols: [
@@ -188,7 +188,7 @@ export default {
       query = {
         pageNum: this.pagination.num,
         pageSize: this.pagination.size,
-        ...this.searchForm
+        ...this.searchData
       }
     ) {
       const { data } = await queryOrderSettlement(query);
@@ -214,11 +214,11 @@ export default {
     },
 
     // 按钮查询
-    query(searchForm) {
-      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
+    query(searchData) {
+      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
       
       // 查询时 pageNum必须恢复为1
-      this.searchForm = searchForm;
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();

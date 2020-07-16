@@ -91,11 +91,11 @@ import {
   enableMenu,
   disableMenu
 } from "@/api/management/systemManage";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
 export default {
   name: "menu-manage",
-  mixins: [initData],
+  mixins: [initPagination],
   data() {
     return {
       tableCols: [
@@ -254,7 +254,8 @@ export default {
         [2, "PUT"],
         [3, "DELETE"]
       ]),
-      treeMap: new Map() //记录懒加载树形表格id,详见:https://blog.csdn.net/IM507/article/details/103297208
+      treeMap: new Map(), //记录懒加载树形表格id,详见:https://blog.csdn.net/IM507/article/details/103297208
+      isChangeStatus:false //当前是否在切换菜单状态
     };
   },
   created() {
@@ -269,6 +270,10 @@ export default {
       }
     ) {
       try {
+        // 切换菜单状态时 , 不需要loadingf效果
+        if(!this.isChangeStatus){
+          this.tablesLoading = true
+        }
         // 获取默认表格数据
         const { data } = await querySubMenu(query);
         this.pagination.total = data.value.total;
@@ -281,6 +286,8 @@ export default {
         });
       } catch (err) {
         console.log(err);
+      }finally{
+        this.tablesLoading = false
       }
     },
 
@@ -306,6 +313,7 @@ export default {
     // 切换菜单状态
     async statusChange(row) {
       try {
+        this.isChangeStatus = true
         if (row.status) {
           await enableMenu({ id: row.id });
           this.$message.success(`已启用${row.name}`);
@@ -326,6 +334,7 @@ export default {
             this.load({tree,treeNode,resolve})
           }
         }
+        this.isChangeStatus = false
       }
     },
 

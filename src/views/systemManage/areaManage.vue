@@ -1,583 +1,392 @@
 <template>
-  <div class="area_page">
-    <div class="tree_box">
-      <treeviewComponent :data="data" @chooseAreaGetListInfo="chooseAreaGetListInfo"></treeviewComponent>
-    </div>
-    <div class="right_box">
-      <mySearchs
-        :addBtn="addBtn"
-        :editBtn="editBtn"
-        :enabledBtn="enabledBtn"
-        :disabledBtn="disabledBtn"
-        :showSearchBtn="showSearchBtn"
-        @enabledFn="enabledFn"
-        @disabledFn="disabledFn"
-        @beforeAddFn="beforeAddFn"
-        @beforeEditFn="beforeEditFn"
-        class="my_searchs"
-      ></mySearchs>
-      <myTables
-        :tableTitle="tableTitle"
-        :tableData="tableData"
-        @chooseInfo="chooseInfo"
-        class="my_tables"
-      ></myTables>
-      <div id="addEditorForm">
-        <el-dialog
-          :title="$store.state.titleHeader"
-          :visible.sync="$store.state.areaManageSign"
-          width="30%"
-          align="left"
-          :close-on-click-modal="false"
-        >
-          <el-form
-            :model="ruleForm"
-            :rules="rules"
-            ref="ruleForm"
-            label-width="100px"
-            class="demo-ruleForm"
-            size="small"
-            :hide-required-asterisk="false"
-          >
-            <el-row>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="上级区域" prop="parentName">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.parentName" disabled></el-input>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="区域名称" prop="name">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.name"></el-input>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="标准区域码" prop="code">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.code"></el-input>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="区域级别" prop="level">
-                  <el-col class="select_style">
-                    <el-select v-model="ruleForm.level" placeholder="请选择区域级别" class="select_style1">
-                      <el-option label="国家" :value="0"></el-option>
-                      <el-option label="省、自治区" :value="1"></el-option>
-                      <el-option label="市" :value="2"></el-option>
-                      <el-option label="区、县" :value="3"></el-option>
-                    </el-select>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="国际电话区码">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.phoneCode"></el-input>
-                  </el-col>
-                  <el-col :span="1">
-                    <el-popover placement="right-start" width="250" trigger="hover">
-                      <span>当区域级别选为</span>
-                      <span style="color:red;font-size:16px">
-                        <b>国家</b>
-                      </span>
-                      <span>时,该参数必填</span>
-                      <i class="el-icon-info" slot="reference"></i>
-                    </el-popover>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="经纬度" prop="lonLat">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.lonLat"></el-input>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="首字母" prop="initial">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.initial"></el-input>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="简拼" prop="simpleSpell">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.simpleSpell"></el-input>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-              <el-col :span="20" :offset="2">
-                <el-form-item label="全拼" prop="fullSpell">
-                  <el-col :span="20">
-                    <el-input v-model="ruleForm.fullSpell"></el-input>
-                  </el-col>
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-form-item>
-              <el-col :span="10" :offset="6" style="display: flex;flex-wrap: nowrap">
-                <el-button @click="cancelForm('ruleForm')">关闭</el-button>
-                <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
-              </el-col>
-            </el-form-item>
-          </el-form>
-        </el-dialog>
-      </div>
-    </div>
-  </div>
+  <el-card>
+    <searchs :formData="formData" :searchBtn="searchBtn" />
+    <tables
+      v-loading="tablesLoading"
+      :tableData="tableData"
+      :tableCols="tableCols"
+      :pagination="pagination"
+      @sizeChange="sizeChange"
+      @numChange="numChange"
+      @load="load"
+    />
+
+    <!--新增 & 编辑模态框-->
+    <el-dialog
+      :title="areaDialogTitle"
+      :visible.sync="areaDialog"
+      @close="dialogClose('areaForm')"
+      :close-on-click-modal="false"
+      top="10%"
+      width="40%"
+    >
+      <el-form
+        style="width:500px"
+        :model="areaForm"
+        ref="areaForm"
+        label-width="100px"
+        size="small"
+        :hide-required-asterisk="false"
+      >
+        <el-form-item label="上级区域">
+          <el-input v-model.trim="areaForm.parentName" placeholder="请选择父菜单" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="区域名称">
+          <el-input v-model.trim="areaForm.name" placeholder="请输入区域名称"></el-input>
+        </el-form-item>
+        <el-form-item label="标准区域码">
+          <el-input v-model.trim="areaForm.code" placeholder="请输入区域码"></el-input>
+        </el-form-item>
+        <el-form-item label="区域级别">
+           <el-select v-model="areaForm.level">
+            <el-option v-for="(value,key) in areaMap.values()" :key="key" :label="value" :value="key"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item v-show="areaForm.level === 0 && areaForm.level !==''" label="国际电话区码">
+          <el-input v-model.trim="areaForm.phoneCode" placeholder="请输入国际电话区码"></el-input>
+        </el-form-item>
+        <el-form-item label="经纬度">
+          <el-input v-model.trim="areaForm.lonLat" placeholder="请输入经纬度"></el-input>
+        </el-form-item>
+        <el-form-item label="首字母">
+          <el-input v-model.trim="areaForm.initial" placeholder="请输入首字母"></el-input>
+        </el-form-item>
+        <el-form-item label="简拼">
+          <el-input v-model.trim="areaForm.simpleSpell" placeholder="请输入简拼"></el-input>
+        </el-form-item>
+        <el-form-item label="全拼">
+         <el-input v-model.trim="areaForm.fullSpell" placeholder="请输入全拼"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('areaForm')">提交</el-button>
+          <el-button @click="areaDialog = false">关闭</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </el-card>
 </template>
 
 <script>
+// 引入api
+import {
+  queryArea,
+  addArea,
+  editArea,
+  enableArea,
+  disableArea
+} from "@/api/management/systemManage";
+import initPagination from "@/mixins/initPagination";
+import { restore } from "@/utils/restoreModel";
 export default {
-  name: "areaManage",
+  name: "menu-manage",
+  mixins: [initPagination],
   data() {
-    // 自定义经纬度规则
-    var checkLonLat = (rule, value, callback) => {
-      if (value == "") {
-        callback(new Error("请输入标准区域经纬度"));
-      }
-      var arr = value.split(",");
-      if (arr.length == 1) {
-        callback(new Error("请输入正确的标准区域经纬度"));
-      } else {
-        var lon = arr[0];
-        var lat = arr[1];
-        if (
-          parseFloat(lon).toString() == "NaN" ||
-          parseFloat(lon) < parseFloat(0) ||
-          parseFloat(lon) > parseFloat(180)
-        ) {
-          callback(new Error("请输入正确的标准区域经度"));
-        }
-        if (
-          parseFloat(lat).toString() == "NaN" ||
-          parseFloat(lat) < parseFloat(0) ||
-          parseFloat(lat) > parseFloat(90)
-        ) {
-          callback(new Error("请输入正确的标准区域纬度"));
-        }
-      }
-      callback();
-    };
     return {
-      apiQuery: "/videomis/area/query",
-      apiAreaTree: "/videomis/area/tree",
-      apiAdd: "/videomis/area/add",
-      apiGetEditInfo: "/videomis/area/get",
-      apiEdit: "/videomis/area/edit",
-      apiEnabled: "/videomis/area/enable",
-      apiDisabled: "/videomis/area/disable",
-      sign: "areamanage",
-      commonId: "", //此参数是要执行对应操作按钮事件之前先通过表格列点击事件获取到信息，然后供后续操作使用
-      addBtn: true,
-      editBtn: true,
-      enabledBtn: true,
-      disabledBtn: true,
-      showSearchBtn: true,
-      areaStatus: "",
-      data: [],
-      tableTitle: [
+      tableCols: [
         {
           prop: "name",
           label: "区域名称",
-          // width: '100',
-          align: "center"
+          width: "180"
         },
         {
           prop: "code",
           label: "标准区域码",
-          // width: '100',
           align: "center"
         },
         {
           prop: "phoneCode",
-          label: "国际电话区码",
-          // width: '100',
+          label: "国际电话区号",
           align: "center"
         },
         {
           prop: "level",
           label: "级别",
-          // width: '100',
-          align: "center",
-          formatter: function(row) {
-            if (row.level == "0") {
-              return "国家";
-            } else if (row.level == "1") {
-              return "省、自治区";
-            } else if (row.level == "2") {
-              return "市";
-            } else if (row.level == "3") {
-              return "区、县";
-            }
-          }
+          align: "center"
         },
         {
           prop: "lonLat",
           label: "经纬度",
-          // width: '100',
           align: "center"
         },
         {
           prop: "parentName",
           label: "父级区域",
-          // width: '100',
           align: "center"
         },
         {
           prop: "fullName",
-          label: "区域全名称",
-          // width: '100',
+          label: "区域全称",
           align: "center"
         },
         {
           prop: "simpleSpell",
           label: "简拼",
-          // width: '100',
-          align: "center"
+          align: "center",
         },
         {
           prop: "fullSpell",
           label: "全拼",
-          // width: '100',
-          align: "center"
+          align: "center",
+        },
+        {
+          type: "switch",
+          prop: "status",
+          label: "状态",
+          align: "center",
+          change: this.statusChange,
+          disabled:row=>row.isChangeStatus
+        },
+        {
+          type: "button",
+          label: "操作",
+          align: "center",
+          width:"200",
+          btnList: [
+            {
+              label:"新增",
+              handle:this.addSubMenu,
+              type:"primary"
+            },
+            {
+              label: "编辑",
+              handle: this.editMenu,
+              type: "primary"
+            }
+          ]
         }
       ],
-      tableData: [],
-      ruleForm: {
-        parentId: "",
+      formData: [],
+      searchBtn: [
+        {
+          type: "primary",
+          label: "新增根区域",
+          handle: this.add,
+          icon: "el-icon-edit"
+        }
+      ],
+      areaForm: {
         parentName: "",
-        level: "",
         code: "",
-        phoneCode: "",
+        level: "",
         name: "",
+        phoneCode: "",
+        lonLat: "",
         initial: "",
         simpleSpell: "",
         fullSpell: "",
-        lonLat: ""
       },
-      treeParentId: "",
-      treeParentName: "",
-      treeParantLevel: "",
+      ruleForm: {
+        parentName: "",
+        code: "",
+        level: "",
+        name: "",
+        phoneCode: "",
+        lonLat: "",
+        initial: "",
+        simpleSpell: "",
+        fullSpell: "",
+      },
+      tablesLoading: false,
+      areaDialog: false,
+      areaDialogTitle: "",
+
       // 验证规则
       rules: {
-        parentName: [{ required: true, message: "请选择父级区域" }],
-        level: [
-          { required: true, message: "请选择区域级别", trigger: "change" }
+        parentName: [{ required: true, message: "请选择父级菜单" }],
+        type: [
+          { required: true, message: "请选择菜单类型", trigger: "change" }
         ],
-        code: [
-          { required: true, message: "请输入标准区域码", trigger: "blur" }
+        method: [
+          { required: true, message: "请选择菜单HTTP方法", trigger: "change" }
         ],
-        name: [{ required: true, message: "请输入区域名称", trigger: "blur" }],
-        initial: [
+        name: [
+          { required: true, message: "请输入菜单中文名称", trigger: "blur" }
+        ],
+        nameEn: [
+          { required: true, message: "请输入菜单英文名称", trigger: "blur" }
+        ],
+        url: [{ required: true, message: "请输入菜单URL", trigger: "blur" }],
+        sort: [
+          { required: true, message: "请输入菜单显示顺序" },
+          { type: "number", message: "顺序值必须为数字值" }
+        ],
+        refreshable: [
           {
             required: true,
-            message: "请输入区域拼音大写首字母",
-            trigger: "blur"
+            message: "请选择此菜单信息是否可刷新",
+            trigger: "change"
           }
-        ],
-        simpleSpell: [
-          { required: true, message: "请输入区域名称简拼", trigger: "blur" }
-        ],
-        fullSpell: [
-          { required: true, message: "请输入区域名称全拼", trigger: "blur" }
-        ],
-        lonLat: [{ required: true, validator: checkLonLat, trigger: "blur" }]
-      }
+        ]
+      },
+      areaMap: new Map([
+        [0, "国家"],
+        [1, "省、自治区"],
+        [2, "市"],
+        [3, "县"]
+      ]),
+      treeMap: new Map(), //记录懒加载树形表格id,详见:https://blog.csdn.net/IM507/article/details/103297208
+      isChangeStatus:false //当前是否在切换菜单状态
     };
   },
-  mounted() {
-    this.$store.state.pageNumParam = 1;
-    this.getDefaultInfo();
-    this.getDefaultAreaTree();
+  created() {
+    this.getTableData();
   },
   methods: {
-    //选择左边区域树对应节点后，将选择的对应值ID赋值给，parentId，用于查询此parentId下对应的列表
-    chooseAreaGetListInfo(n) {
-      // console.log("选择树结构，传值过来++", n);
-      //判断目前的父级区域ID和选中的区域ID是否一致，防止多次查询相同的信息
-      if (this.ruleForm.parentId != n.id) {
-        this.ruleForm.parentId = n.id;
-        this.ruleForm.parentName = n.name;
-        // 选中的左侧区域树的ID、Name和level
-        this.treeParentId = n.id;
-        this.treeParentName = n.name;
-        this.treeParantLevel = n.level;
-        this.getDefaultInfo();
+    // 获取表格数据
+    async getTableData(
+      query = {
+        pageNum: this.pagination.num,
+        pageSize: this.pagination.size
       }
-    },
-
-    //获取默认列表信息方法
-    getDefaultInfo() {
-      var that = this;
-      this.$axios({
-        method: "post",
-        url: this.apiQuery,
-        data: {
-          areaId: this.ruleForm.parentId,
-          pageNum: 1,
-          pageSize: this.$store.state.pageSizeParam
+    ) {
+      try {
+        // 切换菜单状态时 , 不需要loadingf效果
+        if(!this.isChangeStatus){
+          this.tablesLoading = true
         }
-      })
-        .then(res => {
-          // console.log("区域管理返回的数据列表信息返回的数据", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            that.$store.state.totalParam = res.data.value.total;
-            // console.log('返回的数据', that.$store.state.totalParam)
-            this.tableData = [...res.data.value.list];
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {
-          // console.log(error);
+        // 获取默认表格数据
+        const { data } = await queryArea(query);
+        this.pagination.total = data.value.total;
+        // 处理后台返回的数据
+        this.tableData = data.value.list.map(v => {
+          // hasChildren字段为true时会将该行表格转换为树形
+          v.hasChildren = !!v.hasChildren
+          v.status = !!v.status;
+          return v;
         });
-    },
-
-    //获取默认区域树信息
-    getDefaultAreaTree() {
-      this.$axios({
-        method: "get",
-        url: this.apiAreaTree,
-        data: {}
-      })
-        .then(res => {
-          // console.log("区域树返回了哪些信息", res.data);
-          if (res.data.resultStatus.resultCode === "0000") {
-            // console.log('区域树返回了哪些信息',res.data)
-            this.data = [...res.data.value];
-          } else {
-            this.$message.warning(res.data.resultStatus.resultMessage);
-          }
-        })
-        .catch(error => {});
-    },
-
-    //选择选中行数据进行赋值
-    chooseInfo(n) {
-      this.commonId = n.id;
-      this.areaStatus = n.status;
-    },
-
-    beforeAddFn() {
-      if (this.treeParentId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请在左侧区域树中选择一个父级区域");
-        }
-      } else {
-        for (let item in this.ruleForm) {
-          this.ruleForm[item] = "";
-        }
-        this.ruleForm.parentId = this.treeParentId;
-        this.ruleForm.parentName = this.treeParentName;
-        this.$store.state.areaManageSign = true;
+      } catch (err) {
+        console.log(err);
+      }finally{
+        this.tablesLoading = false
       }
     },
 
-    //新增信息
-    addFn() {
-      // console.log("开始提交新增信息");
-      if (this.ruleForm.level <= this.treeParantLevel) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("区域级别选择有误,请重新选择");
-        }
-      } else if (this.ruleForm.level == 0 && this.ruleForm.phoneCode == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("区域级别选择为国家时,国际电话区码不能为空");
-        }
-      } else {
-        this.ruleForm.initial = this.ruleForm.initial.toUpperCase();
-        this.ruleForm.simpleSpell = this.ruleForm.simpleSpell.toUpperCase();
-        this.ruleForm.fullSpell = this.ruleForm.fullSpell.toUpperCase();
-        this.$axios({
-          method: "post",
-          url: this.apiAdd,
-          data: this.ruleForm
+    // 懒加载子节点数据
+    async load({ tree, treeNode, resolve }) {
+      this.treeId = tree.id 
+      this.treeParentId = tree.parentId
+      // 记录当前点击菜单的id
+      this.treeMap.set(this.treeId,{tree,treeNode,resolve})
+      // 记录当前菜单的父元素id
+      this.treeMap.set(this.treeParentId,{tree,treeNode,resolve})
+      const { data } = await queryArea({ areaId: tree.id });
+      // 加载数据
+      resolve(
+        data.value.list.map(v => {
+          v.hasChildren = !!v.hasChildren
+          v.status = !!v.status;
+          return v;
         })
-          .then(res => {
-            // console.log("新增接口成功返回数据", res.data);
-            if (res.data.resultStatus.resultCode === "0000") {
-              this.$store.state.areaManageSign = false;
-              this.getDefaultInfo();
-              this.getDefaultAreaTree();
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-          })
-          .catch(error => {
-            // console.log(error);
-          });
-      }
+      );
     },
 
-    beforeEditFn() {
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiGetEditInfo + "?id=" + this.commonId,
-          data: {}
-        })
-          .then(res => {
-            if (res.data.resultStatus.resultCode === "0000") {
-              //   var nameParam = this.ruleForm.parentName;
-              this.ruleForm = res.data.value;
-              this.treeParantLevel = res.data.value.parentLevel;
-              this.$store.state.areaManageSign = true;
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-          })
-          .catch(error => {});
-      }
-    },
-
-    //编辑信息之后提交信息
-    editFn() {
-      // console.log("开始提交编辑信息");
-      if (this.ruleForm.level <= this.treeParantLevel) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("区域级别选择有误,请重新选择");
-        }
-      } else if (this.ruleForm.level == 0 && this.ruleForm.phoneCode == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("区域级别选择为国家时,国际电话区码不能为空");
-        }
-      } else {
-        this.ruleForm.initial = this.ruleForm.initial.toUpperCase();
-        this.ruleForm.simpleSpell = this.ruleForm.simpleSpell.toUpperCase();
-        this.ruleForm.fullSpell = this.ruleForm.fullSpell.toUpperCase();
-        this.$axios({
-          method: "post",
-          url: this.apiEdit,
-          data: this.ruleForm
-        })
-          .then(res => {
-            // console.log("编辑接口成功返回数据", res.data);
-            if (res.data.resultStatus.resultCode === "0000") {
-              this.$store.state.areaManageSign = false;
-              this.commonId = "";
-              this.getDefaultInfo();
-              this.getDefaultAreaTree();
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-          })
-          .catch(error => {});
-      }
-    },
-
-    //启用
-    enabledFn() {
-      // alert('你选择了继续操作哦')
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else if (this.areaStatus == 1) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此区域已被启用，无需操作");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiEnabled + "?id=" + this.commonId,
-          data: {}
-        })
-          .then(res => {
-            if (res.data.resultStatus.resultCode === "0000") {
-              // this.$store.state.pageNumParam = 1;
-              this.commonId = "";
-              this.getDefaultInfo();
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-
-            // console.log(res.data,'前面是后台返回的启用之后的信息')
-          })
-          .catch(error => {});
-      }
-    },
-    //禁用
-    disabledFn() {
-      // alert('你选择了继续操作哦')
-      if (this.commonId == "") {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("请选择一条数据");
-        }
-      } else if (this.areaStatus == 0) {
-        if (document.getElementsByClassName("el-message").length === 0) {
-          this.$message.warning("此区域已被禁用，无需操作");
-        }
-      } else {
-        this.$axios({
-          method: "get",
-          url: this.apiDisabled + "?id=" + this.commonId,
-          data: {}
-        })
-          .then(res => {
-            if (res.data.resultStatus.resultCode === "0000") {
-              // this.$store.state.pageNumParam = 1;
-              this.commonId = "";
-              this.getDefaultInfo();
-            } else {
-              this.$message.warning(res.data.resultStatus.resultMessage);
-            }
-          })
-          .catch(error => {});
-      }
-    },
-
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
-        if (valid) {
-          if (this.$store.state.titleHeader === "新增") {
-            this.addFn();
-          } else if (this.$store.state.titleHeader === "编辑") {
-            this.editFn();
-          }
+    // 切换菜单状态
+    async statusChange(row) {
+      try {
+        this.isChangeStatus = true
+        // 此参数是为了禁止频繁切换状态
+        row.isChangeStatus = true
+        if (row.status) {
+          await enableArea({ id: row.id });
+          this.$message.success(`已启用${row.name}`);
         } else {
-          // console.log("error submit!!");
-          return false;
+          await disableArea({ id: row.id });
+          this.$message.info(`已禁用${row.name}`);
+        }
+      } catch (err) {
+        // 错误时恢复
+        row.status = !row.status;
+      }finally{
+        // 刷新根节点
+        this.getTableData()
+        // 刷新根节点下的所有子节点
+        if([...this.treeMap].length){
+          for(const item of this.treeMap){
+            const { tree,treeNode,resolve } = this.treeMap.get(item[0])
+            this.load({tree,treeNode,resolve})
+          }
+        }
+        this.isChangeStatus = false
+         row.isChangeStatus = false
+      }
+    },
+
+    // 编辑菜单
+    editMenu(row) {
+      this.areaDialogTitle = "编辑";
+      this.areaDialog = true;
+      // 获取到id
+      this.id = row.id; 
+      //获取到父级id
+      this.parentId = row.parentId;
+      // 回填数据
+      for (const item in this.areaForm) {
+        this.areaForm[item] = row[item];
+      }
+    },
+
+    // 新增根菜单
+    add() {
+      this.areaDialogTitle = "新增根区域";
+      this.areaDialog = true;
+      this.areaForm.parentName = "世界"
+      // 系统根id无法动态获取 暂时写死
+      this.parentId = 1 
+    },
+
+    // 新增子菜单
+    addSubMenu(row){
+      this.areaDialogTitle = "新增子菜单";
+      this.areaDialog = true;
+      this.areaForm.parentName = row.name
+      this.parentId = row.id;
+    },
+
+    // 对话框关闭时
+    dialogClose(formName) {
+      // 重置表单验证
+      this.$refs[formName].resetFields();
+      // 重置表单数据
+      this[formName] = restore(this[formName]);
+    },
+
+    // 提交
+    submitForm(formName) {
+      this.$refs[formName].validate(async valid => {
+        if (valid) {
+          try {
+            // 判断是新增还是编辑
+            if (this.areaDialogTitle === "编辑") {
+              await editArea({
+                id: this.id,
+                parentId: this.parentId,
+                ...this[formName]
+              });
+              this.$message.success("修改成功");
+              this.areaDialog = false;
+            } else {
+              await addArea({parentId:this.parentId,...this[formName]});
+              this.$message.success("新增成功");
+              this.areaDialog = false;
+            }
+          } catch (err) {
+            console.log(err);
+          }finally{
+              // 更新根节点数据
+              this.getTableData();
+              // 更新子节点数据
+              const { tree,treeNode,resolve } = this.treeMap.get(this.treeId)
+              this.load({tree,treeNode,resolve})
+          }
         }
       });
-    },
-    // 关闭窗口
-    cancelForm(formName) {
-      this.$refs[formName].resetFields();
-      this.$store.state.areaManageSign = false;
     }
   }
 };
 </script>
 
 <style scoped>
-.area_page {
-  /*border: 1px solid red;*/
+.card {
   display: flex;
-  flex-direction: row;
-  height: 8rem;
-  min-height: 400px;
-}
-
-.tree_box,
-.right_box {
-  /*border: 1px solid green;*/
-}
-
-.tree_box {
-  width: 20%;
-}
-
-.right_box {
-  flex-grow: 1;
 }
 </style>

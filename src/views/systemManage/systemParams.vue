@@ -1,6 +1,6 @@
 <template>
   <el-card>
-    <!-- <searchs :formData="formData" :searchBtn="searchBtn" /> -->
+    <searchs :formData="formData" :searchBtn="searchBtn" />
     <tables
       v-loading="tablesLoading"
       :tableData="tableData"
@@ -15,6 +15,7 @@
       :title="paramsDialogTitle"
       :visible.sync="paramsDialog"
       width="25%"
+      top="20vh"
       @close="dialogClose('paramsForm')"
       :close-on-click-modal="false"
     >
@@ -28,23 +29,23 @@
         :hide-required-asterisk="false"
       >
         <el-form-item label="参数键" prop="paramKey">
-          <el-input placeholder="请输入参数键" v-model.trim="paramsForm.paramKey"></el-input>
+          <el-input :disabled="this.paramsDialogTitle === '编辑'" placeholder="请输入参数键" v-model.trim="paramsForm.paramKey"></el-input>
+        </el-form-item>
+        <el-form-item label="参数值规则" prop="regularExpression">
+          <el-input :disabled="this.paramsDialogTitle === '编辑'" placeholder="请输入参数值规则" v-model.number="paramsForm.regularExpression"></el-input>
         </el-form-item>
         <el-form-item label="参数值" prop="value">
           <el-input placeholder="请输入参数值" v-model.trim="paramsForm.value"></el-input>
         </el-form-item>
-        <el-form-item label="参数值规则" prop="regularExpression">
-          <el-input placeholder="请输入参数值规则" v-model.number="paramsForm.regularExpression"></el-input>
-        </el-form-item>
         <el-form-item label="可否编辑" prop="edit">
           <el-radio-group v-model="paramsForm.edit">
-            <el-radio :label="0">可以</el-radio>
-            <el-radio :label="1">不可以</el-radio>
+            <el-radio :label="1">可以</el-radio>
+            <el-radio :label="0">不可以</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="描述">
-          <el-input type="textarea" v-model.trim="paramsForm.description"></el-input>
-        </el-form-item>
+          <el-input type="textarea" autosize v-model.trim="paramsForm.description"></el-input>
+        </el-form-item> 
         <el-form-item>
           <el-button type="primary" @click="submitForm('paramsForm')">提交</el-button>
           <el-button @click="paramsDialog = false">关闭</el-button>
@@ -61,14 +62,14 @@ import {
   editParams,
   paramsSync
 } from "@/api/management/systemManage";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
+import { restore } from '@/utils/restoreModel'
 export default {
-  mixins: [initData],
+  mixins: [initPagination],
   name: "system-params",
   data() {
     return {
       paramsForm: {
-        id: "",
         paramKey: "",
         value: "",
         regularExpression: "",
@@ -131,9 +132,64 @@ export default {
           ]
         }
       ],
+      formData: [
+        {
+          type: "input",
+          label: "参数键",
+          model: "paramKey",
+          placeholder: "请输入参数键"
+        },
+        {
+          type: "input",
+          label: "参数值",
+          model: "value",
+          placeholder: "请输入用户昵称"
+        },
+        {
+          label: "编辑",
+          type: "select",
+          model: "edit",
+          options: [
+            {
+              label: "全部",
+              value: undefined
+            },
+            {
+              label: "可编辑",
+              value: 1
+            },
+            {
+              label: "不可编辑",
+              value: 0
+            }
+          ]
+        }
+      ],
+      searchBtn: [
+        {
+          type: "primary",
+          label: "新增",
+          handle: this.add,
+          icon: "el-icon-edit"
+        },
+        {
+          type: "primary",
+          label: "查询",
+          handle: this.query,
+          icon: "el-icon-search"
+        },
+        {
+          type: "primary",
+          label: "同步",
+          handle: this.sync,
+          icon: "el-icon-refresh",
+          loading:false
+        }
+      ],
       tablesLoading: false,
+      btnLoading:true,
       paramsDialog:false,
-      paramsDialogTitle:''
+      paramsDialogTitle:'',
     };
   },
   created() {
@@ -142,7 +198,7 @@ export default {
   methods: {
     async getTableData(
       query = {
-        ...this.searchForm,
+        ...this.searchData,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size
       }
@@ -170,14 +226,48 @@ export default {
       }
     },
 
+    // 新增参数
+    add(){
+      this.paramsDialog = true
+      this.paramsDialogTitle = '新增'
+    },
+
+    // 提交
+    async submitForm(formName){
+
+      try{
+        await editParams({id:this.id,...this[formName]})
+        this.$message.success('修改成功')
+        this.getTableData()
+        this.paramsDialog = false
+      }catch(err){console.log(err)}
+    },
 
 
 
     // 关闭对话框回调
-    dialogClose(){
-      //todo
+    dialogClose(formName){
+      // 重置验证和数据
+      this.$refs[formName].resetFields();
+      this[formName] = restore(this[formName])
+    },
+
+    // 按钮查询
+    query(searchData){
+       this.searchData = searchData;
+      // 查询时,num默认从1开始
+      this.pagination.num = 1;
+      this.getTableData();
+    },
+
+    // 同步至redis
+    async sync(){
+      const i = this.searchBtn.findIndex( v => v.label==="同步" )
+      this.searchBtn[i].loading = true
+      await paramsSync()
+      this.searchBtn[i].loading = false
+      this.$message.success('同步成功')
     }
-  
   }
 };
 </script>

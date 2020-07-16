@@ -1,13 +1,13 @@
 /*
-    此混入为Tables的分页功能提供了一个统一函数
+    混入Tables组件分页相关功能
 */
 import _ from "lodash";
 
-const initData = {
+const initPagination = {
     data() {
         return {
-            tableData: [],
-            searchForm: {},
+            tableData: [], // 表格数据
+            searchData: {}, // 搜索框表单数据
             pagination: {
                 num: 1,
                 size: 10,
@@ -16,7 +16,6 @@ const initData = {
 
         }
     },
-
 
     methods: {
         // Tables组件的分页功能
@@ -30,4 +29,4 @@ const initData = {
         }
     }
 }
-export default initData;
+export default initPagination;

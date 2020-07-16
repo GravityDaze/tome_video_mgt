@@ -52,30 +52,7 @@
 
 <script>
 export default {
-  name: "price-sets",
-  data() {
-    return {
-      // dataArr:[
-      //   {
-      //     time1:'5',
-      //     time2:'10',
-      //     price:'18'
-      //   },
-      //   {
-      //     time1:'15',
-      //     time2:'30',
-      //     price:'25'
-      //   },
-      //   {
-      //     time1:'115',
-      //     time2:'300',
-      //     price:'205'
-      //   },
-      // ],
-    };
-  },
   props: ["dataArr"],
-  mounted() {},
   methods: {
     addPriceSetFn() {
       this.$emit("addPriceSetFn");
@@ -105,7 +82,7 @@ export default {
 
 <style scoped>
 .price_set_box {
-  border: 1px solid lightgrey;
+  /* border: 1px solid lightgrey; */
   height: 8rem;
   min-height: 400px;
 }

@@ -9,7 +9,6 @@ import store from '@/store'
 export function filterRouter() { //遍历vuex中的菜单数组转换为路由组件对象
     const router = []
     const RouterMap = JSON.parse(store.getters.menuList)
-    console.log(RouterMap)
     for (const item of RouterMap) {
         router.push(item.child.map((v) => {
             return {

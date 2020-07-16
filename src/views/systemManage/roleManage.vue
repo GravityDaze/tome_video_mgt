@@ -118,9 +118,9 @@ import {
   menuAuth
 } from "@/api/management/systemManage";
 import { restore } from "@/utils/restoreModel";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 export default {
-  mixins: [initData],
+  mixins: [initPagination],
   data() {
     return {
       tableCols: [
@@ -249,7 +249,7 @@ export default {
     // 获取角色列表
     async getTableData(
       query = {
-        ...this.searchForm,
+        ...this.searchData,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size
       }
@@ -393,8 +393,8 @@ export default {
     },
 
     // 查询标签
-    query(searchForm) {
-      this.searchForm = searchForm;
+    query(searchData) {
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();

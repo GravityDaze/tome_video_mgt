@@ -7,18 +7,18 @@
 <template>
   <div class="searchs">
     <div class="top-area">
-      <el-form size="small" :inline="true" :model="searchForm" class="search-form">
+      <el-form size="small" :inline="true" :model="searchData" class="search-form">
         <el-form-item :label="item.label" v-for="(item,index) in formData" :key="index">
           <!-- 输入框 -->
           <el-input
             v-if="item.type === 'input'"
-            v-model="searchForm[item.model]"
+            v-model="searchData[item.model]"
             :placeholder="item.placeholder"
           ></el-input>
           <!-- 下拉选择框 -->
           <el-select
             v-if="item.type === 'select'"
-            v-model="searchForm[item.model]"
+            v-model="searchData[item.model]"
             :placeholder="item.placeholder"
           >
             <template v-for="option in item.options">
@@ -28,7 +28,7 @@
           <!-- 日期时间选择器 -->
           <el-date-picker
             v-if="item.type === 'datePicker'"
-            v-model="searchForm[item.model]"
+            v-model="searchData[item.model]"
             type="datetimerange"
             :picker-options="pickerOptions"
             range-separator="至"
@@ -40,10 +40,10 @@
           ></el-date-picker>
 
           <!-- 月选择器 -->
-          <el-date-picker v-if="item.type === 'monthPicker'"  value-format="MM" v-model="searchForm[item.model]" type="month" placeholder="选择月"></el-date-picker>
+          <el-date-picker v-if="item.type === 'monthPicker'"  value-format="MM" v-model="searchData[item.model]" type="month" placeholder="选择月"></el-date-picker>
 
           <!-- 年选择器 -->
-          <el-date-picker v-if="item.type === 'yearPicker'"  value-format="yyyy" v-model="searchForm[item.model]" type="year" placeholder="选择年"></el-date-picker>
+          <el-date-picker v-if="item.type === 'yearPicker'"  value-format="yyyy" v-model="searchData[item.model]" type="year" placeholder="选择年"></el-date-picker>
         </el-form-item>
 
         <!-- 按钮组 -->
@@ -52,8 +52,9 @@
             v-for="(item,index) in searchBtn"
             :key="index"
             :type="item.type"
-            @click="item.handle(searchForm)"
+            @click="item.handle(searchData)"
             :icon="item.icon"
+            :loading="item.loading"
           >{{item.label}}</el-button>
         </el-form-item>
       </el-form>
@@ -79,7 +80,7 @@ export default {
   },
   data() {
     return {
-      searchForm: {},
+      searchData: {},
       // 带快捷选项的时间范围选择期
       pickerOptions: {
         shortcuts: [
@@ -118,7 +119,7 @@ export default {
     // 初始化时查询数据中是否有默认值
     const defaultArr = this.formData.filter(v => v.default !== undefined);
     for (let i = 0; i < defaultArr.length; i++) {
-      this.$set(this.searchForm, defaultArr[i].model, defaultArr[i].default);
+      this.$set(this.searchData, defaultArr[i].model, defaultArr[i].default);
     }
   },
   watch: {

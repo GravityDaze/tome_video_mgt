@@ -154,9 +154,9 @@ import { tagsSelect } from "@/api/management/systemManage";
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 export default {
-  mixins: [initData],
+  mixins: [initPagination],
   name: "scenery-manage",
   data() {
     return {
@@ -293,7 +293,7 @@ export default {
     // 获取景区列表
     async getTableData(
       query = {
-        ...this.searchForm,
+        ...this.searchData,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size
       }
@@ -304,7 +304,7 @@ export default {
         // 获取当前查询结果下的分页条数
         this.pagination.total = data.value.total;
         // 当查询结果为空时获取分页条数
-        if (!Object.keys(this.searchForm).length) {
+        if (!Object.keys(this.searchData).length) {
           this.pagination.absTotal = data.value.total;
         }
         // 将后台返回的数据处理为符合switch组件的数据
@@ -529,7 +529,7 @@ export default {
           this.pagination.num = Math.ceil((absTotal + 1) / size);
           this.pagination.total = this.pagination.absTotal; //更新total
           //  清空查询数据
-          this.clear(this.searchForm);
+          this.clear(this.searchData);
           this.getTableData();
           this.$message.success(`已添加景区 ${this.sceneryForm.name}`);
           this.sceneryDialog = false;
@@ -583,27 +583,27 @@ export default {
     },
 
     // 按钮查询相关
-    query(searchForm) {
-      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
-      this.searchForm = searchForm;
+    query(searchData) {
+      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();
     },
 
     // 清空查询结果
-    clear(searchForm) {
-      for (const v in searchForm) {
+    clear(searchData) {
+      for (const v in searchData) {
         if (
-          typeof searchForm[v] === "number" ||
-          typeof searchForm[v] === "undefined"
+          typeof searchData[v] === "number" ||
+          typeof searchData[v] === "undefined"
         ) {
-          searchForm[v] = undefined;
+          searchData[v] = undefined;
         } else {
-          searchForm[v] = "";
+          searchData[v] = "";
         }
       }
-      this.searchForm = searchForm;
+      this.searchData = searchData;
     }
   }
 };

@@ -84,11 +84,11 @@ import {
   enableTemplatePoint,
   getSceneryList
 } from "@/api/management/videoManage";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
 export default {
   name: "scenery-shot-template",
-  mixins: [initData],
+  mixins: [initPagination],
   data() {
     return {
       tableCols: [
@@ -281,7 +281,7 @@ export default {
     // 获取模板信息
     async getTableData(
       query = {
-        ...this.searchForm,
+        ...this.searchData,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size
       }
@@ -420,18 +420,18 @@ export default {
     },
 
     // 按钮查询
-    query(searchForm) {
-      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
-      // 将searchForm中的时间数组转换为后台需要的字符串格式 bug toFix
-      if (searchForm.createDatetime && searchForm.createDatetime.length) {
-        searchForm.startDatetime = searchForm.createDatetime[0];
-        searchForm.endDatetime = searchForm.createDatetime[1];
-        delete searchForm.createDatetime;
-      } else if (searchForm.startDatetime || searchForm.endDatetime) {
-        delete searchForm.startDatetime;
-        delete searchForm.endDatetime;
+    query(searchData) {
+      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
+      // 将searchData中的时间数组转换为后台需要的字符串格式 bug toFix
+      if (searchData.createDatetime && searchData.createDatetime.length) {
+        searchData.startDatetime = searchData.createDatetime[0];
+        searchData.endDatetime = searchData.createDatetime[1];
+        delete searchData.createDatetime;
+      } else if (searchData.startDatetime || searchData.endDatetime) {
+        delete searchData.startDatetime;
+        delete searchData.endDatetime;
       }
-      this.searchForm = searchForm;
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();

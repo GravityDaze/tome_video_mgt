@@ -12,9 +12,16 @@
     style="width: 100%"
     row-key="id"
     lazy
+   
     :load="load"
     :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
     >
+    <!-- 表格索引 -->
+     <el-table-column
+      v-if="type"
+      :type="type"
+      width="50">
+    </el-table-column>
       <el-table-column
         v-for="(item,index) in tableCols"
         :key="index"
@@ -42,7 +49,7 @@
               @click="btn.handle(scope.row)"
               size="small"
               v-if="!btn.show || btn.show(scope.row)"
-              :disabled="!btn.disabled || btn.disabled(scope.row)"
+              :disabled="btn.disabled && btn.disabled(scope.row) || false"
             >{{btn.label}}</el-button>
             </template>
           </div>
@@ -108,6 +115,9 @@ export default {
           num: 1
         };
       }
+    },
+    type:{
+      type:String
     },
     hideOnSinglePage:{
       type:Boolean,

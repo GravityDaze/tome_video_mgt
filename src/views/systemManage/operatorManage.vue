@@ -83,10 +83,10 @@ import {
   closeOperator,
   resetPw
 } from "@/api/management/systemManage";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
 export default {
-  mixins: [initData],
+  mixins: [initPagination],
   name: "operator-manage",
   data() {
     // 自定义联系电话规则
@@ -249,7 +249,7 @@ export default {
     // 获取景区列表
     async getTableData(
       query = {
-        ...this.searchForm,
+        ...this.searchData,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size
       }
@@ -407,9 +407,9 @@ export default {
     },
 
     // 按钮查询
-    query(searchForm) {
-      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
-      this.searchForm = searchForm;
+    query(searchData) {
+      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();

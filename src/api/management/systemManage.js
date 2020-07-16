@@ -121,3 +121,20 @@ export const editParams = data => request.post('/videomis/param/edit',data)
 
 // 同步参数到redis
 export const paramsSync = params => request.get('/videomis/param/sycn',params)
+
+// 区域管理 => areaManage.vue
+
+// 查询区域
+export const queryArea = data => request.post('/videomis/area/query',data)
+
+// 新增区域
+export const addArea = data => request.post('/videomis/area/add',data)
+
+// 编辑区域
+export const editArea = data => request.post('/videomis/area/edit',data)
+
+// 启用区域
+export const enableArea = params => request.get('/videomis/area/enable',{params})
+
+// 禁用区域
+export const disableArea = params => request.get('/videomis/area/disable',{params})

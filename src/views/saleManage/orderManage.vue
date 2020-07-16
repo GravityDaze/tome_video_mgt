@@ -1,6 +1,6 @@
 <template>
   <el-card>
-    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
+    <searchs :formData="formData" :searchBtn="searchBtn" />
     <tables
       :tableData="tableData"
       :tableCols="tableCols"
@@ -83,10 +83,10 @@ import {
   refundPrice,
   refund
 } from "@/api/management/saleManage";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
 export default {
-  mixins: [initData],
+  mixins: [initPagination],
   data() {
     return {
       tableCols: [
@@ -154,7 +154,7 @@ export default {
               show: row => row.payStatus === 0
             },
             {
-              type: "primary",
+              type: "text",
               label: "退款",
               handle: this.handleRefund,
               show: row => row.payStatus === 1
@@ -265,7 +265,7 @@ export default {
       query = {
         pageNum: this.pagination.num,
         pageSize: this.pagination.size,
-        ...this.searchForm
+        ...this.searchData
       }
     ) {
       const { data } = await orderQuery(query);
@@ -334,21 +334,21 @@ export default {
     },
 
     // 查询
-    query(searchForm) {
-      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
-      // 将searchForm中的时间数组转换为后台需要接收的格式
-      if (searchForm.createDatetime && searchForm.createDatetime.length) {
-        searchForm.createStartDatetime = searchForm.createDatetime[0];
-        searchForm.createEndDatetime = searchForm.createDatetime[1];
-        delete searchForm.createDatetime;
+    query(searchData) {
+      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
+      // 将searchData中的时间数组转换为后台需要接收的格式
+      if (searchData.createDatetime && searchData.createDatetime.length) {
+        searchData.createStartDatetime = searchData.createDatetime[0];
+        searchData.createEndDatetime = searchData.createDatetime[1];
+        delete searchData.createDatetime;
       } else if (
-        searchForm.createStartDatetime ||
-        searchForm.createEndDatetime
+        searchData.createStartDatetime ||
+        searchData.createEndDatetime
       ) {
-        delete searchForm.createStartDatetime;
-        delete searchForm.createEndDatetime;
+        delete searchData.createStartDatetime;
+        delete searchData.createEndDatetime;
       }
-      this.searchForm = searchForm;
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();

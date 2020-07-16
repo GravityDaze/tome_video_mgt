@@ -64,9 +64,9 @@ import {
 } from "@/api/management/checkManage";
 import { getUpLoadParams } from "@/api/qiniu";
 import { download } from "@/utils/download";
-import initData from "@/mixins/initData";
+import initPagination from "@/mixins/initPagination";
 export default {
-  mixins:[initData],
+  mixins:[initPagination],
   data() {
     return {
       // 表头默认状态 0未审核 1正在审核  2:审核通过 3:审核不通过
@@ -194,7 +194,7 @@ export default {
           model: "createDatetime"
         }
       ], //初始表单数据
-      searchForm:{},
+      searchData:{},
       searchBtn: [
         {
           type: "primary",
@@ -244,7 +244,7 @@ export default {
         status: this.status,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size,
-        ...this.searchForm
+        ...this.searchData
       }
     ) {
       try {
@@ -536,11 +536,11 @@ export default {
     },
 
     // 按钮查询
-    query(searchForm) {
-      if (_.isEmpty(searchForm)) return this.$message.warning("无效的查询");
+    query(searchData) {
+      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
 
       // 查询时 pageNum必须恢复为1
-      this.searchForm = searchForm;
+      this.searchData = searchData;
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();
