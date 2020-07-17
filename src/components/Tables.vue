@@ -61,12 +61,13 @@
           </div>
         </el-popover>
           <!-- 默认以文本方式显示 -->
-          <span v-else>{{(item.formatter && item.formatter(scope.row)) || scope.row[item.prop]}}</span>
+          <span :style="item.style && item.style(scope.row)" v-else>{{(item.formatter && item.formatter(scope.row)) || scope.row[item.prop]}}</span>
         </template>
       </el-table-column>
     </el-table>
     <!-- 分页 -->
     <el-pagination
+      v-if="!hidePagination"
       :hide-on-single-page="hideOnSinglePage"
       background
       style="margin-top:20px"
@@ -115,6 +116,10 @@ export default {
           num: 1
         };
       }
+    },
+    hidePagination:{
+      type:Boolean,
+      default:false
     },
     type:{
       type:String

@@ -12,7 +12,7 @@ export const queryPrinceConfig = data => request.get('/videomis/priceConfig/quer
 export const addPrinceConfig = data => request.post('/videomis/priceConfig/add',data)
 
 // 价格配置删除
-export const delPrinceConfig = data => request.post('/videomis/priceConfig/delete',data)
+export const delPrinceConfig = params => request.get('/videomis/priceConfig/delete',{ params })
 
 // 订单管理模块 => orderManage.vue 
 

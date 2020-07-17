@@ -15,3 +15,6 @@ export const logout = data=> request.post('/v/sysLogout',data)
 
 // 获取该用户的菜单信息
 export const  getMenu = ()=> request.get('/videomis/menu/auth')
+
+// 刷新用户token
+export const refreshToken =()=> request.get('/v/sysRefresh')

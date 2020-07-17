@@ -1,6 +1,7 @@
 import router from './index.js'
 import store from '@/store'
 import { Message } from 'element-ui'
+
 // 加载进度条
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
@@ -12,6 +13,8 @@ router.beforeEach((to, from, next) => {
   NProgress.start()
   const token = store.getters.token
   if (token) {
+    // 调用刷新token接口
+
     if (to.path === '/login') {
       next('/')
       NProgress.done()

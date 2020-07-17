@@ -1,6 +1,6 @@
 <template>
   <el-card>
-    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
+    <searchs :formData="formData" :searchBtn="searchBtn" />
     <tables
       :tableData="tableData"
       :tableCols="tableCols"

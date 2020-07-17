@@ -53,6 +53,21 @@ export default {
           prop: "status",
           label: "需求状态",
           align: "center",
+          style: row=>{ 
+            switch (row.status) {
+              case 0:
+                return {color:'rgb(206,206,206)'};
+                break;
+              case 1:
+                 return {color:'orange'};
+                break;
+              case 2:
+               return {color:'green'};
+                break;
+              default:
+                 return {color:'red'};
+            }
+           },
           formatter: row => {
             switch (row.status) {
               case 0:

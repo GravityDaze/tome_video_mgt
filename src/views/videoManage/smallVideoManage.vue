@@ -155,6 +155,18 @@ export default {
           prop: "status",
           label: "状态",
           align: "center",
+          style:row=>{
+            switch (row.status) {
+              case 0:
+                return {color:'rgb(206,206,206)'};
+                break;
+              case 1:
+                return {color:'red'};
+                break;
+              default:
+                return {color:'green'};
+            }
+          },
           formatter: row => {
             switch (row.status) {
               case 0:
