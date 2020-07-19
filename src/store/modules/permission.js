@@ -2,8 +2,9 @@ import { getMenu } from '@/api/user'
 import { filterRouter }  from '@/utils/filterRouter'
 
 const state = {
-  menuList: localStorage.getItem('menuList') || '[]',
-  routerMap:[]
+  menuList: JSON.parse(localStorage.getItem('menuList')) || [],
+  routerMap:[],
+  isCollapse:JSON.parse(sessionStorage.getItem('isCollapse')) || false
 }
 
 const mutations = {
@@ -15,6 +16,10 @@ const mutations = {
   },
   RESET_ROUTER(state){
     state.routerMap = []
+  },
+  SET_COLLAPSE(state){
+    state.isCollapse = !state.isCollapse
+    sessionStorage.setItem('isCollapse',JSON.stringify(state.isCollapse))
   }
 }
 
@@ -24,8 +29,7 @@ const actions = {
     return new Promise(async (resolve, reject) => {
       try {
         const { data } = await getMenu()
-        commit('SET_MENU', JSON.stringify(data.value))
-        console.log( data )
+        commit('SET_MENU', data.value)
         localStorage.setItem('menuList', JSON.stringify(data.value))
         resolve()
       } catch (err) {

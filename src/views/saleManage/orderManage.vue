@@ -129,6 +129,8 @@ export default {
           label: "订单状态",
           prop: "status",
           align: "center",
+          type:"tag",
+          tag: row => row.status === 0 ? "info" : "success",
           formatter: row => row.status === 0 ? "未支付" : "已完成"
         },
         {
@@ -140,6 +142,8 @@ export default {
           label: "支付状态",
           prop: "payStatus",
           align: "center",
+          type:'tag',
+          tag: row => row.status === 0 ? "info" : "success",
           formatter: row => row.payStatus === 0 ? "未支付" : "已支付"
         },
         {

@@ -116,6 +116,8 @@ export default {
           prop: "edit",
           label: "是否可编辑",
           align: "center",
+          type:"tag",
+          tag:row=> (row.edit ? "success" : "danger"),
           formatter: row => (row.edit ? "可编辑" : "不可编辑")
         },
         {

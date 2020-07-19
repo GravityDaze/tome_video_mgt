@@ -33,6 +33,7 @@ const actions = {
         localStorage.setItem('name', username)
         resolve()
       } catch (err) {
+        console.log(err)
         reject(err)
       }
     })

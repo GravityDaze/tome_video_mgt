@@ -155,16 +155,17 @@ export default {
           prop: "status",
           label: "状态",
           align: "center",
-          style:row=>{
+          type: "tag",
+          tag:row=>{
             switch (row.status) {
               case 0:
-                return {color:'rgb(206,206,206)'};
+                return 'danger'
                 break;
               case 1:
-                return {color:'red'};
+                return '';
                 break;
               default:
-                return {color:'green'};
+                return 'success'
             }
           },
           formatter: row => {
@@ -184,6 +185,8 @@ export default {
           prop: "shareStatus",
           label: "发布",
           align: "center",
+          type:"tag",
+          tag:row=> row.shareStatus === 0 ? "warning" : "success",
           formatter: row => row.shareStatus === 0 ? "未发布" : "已发布"
         },
         {
@@ -213,6 +216,7 @@ export default {
         {
           label: "操作",
           type: "button",
+           align: "center",
           btnList: [{ type: "primary", label: "编辑", handle: this.editVideo }]
         }
       ],
@@ -259,7 +263,7 @@ export default {
           type: "primary",
           label: "新增",
           handle: this.add,
-          icon: "el-icon-search"
+          icon: "el-icon-edit"
         },
         {
           type: "primary",

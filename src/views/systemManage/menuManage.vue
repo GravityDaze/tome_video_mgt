@@ -160,10 +160,10 @@ export default {
           type: "button",
           label: "操作",
           align: "center",
-          width:"250",
+          width:"180",
           btnList: [
             {
-              label:"新增子菜单",
+              label:"新增",
               handle:this.addSubMenu,
               type:"primary"
             },

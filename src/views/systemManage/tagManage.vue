@@ -68,7 +68,10 @@ export default {
         {
           prop: "name",
           label: "标签名称",
-          align: "center"
+          align: "center",
+          type:"tag",
+          effect:"plain",
+          tag:()=>'success'
         },
         {
           prop: "type",

@@ -139,6 +139,7 @@ export default {
         {
           label: "操作",
           type: "button",
+          align:"center",
           btnList: [{ type: "primary", label: "编辑", handle: this.editTemp }]
         }
       ],
@@ -212,7 +213,7 @@ export default {
           type: "primary",
           label: "新增",
           handle: this.add,
-          icon: "el-icon-search"
+          icon: "el-icon-edit"
         },
         {
           type: "primary",

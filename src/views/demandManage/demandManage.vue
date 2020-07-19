@@ -33,19 +33,16 @@ export default {
         {
           prop: "nickName",
           label: "用户昵称",
-          // width: '180',
           align: "center"
         },
         {
           prop: "createDatetime",
           label: "提交时间",
-          // width: '180',
           align: "center"
         },
         {
           prop: "type",
           label: "需求类型",
-          // width: '180',
           align: "center",
           formatter: row => (row.type === 1 ? "标准制作" : "定制合成")
         },
@@ -53,19 +50,20 @@ export default {
           prop: "status",
           label: "需求状态",
           align: "center",
-          style: row=>{ 
+          type:"tag",
+          tag: row=>{ 
             switch (row.status) {
               case 0:
-                return {color:'rgb(206,206,206)'};
+                return 'warning';
                 break;
               case 1:
-                 return {color:'orange'};
+                 return '';
                 break;
               case 2:
-               return {color:'green'};
+               return 'success';
                 break;
               default:
-                 return {color:'red'};
+                 return 'danger';
             }
            },
           formatter: row => {

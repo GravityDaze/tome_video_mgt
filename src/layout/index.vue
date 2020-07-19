@@ -1,40 +1,19 @@
 <template>
   <el-container class="wrapper">
-    <el-aside :style="{width:asideWidth}">
+    <el-aside :style="{width:isCollapse?'64px':'300px'}">
       <!-- 顶部logo  -->
-      <div class="logo" :style="{display:logoDisplay}">
+      <div class="logo" v-show="!isCollapse">
         <img src="../assets/images/logo.png" alt />
       </div>
-      <el-menu
-        :default-active="$route.path"
-        :unique-opened="true"
-        class="el-menu-vertical"
-        background-color="#304156"
-        router
-        text-color="#fff"
-        active-text-color="#03a9f3"
-        :collapse="isCollapse"
-        :collapse-transition="false"
-      >
-        <template v-for="item in JSON.parse(this.menuList)">
-          <el-submenu :index="item.id.toString()" :key="item.id">
-            <template slot="title">
-              <i :class="item.iconStyle"></i>
-              <span>{{item.name}}</span>
-            </template>
-            <template v-for="(item1,index) in item.child">
-              <el-menu-item :index="item1.url" :key="index">{{item1.name}}</el-menu-item>
-            </template>
-          </el-submenu>
-        </template>
-      </el-menu>
+      <!-- 侧边菜单 -->
+      <Menu :menuList="menuList" />
     </el-aside>
 
     <el-container>
       <el-header>
         <div class="top">
           <div class="left">
-            <i @click="collapse" id="collapse" :class="collapseClass"></i>
+            <i @click="collapse" id="collapse" :class="[isCollapse?'el-icon-s-unfold':'el-icon-s-fold']"></i>
             <!-- 面包屑 -->
             <el-breadcrumb separator="/">
               <el-breadcrumb-item style="font-weight:bold">{{$route.meta.breadcrumb[0]}}</el-breadcrumb-item>
@@ -62,24 +41,13 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters, mapActions, mapMutations } from "vuex";
+import Menu from "@/layout/components/Menu"
 import Tabs from "@/components/Tabs";
 export default {
   name: "layout",
-  data() {
-    return {
-      isCollapse: false, //是否收起侧边栏导航
-      asideWidth: "300px",
-      logoDisplay: "flex",
-      collapseClass: "el-icon-s-fold",
-      menuVar: [],
-      fullscreenLoading: false
-    };
-  },
-  computed: mapGetters(["username", "menuList"]),
+  computed: mapGetters(["username", "menuList","isCollapse"]),
   methods: {
-    ...mapActions({ logout: "user/logout" }),
-
     // 注销
     handleLogout() {
       this.$confirm("确定退出吗?", "提示", {
@@ -89,27 +57,21 @@ export default {
       })
         .then(async () => {
           try {
-            await this.logout(this.username);
-          } catch (err) {
+            await this.$store.dispatch("user/logout",this.username);
           } finally {
             this.$router.push("/login");
           }
         })
         .catch(() => {});
     },
-    // 收起侧边栏
+    // 侧边栏伸缩
     collapse() {
-      this.isCollapse = !this.isCollapse;
-      this.asideWidth = this.asideWidth === "auto" ? "300px" : "auto";
-      this.logoDisplay = this.logoDisplay === "none" ? "flex" : "none";
-      this.collapseClass =
-        this.collapseClass === "el-icon-s-fold"
-          ? "el-icon-s-unfold"
-          : "el-icon-s-fold";
+      this.$store.commit('permission/SET_COLLAPSE')
     }
   },
   components: {
-    Tabs
+    Tabs,
+    Menu
   }
 };
 </script>
@@ -133,6 +95,8 @@ export default {
 
 .wrapper {
   height: 100%;
+
+  
 
   .el-header {
     padding: 0;
@@ -194,10 +158,7 @@ export default {
   // 侧边栏
   .el-aside {
     background: #304156;
-
-    .el-menu-vertical {
-      border: 0;
-    }
+    transition:.3s;
 
     .logo {
       justify-content: center;
@@ -210,6 +171,7 @@ export default {
       }
     }
   }
+
 
   .el-main {
     overflow-x: hidden;

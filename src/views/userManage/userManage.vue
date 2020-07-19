@@ -58,7 +58,8 @@
                     style="width: 100px; height: 100px"
                     :src="customerForm.frontFace"
                     fit="cover"
-                  ></el-image>
+                  >
+                  </el-image>
                 </el-form-item>
                 <el-form-item label="用户编号">
                   <span>{{customerForm.no}}</span>
@@ -128,15 +129,15 @@ export default {
           label: "性别",
           align: "center",
           formatter: row => {
-            switch(row.sex){
+            switch (row.sex) {
               case 1:
-                return '男'
-                break
+                return "男";
+                break;
               case 2:
-                return '女'
-                break
+                return "女";
+                break;
               default:
-                return '保密'
+                return "保密";
             }
           }
         },
@@ -166,7 +167,6 @@ export default {
         {
           type: "button",
           label: "操作",
-          width: "80",
           align: "center",
           btnList: [
             {
@@ -268,7 +268,7 @@ export default {
       },
       activeName: "first",
       customerForm: {}, //用户详情表单
-      loading:false
+      loading: false
     };
   },
   created() {
@@ -282,19 +282,18 @@ export default {
         ...this.searchData
       }
     ) {
-      this.loading = true
-      try{
+      this.loading = true;
+      try {
         const { data } = await queryCustomer(query);
-      this.tableData = data.value.list.map(v => {
-        // 将0和1转换为布尔值
-        v.status = !!v.status;
-        return v;
-      });
-      this.pagination.total = data.value.total;
-      }finally{
-        this.loading = false
+        this.tableData = data.value.list.map(v => {
+          // 将0和1转换为布尔值
+          v.status = !!v.status;
+          return v;
+        });
+        this.pagination.total = data.value.total;
+      } finally {
+        this.loading = false;
       }
-      
     },
 
     // 启用 & 禁用用户
@@ -352,7 +351,7 @@ export default {
     // 对话框关闭
     dialogClose() {
       this.activeName = "first";
-      this.customerForm = {}
+      this.customerForm = {};
     },
 
     // 按钮查询

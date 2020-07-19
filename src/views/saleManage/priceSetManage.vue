@@ -94,7 +94,7 @@ export default {
       searchBtn: [
         {
           type: "primary",
-          label: "新增价格规则",
+          label: "新增",
           handle: this.add,
           icon: "el-icon-edit"
         }

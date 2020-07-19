@@ -1,13 +1,13 @@
 <template>
   <el-card class="checkCenter">
-    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
+    <searchs :formData="formData" :searchBtn="searchBtn" />
     <tables
       :tableData="tableData"
       :tableCols="filterTitle"
       @sizeChange="sizeChange"
       @numChange="numChange"
       :pagination="pagination"
-      v-loading="loading"
+      v-loading="tableLoading"
       :element-loading-text="loadingText"
     />
 
@@ -72,14 +72,21 @@ export default {
       // 表头默认状态 0未审核 1正在审核  2:审核通过 3:审核不通过
       status: 0,
       // 响应审核状态映射
-      statusMap: {
-        0: "未审核",
-        1: "正在审核",
-        2: "审核通过",
-        3: "审核未通过"
-      },
+      statusMap:new Map([
+        [0, "未审核"],
+        [1, "正在审核"],
+        [2, "审核通过"],
+        [3, "审核未通过"]
+      ]),
+      // 响应审核标签类型映射
+      statusTagMap:new Map([
+        [0, "warning"],
+        [1, ""],
+        [2, "success"],
+        [3, "danger"]
+      ]),
       filterTitle: [], //过滤后的表头数据
-      tableTitle: [
+      tableCols: [
         {
           prop: "id",
           label: "审核id",
@@ -96,10 +103,18 @@ export default {
           align: "center"
         },
         {
+          prop: "coverUrl",
+          label: "视频封面",
+          align: "center",
+          type:'img'
+        },
+        {
           prop: "status",
           label: "审核结果",
           align: "center",
-          formatter: row => this.statusMap[row.status]
+          type:'tag',
+          tag:row => this.statusTagMap.get(row.status),
+          formatter: row => this.statusMap.get(row.status)
         },
         {
           prop: "examineUserName",
@@ -135,7 +150,8 @@ export default {
         {
           prop: "proCoverUrl",
           label: "视频新封面",
-          align: "center"
+          align: "center",
+          type:'img'
         },
         {
           prop: "proUrl",
@@ -148,10 +164,10 @@ export default {
           align:"center",
           btnList: [
             { type: "text", label: "开启审核", handle: this.checkStart },
-            { type: "text", label: "预览", handle: this.preview },
+            { type: "text", label: "预览视频", handle: this.preview },
+            { type: "text", label: "审核通过", handle: this.approved },
             { type: "text", label: "下载", handle: this.downloadVideo },
             { type: "text", label: "上传", handle: this.upload },
-            { type: "text", label: "审核通过", handle: this.approved },
             { type: "text", label: "拒绝", handle: this.disapproved }
           ]
         }
@@ -162,7 +178,6 @@ export default {
           label: "状态",
           model: "status",
           placeholder: "请选择审核状态",
-          // default: 0,
           options: [
             {
               label: "未审核",
@@ -173,7 +188,7 @@ export default {
               value: 1
             },
             {
-              label: "审核成功",
+              label: "审核通过",
               value: 2
             },
             {
@@ -213,7 +228,7 @@ export default {
       token: "", //当前视频token
       id: "", //当前视频的id
       tips: "", //上传提示信息
-      loading: false,
+      tableLoading: false,
       loadingText: "", //表格加载时的提示信息
       uploading: false,
       videoInfo: {}, //视频相关信息
@@ -275,7 +290,7 @@ export default {
 
     // 初始化查询是否有正在审核的视频
     async isCheckingFn() {
-      this.loading = true;
+      this.tableLoading = true;
       const { data } = await queryChecking();
       this.isChecking = data.value.flag;
       if (this.isChecking) {
@@ -294,11 +309,11 @@ export default {
           )
         });
       }
-      this.loading = false;
+      this.tableLoading = false;
       this.startTimer();
     },
 
-    // 表头过滤方法 , 数组中保存的是每个状态下应该被过滤掉的表头数据
+    // 表头过滤方法 , 数组中保存的是每个状态下应该被过滤掉的表头数据 ，而非显示在表头上的数据
     filterTableCols() {
       let filter;
       let btnFilter;
@@ -311,7 +326,7 @@ export default {
             "remark",
             "examineDatetime",
             "examineUserName",
-            "statusUpload"
+            "statusUpload",
           ];
           btnFilter = ["下载", "上传", "审核通过", "拒绝"];
           break;
@@ -336,15 +351,16 @@ export default {
             "examineUserName",
             "examineDatetime",
             "statusUpload",
-            "button"
+            "button",
+            "coverUrl"
           ];
           break;
         default:
-          filter = ["button"];
+          filter = ["button","remark","statusUpload","coverUrl"];
       }
       // 获取到过滤后的表头
       const mainCols = _.cloneDeep(
-        this.tableTitle.filter(v => !filter.includes(v.prop || v.type))
+        this.tableCols.filter(v => !filter.includes(v.prop || v.type))
       );
       // 对按钮组进行单独过滤
       return mainCols.map(v => {
@@ -388,11 +404,11 @@ export default {
     // 下载视频
     async downloadVideo({ url, name }) {
       try {
-        this.loading = true;
+        this.tableLoading = true;
         this.loadingText = "下载中请稍后";
         await download(url, name);
       } finally {
-        this.loading = false;
+        this.tableLoading = false;
         this.loadingText = "";
       }
     },
@@ -508,7 +524,9 @@ export default {
           this.status = 0;
           this.getTableData();
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.log(err)
+        });
     },
 
     // 打开审核不通过对话框

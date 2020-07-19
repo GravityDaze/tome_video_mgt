@@ -270,11 +270,6 @@ export default {
           label: "新增",
           handle: this.add,
           icon: "el-icon-edit"
-        },
-        {
-          label: "重置",
-          handle: this.clear,
-          icon: "el-icon-edit"
         }
       ],
       rules:{
@@ -563,7 +558,7 @@ export default {
           if (valid) {
             try {
         // 判断当前是新增还是修改景区
-        if (this.dialogTitle === "新增景区") {
+        if (this.dialogTitle === "新增景区") { 
           // 先调用新增景区接口以获取到id , 然后才能通过id调用标签编辑接口
           const { data } = await addScenery(this.sceneryForm);
           await editSceneryTags({
@@ -648,21 +643,6 @@ export default {
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();
-    },
-
-    // 清空查询结果
-    clear(searchData) {
-      for (const v in searchData) {
-        if (
-          typeof searchData[v] === "number" ||
-          typeof searchData[v] === "undefined"
-        ) {
-          searchData[v] = undefined;
-        } else {
-          searchData[v] = "";
-        }
-      }
-      this.searchData = searchData;
     }
   }
 };

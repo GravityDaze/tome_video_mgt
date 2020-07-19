@@ -81,7 +81,7 @@ export default {
   data() {
     return {
       searchData: {},
-      // 带快捷选项的时间范围选择期
+      // 带快捷选项的时间范围选择器
       pickerOptions: {
         shortcuts: [
           {
@@ -126,7 +126,7 @@ export default {
     // 监听默认值的变化
     formData: {
       handler(res) {
-        console.log(res);
+        // console.log(res);
       },
       immediate: true,
       deep: true
@@ -141,6 +141,6 @@ export default {
 }
 
 .el-form-item {
-  margin-bottom: 0;
+  /* margin-bottom: 10px; */
 }
 </style>

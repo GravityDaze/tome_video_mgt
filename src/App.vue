@@ -11,7 +11,7 @@ export default {
 </script>
 
 <style>
-/* webkit内核浏览器的滚动条样式优化 */
+/* webkit内核浏览器的滚动条样式修改 */
 ::-webkit-scrollbar {
   width: 10px;
   height: 1px;
@@ -24,7 +24,6 @@ export default {
   border-radius:5px;
 
 }
-
 html,body,#app{
   height:100%;
 }
