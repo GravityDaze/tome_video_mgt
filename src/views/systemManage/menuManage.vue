@@ -335,6 +335,10 @@ export default {
           }
         }
         this.isChangeStatus = false
+        // 热更新菜单
+              this.$store.dispatch('user/refreshTokenFn')
+              .then(()=>console.log("更新完成"))
+              .catch( err => console.log(err) )
       }
     },
 
@@ -404,6 +408,10 @@ export default {
               // 更新子节点数据
               const { tree,treeNode,resolve } = this.treeMap.get(this.treeId)
               this.load({tree,treeNode,resolve})
+              // 热更新菜单
+              this.$store.dispatch('permission/getMenuList')
+              .then(()=>console.log("更新完成"))
+              .catch( err => console.log(err) )
           }
         }
       });

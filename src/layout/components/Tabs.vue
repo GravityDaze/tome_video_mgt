@@ -46,9 +46,13 @@ export default {
     //   页面初始化时获得标签状态
     this.getTagsStatus();
   },
+
   // 监听路由变化动态改变标签页
   watch: {
     $route(to) {
+      // 单独处理用于刷新的redirect路由 不生成新的标签
+      if(!to.name)return
+
       const obj = this.editableTabs.find(item => item.path === to.path);
       if (!obj) {
         let newTabName = ++this.tabIndex + "";
@@ -88,13 +92,13 @@ export default {
     // 获取标签状态
     getTagsStatus() {
       // 获取vuex路由表保存的第一个路由
-      const defaultRouter = this.$store.getters.routerMap[0].children[0]
-      const { breadcrumb } = defaultRouter.meta
+      const defaultRouter = this.$store.getters.routerMap[0].children[0];
+      const { breadcrumb } = defaultRouter.meta;
       this.editableTabs = JSON.parse(
         window.sessionStorage.getItem("editableTabs")
       ) || [
         {
-          title: breadcrumb[breadcrumb.length-1],
+          title: breadcrumb[breadcrumb.length - 1],
           name: "1",
           path: defaultRouter.path,
           close: false
@@ -122,16 +126,24 @@ export default {
     // 刷新
     refresh() {
       this.animationflag = true;
-      this.$router.go(0);
+      // 详见:https://juejin.im/post/5c92ff94f265da6128275a85  => redirect 刷新页面
+      const { fullPath } = this.$route;
+      this.$router.replace({
+        path: "/redirect" + fullPath
+      });
+      setTimeout(()=>{
+        this.animationflag = false
+      },1000)
     },
     // 关闭所有标签
     closeAllTags() {
-       // 获取vuex路由表保存的第一个路由
-      const defaultRouter = this.$store.getters.routerMap[0].children[0]
+      // 获取vuex路由表保存的第一个路由
+      const defaultRouter = this.$store.getters.routerMap[0].children[0];
 
       if (this.editableTabs.length !== 1) {
         this.editableTabs.splice(1, this.editableTabs.length - 1);
-        if (this.$route.path !== defaultRouter.path) this.$router.push(defaultRouter.path);
+        if (this.$route.path !== defaultRouter.path)
+          this.$router.push(defaultRouter.path);
         this.setTagsStatus();
         this.closeFlag = false;
       }
@@ -157,7 +169,8 @@ export default {
 .el-tabs {
   display: flex;
   align-items: center;
-  padding:0 20px;
+  padding: 0 20px;
+  overflow: auto;
 
   .icon {
     cursor: pointer;

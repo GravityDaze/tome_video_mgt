@@ -2,22 +2,31 @@
   <el-container class="wrapper">
     <el-aside :style="{width:isCollapse?'64px':'300px'}">
       <!-- 顶部logo  -->
-      <div class="logo" v-show="!isCollapse">
-        <img src="../assets/images/logo.png" alt />
-      </div>
+      <transition name="el-fade-in-linear">
+        <div class="logo" v-show="!isCollapse">
+          <img src="../assets/images/logo.png" alt />
+        </div>
+      </transition>
       <!-- 侧边菜单 -->
-      <Menu :menuList="menuList" />
+      <Menu />
     </el-aside>
 
     <el-container>
       <el-header>
         <div class="top">
           <div class="left">
-            <i @click="collapse" id="collapse" :class="[isCollapse?'el-icon-s-unfold':'el-icon-s-fold']"></i>
-            <!-- 面包屑 -->
+            <i
+              @click="collapse"
+              id="collapse"
+              :class="[isCollapse?'el-icon-s-unfold':'el-icon-s-fold']"
+            ></i>
+            <!-- 动态面包屑 -->
             <el-breadcrumb separator="/">
-              <el-breadcrumb-item style="font-weight:bold">{{$route.meta.breadcrumb[0]}}</el-breadcrumb-item>
-              <el-breadcrumb-item>{{$route.meta.breadcrumb[$route.meta.breadcrumb.length-1]}}</el-breadcrumb-item>
+              <el-breadcrumb-item
+                :style="{ fontWeight:index===0?'bold':''}"
+                v-for="(item,index) in $route.meta.breadcrumb"
+                :key="index"
+              >{{item}}</el-breadcrumb-item>
             </el-breadcrumb>
           </div>
           <div class="info">
@@ -42,11 +51,11 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";
-import Menu from "@/layout/components/Menu"
-import Tabs from "@/components/Tabs";
+import Menu from "@/layout/components/Menu";
+import Tabs from "@/layout/components/Tabs";
 export default {
   name: "layout",
-  computed: mapGetters(["username", "menuList","isCollapse"]),
+  computed: mapGetters(["username", "isCollapse"]),
   methods: {
     // 注销
     handleLogout() {
@@ -57,7 +66,7 @@ export default {
       })
         .then(async () => {
           try {
-            await this.$store.dispatch("user/logout",this.username);
+            await this.$store.dispatch("user/logout", this.username);
           } finally {
             this.$router.push("/login");
           }
@@ -66,7 +75,7 @@ export default {
     },
     // 侧边栏伸缩
     collapse() {
-      this.$store.commit('permission/SET_COLLAPSE')
+      this.$store.commit("permission/SET_COLLAPSE");
     }
   },
   components: {
@@ -95,8 +104,6 @@ export default {
 
 .wrapper {
   height: 100%;
-
-  
 
   .el-header {
     padding: 0;
@@ -158,7 +165,7 @@ export default {
   // 侧边栏
   .el-aside {
     background: #304156;
-    transition:.3s;
+    transition: 0.3s;
 
     .logo {
       justify-content: center;
@@ -171,7 +178,6 @@ export default {
       }
     }
   }
-
 
   .el-main {
     overflow-x: hidden;

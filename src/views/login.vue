@@ -96,8 +96,8 @@ export default {
     // 获取验证码
     async getCode() {
       const res = await getCode();
-      const { url, baseURL } = res.config;
-      this.codeUrl = baseURL + url + "?" + Date.now();
+      const { url } = res.config;
+      this.codeUrl = process.env.VUE_APP_BASE_URL + url + "?" + Date.now();
     },
 
     // 登录

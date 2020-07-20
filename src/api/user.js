@@ -17,4 +17,4 @@ export const logout = data=> request.post('/v/sysLogout',data)
 export const  getMenu = ()=> request.get('/videomis/menu/auth')
 
 // 刷新用户token
-export const refreshToken =()=> request.get('/v/sysRefresh')
+export const refreshToken = params => request.get('/v/sysRefresh',{ params })

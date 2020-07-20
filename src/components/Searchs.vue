@@ -139,8 +139,4 @@ export default {
 .searchs {
   padding: 10px;
 }
-
-.el-form-item {
-  /* margin-bottom: 10px; */
-}
 </style>

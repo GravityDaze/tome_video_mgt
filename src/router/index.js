@@ -1,9 +1,22 @@
 import Vue from "vue";
 import Router from "vue-router";
+import layout from "@/layout"
 Vue.use(Router);
 
 const createRouter = () => new Router({
   routes: [
+    // 该路由详见:https://juejin.im/post/5c92ff94f265da6128275a85  => redirect 刷新页面
+    {
+      path:"/redirect",
+      name:"redirect",
+      component:layout,
+      children: [
+        {
+          path: '/redirect/:path(.*)',
+          component: () => import('@/views/redirect/index')
+        }
+      ]
+    },
     {
       //登录页路由
       path: "/login",
@@ -32,7 +45,7 @@ Router.prototype.push = function push(location) {
 
 export default router
 
-// 原始全量路由表
+// 全量路由表，现由后端返回的导航菜单数据动态生成路由 详见:@/utils/filterRouter 
 // const router = new Router({
 //   routes: [
 //     {

@@ -13,7 +13,6 @@
     <!-- 用户信息对话框 -->
     <el-dialog
       :close-on-click-modal="false"
-      title="用户信息"
       :visible.sync="customerDialog"
       append-to-body
       width="70%"

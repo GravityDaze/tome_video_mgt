@@ -5,7 +5,8 @@ import './router/permit'
 import Vuex from "vuex";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
-import store from "./store" 
+import store from "./store"
+
 
 Vue.use(ElementUI);
 Vue.use(Vuex);
@@ -14,7 +15,7 @@ Vue.use(Vuex);
 import Tables from "./components/Tables";
 import Searchs from "./components/Searchs";
 
-//注册组件(全局)
+//全局注册注册组件
 Vue.component('tables',Tables)
 Vue.component('searchs',Searchs)
 

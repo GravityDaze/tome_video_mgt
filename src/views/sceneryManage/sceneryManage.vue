@@ -14,8 +14,8 @@
       :close-on-click-modal="false"
       :title="dialogTitle"
       :visible.sync="sceneryDialog"
-      append-to-body
       top="1%"
+      append-to-body
       @close="dialogClose('sceneryForm')"
     >
       <el-form :model="sceneryForm" :rules="rules" ref="sceneryForm">
