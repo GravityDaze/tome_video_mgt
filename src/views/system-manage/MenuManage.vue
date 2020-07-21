@@ -275,7 +275,8 @@ export default {
       isChangeStatus: false //当前是否在切换菜单状态
     };
   },
-  created() {
+  async created() {
+    // 查询菜单树
     this.getTableData();
   },
   methods: {
