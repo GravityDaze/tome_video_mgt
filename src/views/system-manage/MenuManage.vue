@@ -33,12 +33,22 @@
         </el-form-item>
         <el-form-item label="菜单类型">
           <el-select v-model="menuForm.type">
-            <el-option v-for="(value,key) in typeMap.values()" :key="key" :label="value" :value="key"></el-option>
+            <el-option
+              v-for="(value,key) in typeMap.values()"
+              :key="key"
+              :label="value"
+              :value="key"
+            ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="HTTP方法">
           <el-select v-model="menuForm.method">
-            <el-option v-for="(value,key) in methodMap.values()" :key="key" :label="value" :value="key"></el-option>
+            <el-option
+              v-for="(value,key) in methodMap.values()"
+              :key="key"
+              :label="value"
+              :value="key"
+            ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="中文名称">
@@ -46,6 +56,9 @@
         </el-form-item>
         <el-form-item label="英文名称">
           <el-input v-model.trim="menuForm.nameEn" placeholder="请输入英文名称"></el-input>
+        </el-form-item>
+        <el-form-item label="路由文件路径">
+          <el-input v-model.trim="menuForm.route" placeholder="请输入路由文件路径"></el-input>
         </el-form-item>
         <el-form-item label="URL">
           <el-input v-model.trim="menuForm.url" placeholder="请输入URL"></el-input>
@@ -93,6 +106,8 @@ import {
 } from "@/api/management/systemManage";
 import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
+// 重置动态路由
+import { resetRouter } from "@/router";
 export default {
   name: "menu-manage",
   mixins: [initPagination],
@@ -154,18 +169,19 @@ export default {
           prop: "status",
           label: "状态",
           align: "center",
-          change: this.statusChange
+          change: this.statusChange,
+          disabled: row => this.isChangeStatus
         },
         {
           type: "button",
           label: "操作",
           align: "center",
-          width:"180",
+          width: "180",
           btnList: [
             {
-              label:"新增",
-              handle:this.addSubMenu,
-              type:"primary"
+              label: "新增",
+              handle: this.addSubMenu,
+              type: "primary"
             },
             {
               label: "编辑",
@@ -194,7 +210,8 @@ export default {
         sort: "",
         refreshable: "",
         description: "",
-        iconStyle:""
+        iconStyle: "",
+        route:""
       },
       ruleForm: {
         parentId: "",
@@ -255,7 +272,7 @@ export default {
         [3, "DELETE"]
       ]),
       treeMap: new Map(), //记录懒加载树形表格id,详见:https://blog.csdn.net/IM507/article/details/103297208
-      isChangeStatus:false //当前是否在切换菜单状态
+      isChangeStatus: false //当前是否在切换菜单状态
     };
   },
   created() {
@@ -271,8 +288,8 @@ export default {
     ) {
       try {
         // 切换菜单状态时 , 不需要loadingf效果
-        if(!this.isChangeStatus){
-          this.tablesLoading = true
+        if (!this.isChangeStatus) {
+          this.tablesLoading = true;
         }
         // 获取默认表格数据
         const { data } = await querySubMenu(query);
@@ -280,30 +297,30 @@ export default {
         // 处理后台返回的数据
         this.tableData = data.value.list.map(v => {
           // hasChildren字段为true时会将该行表格转换为树形
-          v.hasChildren = !!v.hasChildren
+          v.hasChildren = !!v.hasChildren;
           v.status = !!v.status;
           return v;
         });
       } catch (err) {
         console.log(err);
-      }finally{
-        this.tablesLoading = false
+      } finally {
+        this.tablesLoading = false;
       }
     },
 
     // 懒加载子节点数据
     async load({ tree, treeNode, resolve }) {
-      this.treeId = tree.id 
-      this.treeParentId = tree.parentId
+      this.treeId = tree.id;
+      this.treeParentId = tree.parentId;
       // 记录当前点击菜单的id
-      this.treeMap.set(this.treeId,{tree,treeNode,resolve})
+      this.treeMap.set(this.treeId, { tree, treeNode, resolve });
       // 记录当前菜单的父元素id
-      this.treeMap.set(this.treeParentId,{tree,treeNode,resolve})
+      this.treeMap.set(this.treeParentId, { tree, treeNode, resolve });
       const { data } = await querySubMenu({ parentId: tree.id });
       // 加载数据
       resolve(
         data.value.list.map(v => {
-          v.hasChildren = !!v.hasChildren
+          v.hasChildren = !!v.hasChildren;
           v.status = !!v.status;
           return v;
         })
@@ -313,7 +330,7 @@ export default {
     // 切换菜单状态
     async statusChange(row) {
       try {
-        this.isChangeStatus = true
+        this.isChangeStatus = true;
         if (row.status) {
           await enableMenu({ id: row.id });
           this.$message.success(`已启用${row.name}`);
@@ -324,21 +341,17 @@ export default {
       } catch (err) {
         // 错误时恢复
         row.status = !row.status;
-      }finally{
+      } finally {
         // 刷新根节点
-        this.getTableData()
+        this.getTableData();
         // 刷新根节点下的所有子节点
-        if([...this.treeMap].length){
-          for(const item of this.treeMap){
-            const { tree,treeNode,resolve } = this.treeMap.get(item[0])
-            this.load({tree,treeNode,resolve})
+        if ([...this.treeMap].length) {
+          for (const item of this.treeMap) {
+            const { tree, treeNode, resolve } = this.treeMap.get(item[0]);
+            this.load({ tree, treeNode, resolve });
           }
         }
-        this.isChangeStatus = false
-        // 热更新菜单
-              this.$store.dispatch('user/refreshTokenFn')
-              .then(()=>console.log("更新完成"))
-              .catch( err => console.log(err) )
+        this.isChangeStatus = false;
       }
     },
 
@@ -347,7 +360,7 @@ export default {
       this.menuDialogTitle = "编辑";
       this.menuDialog = true;
       // 获取到id
-      this.id = row.id; 
+      this.id = row.id;
       //获取到父级id
       this.parentId = row.parentId;
       // 回填数据
@@ -360,16 +373,16 @@ export default {
     add() {
       this.menuDialogTitle = "新增根菜单";
       this.menuDialog = true;
-      this.menuForm.parentName = "系统根"
+      this.menuForm.parentName = "系统根";
       // 系统根id无法动态获取 暂时写死
-      this.parentId = 1 
+      this.parentId = 1;
     },
 
     // 新增子菜单
-    addSubMenu(row){
+    addSubMenu(row) {
       this.menuDialogTitle = "新增子菜单";
       this.menuDialog = true;
-      this.menuForm.parentName = row.name
+      this.menuForm.parentName = row.name;
       this.parentId = row.id;
     },
 
@@ -396,22 +409,23 @@ export default {
               this.$message.success("修改成功");
               this.menuDialog = false;
             } else {
-              await addMenu({parentId:this.parentId,...this[formName]});
+              await addMenu({ parentId: this.parentId, ...this[formName] });
               this.$message.success("新增成功");
               this.menuDialog = false;
             }
           } catch (err) {
             console.log(err);
-          }finally{
-              // 更新根节点数据
-              this.getTableData();
-              // 更新子节点数据
-              const { tree,treeNode,resolve } = this.treeMap.get(this.treeId)
-              this.load({tree,treeNode,resolve})
-              // 热更新菜单
-              this.$store.dispatch('permission/getMenuList')
-              .then(()=>console.log("更新完成"))
-              .catch( err => console.log(err) )
+          } finally {
+            // 更新根节点数据
+            this.getTableData();
+            // 更新子节点数据
+            const { tree, treeNode, resolve } = this.treeMap.get(this.treeId);
+            this.load({ tree, treeNode, resolve });
+            // 热更新菜单
+            this.$store
+              .dispatch("permission/getMenuList")
+              .then(() => console.log("更新完成"))
+              .catch(err => console.log(err));
           }
         }
       });

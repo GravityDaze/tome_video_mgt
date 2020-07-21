@@ -18,3 +18,6 @@ export const  getMenu = ()=> request.get('/videomis/menu/auth')
 
 // 刷新用户token
 export const refreshToken = params => request.get('/v/sysRefresh',{ params })
+
+// 获取用户个人资料
+export const queryUserInfo = () => request.get('/videomis/user/userInfo')

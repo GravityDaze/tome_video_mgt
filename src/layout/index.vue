@@ -30,11 +30,22 @@
             </el-breadcrumb>
           </div>
           <div class="info">
-            <p class="wel">欢迎您，{{username}}</p>
-            <div class="logout" @click="handleLogout">
-              <i class="el-icon-switch-button"></i>
-              <span>注销</span>
-            </div>
+            <el-dropdown @command="handleCommand">
+              <div class="el-dropdown-link" style="display:flex;align-items:center;cursor:pointer">
+                <el-avatar
+                  size="medium"
+                  src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+                ></el-avatar>
+                <div style="margin-left:8px">
+                  <span>{{username}}</span>
+                  <i class="el-icon-arrow-down el-icon--right"></i>
+                </div>
+              </div>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="d" icon="el-icon-plus">个人资料</el-dropdown-item>
+                <el-dropdown-item command="logout" icon="el-icon-switch-button">注销</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
         </div>
         <!-- 标签导航 -->
@@ -46,17 +57,48 @@
         </transition>
       </el-main>
     </el-container>
+
+    <!-- 右侧对话框 -->
+    <el-drawer :with-header="false" show-close title="个人资料" :visible.sync="drawer" direction="rtl" :before-close="handleClose">
+      <div class="drawer">
+        <!-- 头像 -->
+        <img src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
+        <ul>
+          <li>登录名:admin</li>
+          <li>真实姓名:admin</li>
+          <li>性别:男</li>
+          <li>联系电话:1616454548</li>
+          <li>Email:zhqy333@333.com</li>
+          <li>生日:2020-10-1</li>
+        </ul>
+      </div>
+    </el-drawer>
   </el-container>
 </template>
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";
+import { queryUserInfo } from "@/api/user";
 import Menu from "@/layout/components/Menu";
 import Tabs from "@/layout/components/Tabs";
 export default {
   name: "layout",
+  data() {
+    return {
+      drawer: false
+    };
+  },
   computed: mapGetters(["username", "isCollapse"]),
   methods: {
+    // 下拉菜单
+    handleCommand(command) {
+      if (command === "logout") {
+        this.handleLogout();
+      } else {
+        this.getUserInfo();
+      }
+    },
+
     // 注销
     handleLogout() {
       this.$confirm("确定退出吗?", "提示", {
@@ -76,6 +118,14 @@ export default {
     // 侧边栏伸缩
     collapse() {
       this.$store.commit("permission/SET_COLLAPSE");
+    },
+    async getUserInfo() {
+      this.drawer = true;
+      const { data } = await queryUserInfo();
+      console.log(data);
+    },
+    handleClose() {
+      this.drawer = false;
     }
   },
   components: {
@@ -182,5 +232,27 @@ export default {
   .el-main {
     overflow-x: hidden;
   }
+
+  // 抽屉
+  .drawer{
+    padding:20px;
+    display:flex;
+    align-items: center;
+    flex-flow: column;
+
+    ul{
+      list-style-type:none;
+
+      li{
+        margin-top:10px;
+      }
+    }
+
+    img{
+      width:80px;
+    }
+
+  }
+
 }
 </style>

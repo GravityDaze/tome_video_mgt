@@ -1,5 +1,6 @@
-import { login, logout, refreshTokenApi } from '@/api/user'
+import { login, logout, refreshToken } from '@/api/user'
 import { resetRouter } from '@/router'
+import { clearRoutes }  from '@/utils/filterRouter'
 
 const state = {
   token: localStorage.getItem('token') || '',
@@ -60,30 +61,29 @@ const actions = {
         commit('permission/RESET_ROUTER',[],{root:true})
         localStorage.clear()
         sessionStorage.clear()
+        // 清除全局变量newRouter,详见@/utils/filterRouter
+        clearRoutes()
         // 重新实例化vue-router重置动态路由
         resetRouter()
       } 
     })
   },
 
-  // 刷新Token
-  refreshTokenFn({ commit,state }){
-    return new Promise(async (resolve, reject) => {
-      try {
-        const { data } = await refreshTokenApi({'refreshToken':state.refreshToken})
-        const token = data.value.access_token
-        const refreshToken = data.value.refresh_token
-        commit('SET_TOKEN', token)
-        commit('SET_REFRESH_TOKEN', refreshToken)
-        localStorage.setItem('token', token)
-        localStorage.setItem('refreshToken', refreshToken)
-        resolve()
-      } catch (err) {
-        console.log(err)
+  // 刷新token 暂未使用
+  updateToken({commit,state}){
+    return new Promise( async ( resolve, reject ) =>{
+      try{
+        const { data }  = await refreshToken({refreshToken:state.refreshToken})
+        const newToken = data.value.access_token
+        commit('SET_TOKEN', newToken)
+        localStorage.setItem('token', newToken)
+        resolve()  
+      }catch(err){
         reject(err)
       }
-    })
+    } )
   }
+ 
 
 }
 

@@ -31,7 +31,12 @@ body,
   height: 100%;
 }
 
-// // element-ui dialog组件全局居中 bug
+// 去掉focus中的弹框
+:focus {
+  outline: 0;
+}
+
+// element-ui dialog组件全局居中 bug
 // .el-dialog {
 //   display: flex;
 //   flex-direction: column;
