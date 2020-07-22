@@ -117,7 +117,7 @@ export default {
           label: "是否可编辑",
           align: "center",
           type:"tag",
-          tag:row=> (row.edit ? "" : "info"),
+          tagType:row=> (row.edit ? "" : "info"),
           formatter: row => (row.edit ? "可编辑" : "不可编辑")
         },
         {

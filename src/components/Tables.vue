@@ -67,7 +67,7 @@
           <div v-else-if="item.type==='tag'">
             <el-tag
               size="medium"
-              :type="item.tag && item.tag(scope.row) || ''"
+              :type="item.tagType && item.tagType(scope.row) || ''"
               :effect="item.effect || 'light' "
             >{{ (item.formatter && item.formatter(scope.row)) || scope.row[item.prop] }}</el-tag>
           </div>

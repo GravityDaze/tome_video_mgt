@@ -113,7 +113,7 @@ export default {
           label: "审核结果",
           align: "center",
           type:'tag',
-          tag:row => this.statusTagMap.get(row.status),
+          tagType:row => this.statusTagMap.get(row.status),
           formatter: row => this.statusMap.get(row.status)
         },
         {

@@ -86,7 +86,7 @@ export default {
     this.enter();
     this.getCode();
   },
-  computed:mapGetters(['username']),
+  computed:mapGetters(['userInfo']),
   methods: {
     ...mapActions({
       login: "user/login",
@@ -123,7 +123,7 @@ export default {
             .then(resolve => {
               this.$router.push("/");
               this.$notify({
-                title: `您好 ${this.username}`,
+                title: `您好 ${this.userInfo.loginName}`,
                 message: `今天是${new Date().toLocaleDateString()} 欢迎登录途咪小视频后台管理系统`,
                 type: "success"
               });
@@ -183,6 +183,8 @@ export default {
 }
 .title {
   background-image: url("../assets/images/login-bg.jpg");
+  /* background-image: url("http://demo.qfpffmp.cn/cssthemes4/tpez_7_xt/images/user-img-background.jpg"); */
+  
   background-size: cover;
   height: 170px;
   display: flex;

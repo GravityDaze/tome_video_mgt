@@ -21,3 +21,6 @@ export const refreshToken = params => request.get('/v/sysRefresh',{ params })
 
 // 获取用户个人资料
 export const queryUserInfo = () => request.get('/videomis/user/userInfo')
+
+// 编辑用户个人资料
+export const editUserInfo = data => request.post('/videomis/user/editUserInfo',data)

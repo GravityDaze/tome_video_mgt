@@ -8,7 +8,7 @@ const createRouter = () => new Router({
     // 该路由详见:https://juejin.im/post/5c92ff94f265da6128275a85  => redirect 刷新页面
     {
       path:"/redirect",
-      name:"redirect",
+      name:"Redirect",
       component:layout,
       children: [
         {
@@ -20,8 +20,8 @@ const createRouter = () => new Router({
     {
       //登录页路由
       path: "/login",
-      name: "login",
-      component: () => import('@/views/login'),
+      name: "Login",
+      component: () => import('@/views/Login'),
       meta:{
         title:'登录'
       }
@@ -31,13 +31,13 @@ const createRouter = () => new Router({
 
 const router = createRouter()
 
-// 重置动态路由
+// 重置动态路由方法
 export const resetRouter = () => {
   const newRouter = createRouter()
   router.matcher = newRouter.matcher
 }
 
-// 解决ElementUI导航栏中的vue-router在3.0版本以上重复点菜单报错问题
+// 解决ElementUI导航栏中的vue-router在3.0版本以上重复点击菜单报错问题
 const originalPush = Router.prototype.push
 Router.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)

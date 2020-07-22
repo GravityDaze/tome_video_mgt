@@ -15,7 +15,7 @@
 import { queryDemand } from "@/api/management/demandManage";
 import initPagination from "@/mixins/initPagination";
 export default {
-  mixins:[initPagination],
+  mixins: [initPagination],
   name: "demand-manage",
   data() {
     return {
@@ -50,22 +50,22 @@ export default {
           prop: "status",
           label: "需求状态",
           align: "center",
-          type:"tag",
-          tag: row=>{ 
+          type:'tag',
+          tagType: row => {
             switch (row.status) {
               case 0:
                 return 'warning';
                 break;
               case 1:
-                 return '';
+                return '';
                 break;
               case 2:
-               return 'success';
+                return 'success';
                 break;
               default:
-                 return 'danger';
+                return 'danger';
             }
-           },
+          },
           formatter: row => {
             switch (row.status) {
               case 0:
@@ -86,7 +86,8 @@ export default {
           prop: "commitStatus",
           label: "推送通知",
           align: "center",
-          formatter: row => row.commitStatus === 1 ? "已提交" : "未提交"
+          style:row => row.commitStatus === 1 ? {color:'green',fontWeight:'bold'} : {color:'grey'},
+          formatter: row => (row.commitStatus === 1 ? "已提交" : "未提交")
         },
         {
           prop: "updateDatetime",
@@ -203,7 +204,7 @@ export default {
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();
-    },
+    }
   }
 };
 </script>

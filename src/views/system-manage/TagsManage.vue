@@ -71,7 +71,7 @@ export default {
           align: "center",
           type:"tag",
           effect:"plain",
-          tag:()=>'success'
+          tagType:()=>'success'
         },
         {
           prop: "type",

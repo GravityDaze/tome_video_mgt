@@ -1,10 +1,10 @@
-import { login, logout, refreshToken } from '@/api/user'
+import { login, logout, refreshToken, queryUserInfo} from '@/api/user'
 import { resetRouter } from '@/router'
-import { clearRoutes }  from '@/utils/filterRouter'
+import { clearRoutes }  from '@/utils/getAsyncRouter'
 
 const state = {
   token: localStorage.getItem('token') || '',
-  username: localStorage.getItem('name') || '',
+  userInfo: JSON.parse(localStorage.getItem('userInfo')) || {},
   refreshToken :localStorage.getItem('refreshToken') || ''
 }
 
@@ -15,30 +15,34 @@ const mutations = {
   SET_REFRESH_TOKEN(state,refreshToken){
     state.refreshToken = refreshToken
   },
-  SET_USER_NAME(state, username) {
-    state.username = username
+  SET_USER_INFO(state, userInfo) {
+    state.userInfo = userInfo
+    localStorage.setItem('userInfo', JSON.stringify(userInfo))
   },
   RESET_USER_INFO(state) {
     state.token = ''
-    state.username = ''
+    state.userInfo = {}
   }
 }
 
 const actions = {
   //登录方法
-  login({ commit }, userInfo) {
+  login({ commit }, loginForm) {
     return new Promise(async (resolve, reject) => {
       try {
-        const { data } = await login(userInfo)
+        const {data} = await login(loginForm)
         const token = data.value.access_token
         const refreshToken = data.value.refresh_token
-        const username = userInfo.name
         commit('SET_TOKEN', token)
         commit('SET_REFRESH_TOKEN', refreshToken)
-        commit('SET_USER_NAME', username)
         localStorage.setItem('token', token)
-        localStorage.setItem('name', username)
         localStorage.setItem('refreshToken', refreshToken)
+        
+        // 获取用户信息
+        const res = await queryUserInfo()
+        const userInfo = res.data.value
+        commit('SET_USER_INFO', userInfo)
+        
         resolve()
       } catch (err) {
         console.log(err)

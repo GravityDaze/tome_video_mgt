@@ -355,15 +355,18 @@ export default {
           getAssignableAuth({ id: row.id }),
           getMenuAuth({ id: row.id })
         ]);
+        // 获取可被授权的角色数据
         this.canAuth = res1.data.value.canAuth;
-        // 获取树形菜单的数据
+        // 获取可被授权的树形菜单数据
         this.treeData = res2.data.value.canAuth;
         // 回填角色名称数据
         this.authForm.name = row.name;
         // 回填可授权角色数据
         this.authForm.roleIds = res1.data.value.beAuth.map(v => v.id);
-        // 递归回填可授权功能数据
+        // 回填可授权功能数据
         this.getTree( res2.data.value.beAuth)
+        console.log(res2.data.value.beAuth)
+        console.log(this.treeData)
         // 将默认选中节点的父节点展开
         this.expandedKeys = res2.data.value.beAuth.map(v => v.parentId);
         // 如果不存在选中的节点则默认展开根节点

@@ -130,7 +130,7 @@ export default {
           prop: "status",
           align: "center",
           type:"tag",
-          tag: row => row.status === 0 ? "info" : "success",
+          tagType: row => row.status === 0 ? "info" : "success",
           formatter: row => row.status === 0 ? "未支付" : "已完成"
         },
         {
@@ -143,7 +143,7 @@ export default {
           prop: "payStatus",
           align: "center",
           type:'tag',
-          tag: row => row.status === 0 ? "info" : "success",
+          tagType: row => row.status === 0 ? "info" : "success",
           formatter: row => row.payStatus === 0 ? "未支付" : "已支付"
         },
         {

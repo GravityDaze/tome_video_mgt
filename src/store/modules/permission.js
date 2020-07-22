@@ -1,5 +1,5 @@
 import { getMenu } from '@/api/user'
-import { filterRouter }  from '@/utils/filterRouter'
+import { getAsyncRouter }  from '@/utils/getAsyncRouter'
 
 const state = {
   menuList: JSON.parse(localStorage.getItem('menuList')) || [],
@@ -43,7 +43,7 @@ const actions = {
   getRouter({commit}){
     return new Promise( (resolve,reject) =>{
       try{
-        commit('SET_ROUTER',filterRouter())
+        commit('SET_ROUTER',getAsyncRouter())
         resolve()
       }catch(err){
         console.log(err)

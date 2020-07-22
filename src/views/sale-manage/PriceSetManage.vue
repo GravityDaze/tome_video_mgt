@@ -150,7 +150,7 @@ export default {
           this.$message.info("删除成功");
           this.getTableData();
         })
-        .catch();
+        .catch(()=>{});
     },
 
     submit(formName) {

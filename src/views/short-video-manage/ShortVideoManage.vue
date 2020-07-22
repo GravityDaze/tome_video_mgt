@@ -156,7 +156,7 @@ export default {
           label: "状态",
           align: "center",
           type: "tag",
-          tag:row=>{
+          tagType:row=>{
             switch (row.status) {
               case 0:
                 return 'danger'
@@ -186,7 +186,7 @@ export default {
           label: "发布",
           align: "center",
           type:"tag",
-          tag:row=> row.shareStatus === 0 ? "warning" : "success",
+          tagType:row=> row.shareStatus === 0 ? "warning" : "success",
           formatter: row => row.shareStatus === 0 ? "未发布" : "已发布"
         },
         {

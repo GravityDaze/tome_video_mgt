@@ -31,35 +31,10 @@ body,
   height: 100%;
 }
 
-// 去掉focus中的弹框
+// 去掉focus的outline
 :focus {
   outline: 0;
 }
-
-// element-ui dialog组件全局居中 bug
-// .el-dialog {
-//   display: flex;
-//   flex-direction: column;
-//   margin: 0 !important;
-//   position: absolute !important;
-//   // top:0;
-//   // left:0;
-//   // bottom:0;
-//   // right:0;
-//   // margin: auto !important;
-//   top: 50%;
-//   left: 50%;
-//   // transform: translate(calc(-50% + 0.5px), calc(-50% + 0.5px));
-//   transform: translate(-50%, -50%) ;
-//   // transform-origin: 50%  51%;
-//   max-height: calc(100% - 30px);
-//   max-width: calc(100% - 30px);
-
-//   .el-dialog__body {
-//     flex: 1;
-//     overflow: auto;
-//   }
-// }
 
 @import "./assets/style/normalize.css"; 
 </style>

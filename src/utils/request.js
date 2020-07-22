@@ -32,7 +32,6 @@ instance.interceptors.response.use(response => {
 }, err => {
     const { response } = err
     if (response) {
-        console.log( response.status )
         switch (response.status) {
             case 401: //权限不足
             Message.warning('登录过期')

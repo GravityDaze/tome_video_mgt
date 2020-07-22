@@ -37,7 +37,7 @@ export default {
 };
 </script>
  
-<style lang="less" scoped>
+<style lang="less">
 /* 
    解决element-ui导航菜单无法伸缩的bug
    详见:https://segmentfault.com/q/1010000022440073
@@ -52,7 +52,6 @@ export default {
     visibility: hidden;
     display: inline-block;
   }
-
   .el-submenu__icon-arrow {
     display: none;
   }
