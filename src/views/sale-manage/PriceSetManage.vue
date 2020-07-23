@@ -18,7 +18,7 @@
       top="25vh"
       title="新增规则"
       :visible.sync="ruleDialog"
-      @close="dialogClose('ruleForm')"
+      @closed="dialogClose('ruleForm')"
     >
       <el-form :model="ruleForm" ref="ruleForm">
         <el-form-item label="时间范围" label-width="120px">

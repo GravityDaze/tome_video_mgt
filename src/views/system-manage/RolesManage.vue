@@ -15,7 +15,7 @@
       :title="roleDialogTitle"
       :visible.sync="roleDialog"
       width="25%"
-      @close="dialogClose('roleForm')"
+      @closed="dialogClose('roleForm')"
       :close-on-click-modal="false"
       top="15%"
     >
@@ -64,7 +64,7 @@
     <el-dialog
       title="授权"
       :visible.sync="authDialog"
-      @close="authDialogClose('authForm')"
+      @closed="authDialogClose('authForm')"
       :close-on-click-modal="false"
       top="3%"
     >

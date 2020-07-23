@@ -16,7 +16,7 @@
       :visible.sync="sceneryDialog"
       top="1%"
       append-to-body
-      @close="dialogClose('sceneryForm')"
+      @closed="dialogClose('sceneryForm')"
     >
       <el-form :model="sceneryForm" :rules="rules" ref="sceneryForm">
         <el-form-item label="景区名" label-width="120px" prop="name">

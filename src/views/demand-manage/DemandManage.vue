@@ -7,6 +7,7 @@
       :pagination="pagination"
       @sizeChange="sizeChange"
       @numChange="numChange"
+      v-loading="tableLoading"
     />
   </el-card>
 </template>
@@ -167,7 +168,8 @@ export default {
           handle: this.query,
           icon: "el-icon-search"
         }
-      ]
+      ],
+      tableLoading:false
     };
   },
   created() {
@@ -182,10 +184,14 @@ export default {
       }
     ) {
       try {
+        this.tableLoading = true
         const { data } = await queryDemand(query);
         this.tableData = data.value.list;
         this.pagination.total = data.value.total;
       } catch (err) {}
+      finally{
+        this.tableLoading = false
+      }
     },
 
     // 按钮查询

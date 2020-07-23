@@ -15,11 +15,11 @@
       <el-header>
         <div class="top">
           <div class="left">
-              <i
-                @click="collapse"
-                id="collapse"
-                :class="[isCollapse?'el-icon-s-unfold':'el-icon-s-fold']"
-              ></i>
+            <i
+              @click="collapse"
+              id="collapse"
+              :class="[isCollapse?'el-icon-s-unfold':'el-icon-s-fold']"
+            ></i>
             <!-- 动态面包屑 -->
             <el-breadcrumb separator="/">
               <el-breadcrumb-item
@@ -30,11 +30,35 @@
             </el-breadcrumb>
           </div>
           <div class="info">
+            <!-- 工具条 -->
+            <div class="tools">
+              <el-select
+                v-model="value"
+                multiple
+                filterable
+                size="small"
+                remote
+                reserve-keyword
+                placeholder="请输入关键词"
+                :remote-method="remoteMethod"
+                :loading="loading"
+              >
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+              <i class="el-icon-search"></i>
+              <i @click="handleFullScreen" class="el-icon-rank"></i>
+            </div>
+
             <el-dropdown @command="handleCommand">
               <div class="el-dropdown-link" style="display:flex;align-items:center;cursor:pointer">
                 <el-avatar
                   size="medium"
-                  src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+                  :src="userInfo.headPicPath || require('../assets/images/avatar.png')"
                 ></el-avatar>
                 <div style="margin-left:8px">
                   <span>{{userInfo.loginName}}</span>
@@ -42,7 +66,7 @@
                 </div>
               </div>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="profile" icon="el-icon-user">个人资料</el-dropdown-item>
+                <el-dropdown-item command="profile" icon="el-icon-edit-outline">个人资料</el-dropdown-item>
                 <el-dropdown-item command="changePwd" icon="el-icon-setting">修改密码</el-dropdown-item>
                 <el-dropdown-item command="logout" icon="el-icon-switch-button">退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -61,7 +85,6 @@
 
     <!-- 右侧对话框 -->
     <Drawer :showDrawer="drawer" :drawerFormType="drawerFormType" @close="drawer = false" />
-  
   </el-container>
 </template>
 
@@ -70,15 +93,47 @@ import { mapGetters, mapActions, mapMutations } from "vuex";
 import { queryUserInfo } from "@/api/user";
 import Menu from "./components/Menu";
 import Tabs from "./components/Tabs";
-import Drawer from "./components/Drawer"
+import Drawer from "./components/Drawer";
+import screenfull from "screenfull";
 export default {
   name: "layout",
   computed: mapGetters(["userInfo", "isCollapse"]),
-  data(){
-    return{
-      drawer:false,
-      drawerFormType:''
-    }
+  data() {
+    return {
+      drawer: false,
+      drawerFormType: "",
+      isFullscreen: false,
+       options: [],
+        value: [],
+        list: [],
+        loading: false,
+        states: ["Alabama", "Alaska", "Arizona",
+        "Arkansas", "California", "Colorado",
+        "Connecticut", "Delaware", "Florida",
+        "Georgia", "Hawaii", "Idaho", "Illinois",
+        "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Maryland",
+        "Massachusetts", "Michigan", "Minnesota",
+        "Mississippi", "Missouri", "Montana",
+        "Nebraska", "Nevada", "New Hampshire",
+        "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Ohio",
+        "Oklahoma", "Oregon", "Pennsylvania",
+        "Rhode Island", "South Carolina",
+        "South Dakota", "Tennessee", "Texas",
+        "Utah", "Vermont", "Virginia",
+        "Washington", "West Virginia", "Wisconsin",
+        "Wyoming"]
+    };
+  },
+  mounted() {
+    this.init();
+     this.list = this.states.map(item => {
+        return { value: `value:${item}`, label: `label:${item}` };
+      });
+  },
+  beforeDestroy() {
+    this.destroy();
   },
   methods: {
     // 下拉菜单
@@ -105,14 +160,54 @@ export default {
         })
         .catch(() => {});
     },
+    // 全屏
+    handleFullScreen() {
+      if (!screenfull.isEnabled) {
+        this.$message({
+          message: "you browser can not work",
+          type: "warning"
+        });
+        return false;
+      }
+      screenfull.toggle();
+    },
+    change() {
+      this.isFullscreen = screenfull.isFullscreen;
+    },
+    init() {
+      if (screenfull.enabled) {
+        screenfull.on("change", this.change);
+      }
+    },
+    destroy() {
+      if (screenfull.enabled) {
+        screenfull.off("change", this.change);
+      }
+    },
+    // 搜索
+     remoteMethod(query) {
+        if (query !== '') {
+          this.loading = true;
+          setTimeout(() => {
+            this.loading = false;
+            this.options = this.list.filter(item => {
+              return item.label.toLowerCase()
+                .indexOf(query.toLowerCase()) > -1;
+            });
+          }, 200);
+        } else {
+          this.options = [];
+        }
+      },
+
     // 侧边栏伸缩
     collapse() {
       this.$store.commit("permission/SET_COLLAPSE");
     },
     // 打开右侧抽屉
-    openDrawer(command){
-      this.drawer = true
-      this.drawerFormType = command
+    openDrawer(command) {
+      this.drawer = true;
+      this.drawerFormType = command;
     }
   },
   components: {
@@ -173,27 +268,13 @@ export default {
         display: flex;
         align-items: center;
 
-        .wel {
-          font-size: 14px;
-          color: #888;
+        .tools {
           margin-right: 10px;
-        }
-
-        .logout {
-          color: #999c9e !important;
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          span {
-            margin-left: 5px;
-            font-weight: 600;
-            font-size: 14px;
-          }
 
           i {
-            font-weight: 600;
-            color: #999c9e !important;
-            font-size: 18px;
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 10px;
           }
         }
       }

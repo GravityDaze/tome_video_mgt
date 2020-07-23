@@ -24,3 +24,6 @@ export const queryUserInfo = () => request.get('/videomis/user/userInfo')
 
 // 编辑用户个人资料
 export const editUserInfo = data => request.post('/videomis/user/editUserInfo',data)
+
+// 修改密码
+export const editPassword = data => request.post('/videomis/user/editPassword',data)  

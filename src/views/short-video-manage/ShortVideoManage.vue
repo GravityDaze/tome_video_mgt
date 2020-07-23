@@ -2,6 +2,7 @@
   <el-card class="small-video-manage">
     <searchs :formData="formData" :searchBtn="searchBtn" />
     <tables
+      v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
       :pagination="pagination"
@@ -90,7 +91,7 @@
       :visible.sync="demandDialog"
       width="70%"
       top="5vh"
-      @close="demandDialogClose"
+      @closed="demandDialogClose"
     >
       <tables
         :tableCols="demandTableCols"
@@ -156,16 +157,16 @@ export default {
           label: "状态",
           align: "center",
           type: "tag",
-          tagType:row=>{
+          tagType: row => {
             switch (row.status) {
               case 0:
-                return 'danger'
+                return "danger";
                 break;
               case 1:
-                return '';
+                return "";
                 break;
               default:
-                return 'success'
+                return "success";
             }
           },
           formatter: row => {
@@ -185,9 +186,9 @@ export default {
           prop: "shareStatus",
           label: "发布",
           align: "center",
-          type:"tag",
-          tagType:row=> row.shareStatus === 0 ? "warning" : "success",
-          formatter: row => row.shareStatus === 0 ? "未发布" : "已发布"
+          type: "tag",
+          tagType: row => (row.shareStatus === 0 ? "warning" : "success"),
+          formatter: row => (row.shareStatus === 0 ? "未发布" : "已发布")
         },
         {
           prop: "topStatus",
@@ -216,7 +217,7 @@ export default {
         {
           label: "操作",
           type: "button",
-           align: "center",
+          align: "center",
           btnList: [{ type: "primary", label: "编辑", handle: this.editVideo }]
         }
       ],
@@ -310,6 +311,7 @@ export default {
       handleVideoDialog: false, //编辑或新增模态框
       demandDialog: false, //制作需求对话框
       demandLoading: false, //制作需求对话框加载效果
+      tablesLoading: false,
       handleVideoForm: {
         needNo: "", //制作需求
         sceneryId: "", //景区id
@@ -327,8 +329,8 @@ export default {
     };
   },
 
-  created(){
-    this.getTableData()
+  created() {
+    this.getTableData();
   },
 
   methods: {
@@ -340,6 +342,7 @@ export default {
       }
     ) {
       try {
+        this.tablesLoading = true;
         const { data } = await queryVideoList(query);
         // 转换为布尔值
         this.tableData = data.value.list.map(v => {
@@ -349,7 +352,10 @@ export default {
           return v;
         });
         this.pagination.total = data.value.total;
-      } catch (err) {}
+      } catch (err) {
+      } finally {
+        this.tablesLoading = false;
+      }
     },
 
     // 编辑视频

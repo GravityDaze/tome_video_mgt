@@ -16,7 +16,7 @@
       :visible.sync="customerDialog"
       append-to-body
       width="70%"
-      @close="dialogClose"
+      @closed="dialogClose"
     >
       <el-tabs v-model="activeName" type="border-card">
         <el-tab-pane name="first" label="用户详情">

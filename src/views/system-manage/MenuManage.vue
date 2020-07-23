@@ -15,7 +15,7 @@
     <el-dialog
       :title="menuDialogTitle"
       :visible.sync="menuDialog"
-      @close="dialogClose('menuForm')"
+      @closed="dialogClose('menuForm')"
       :close-on-click-modal="false"
       top="10%"
       width="40%"

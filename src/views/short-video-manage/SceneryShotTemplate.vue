@@ -11,7 +11,7 @@
     />
 
     <!-- 编辑对话框 -->
-    <el-dialog :title="tempDialogTitle" :visible.sync="tempDialog" @close="dialogClose">
+    <el-dialog :title="tempDialogTitle" :visible.sync="tempDialog" @closed="dialogClose">
       <el-form :model="tempForm">
         <el-form-item label="景区" label-width="120px">
           <el-select v-model="tempForm.sceneryId" placeholder="请选择景区">

@@ -2,6 +2,7 @@
   <el-card>
     <searchs :formData="formData" :searchBtn="searchBtn" />
     <tables
+      v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
       :pagination="pagination"
@@ -45,7 +46,7 @@
       top="25vh"
       title="退款"
       :visible.sync="refundDialog"
-      @close="dialogClose('refundForm')"
+      @closed="dialogClose('refundForm')"
     >
       <el-form :model="refundForm" :rules="refundRules" ref="refundForm">
         <el-form-item label="订单金额" label-width="120px">
@@ -240,6 +241,7 @@ export default {
       ],
       statusDialog: false, //修改支付状态对话框
       refundDialog: false, //退款对话框
+      tablesLoading: false,
       statusForm: {
         cause: "",
         status: 1
@@ -272,9 +274,14 @@ export default {
         ...this.searchData
       }
     ) {
-      const { data } = await orderQuery(query);
-      this.tableData = data.value.list;
-      this.pagination.total = data.value.total;
+      try{
+        this.tablesLoading = true
+        const { data } = await orderQuery(query);
+        this.tableData = data.value.list;
+        this.pagination.total = data.value.total;
+      }finally{
+        this.tablesLoading = false
+      }
     },
 
     // 打开修改支付状态对话框
@@ -294,6 +301,7 @@ export default {
       this.refundForm.refundedPrice = data.value.refundPrice;
       this.refundForm.price = row.price;
     },
+
 
     // 确认退款
     refundSubmit(formName) {

@@ -15,7 +15,7 @@
       :title="tagsDialogTitle"
       :visible.sync="tagsDialog"
       width="25%"
-      @close="dialogClose('tagsForm')"
+      @closed="dialogClose('tagsForm')"
       :close-on-click-modal="false"
       top="15%"
     >

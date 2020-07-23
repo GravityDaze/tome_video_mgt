@@ -16,7 +16,7 @@
       :visible.sync="paramsDialog"
       width="25%"
       top="20vh"
-      @close="dialogClose('paramsForm')"
+      @closed="dialogClose('paramsForm')"
       :close-on-click-modal="false"
     >
       <el-form

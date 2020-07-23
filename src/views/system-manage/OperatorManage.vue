@@ -15,7 +15,7 @@
       :title="operatorDialogTitle"
       :visible.sync="operatorDialog"
       width="25%"
-      @close="dialogClose('operatorForm')"
+      @closed="dialogClose('operatorForm')"
       :close-on-click-modal="false"
     >
       <el-form

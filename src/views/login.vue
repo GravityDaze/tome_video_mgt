@@ -7,7 +7,7 @@
       <div class="input_content">
         <div>
           <label>
-            <span class="input1">用户名：</span>
+            <span>用户名：</span>
             <input
               @focus="curFocus=0"
               @blur="curFocus=-1"
@@ -20,7 +20,7 @@
 
         <div>
           <label>
-            <span class="input2">密码：</span>
+            <span>密码：</span>
             <input
               @focus="curFocus=1"
               @blur="curFocus=-1"
@@ -32,7 +32,7 @@
         </div>
         <div>
           <label>
-            <span class="input3">验证码：</span>
+            <span>验证码：</span>
             <input
               @focus="curFocus=2"
               @blur="curFocus=-1"
@@ -103,22 +103,20 @@ export default {
     // 登录
     async loginFn() {
       if (!this.loginForm.name) {
-        this.$message.warning("请输入用户名！");
-        return;
+        return this.$message.warning("请输入用户名！");
       }
       if (!this.loginForm.password) {
-        this.$message.warning("请输入密码！");
-        return;
+        return this.$message.warning("请输入密码！");
+        
       }
       if (!this.loginForm.code) {
-        this.$message.warning("请输入验证码！");
-        return;
+        return this.$message.warning("请输入验证码！");
       }
       // 登录actions
       this.fullscreenLoading = true;
       this.login(this.loginForm)
         .then(() => {
-          // 获取菜单actions
+          // 获取菜单
           this.getMenuList()
             .then(resolve => {
               this.$router.push("/");
@@ -153,6 +151,8 @@ export default {
 .home_bg {
   height: 100vh;
   background-image: url("../assets/images/gs.png");
+  /* background-image: url("https://user.mockplus.cn/login-bg.jpg"); */
+  /* background-size: cover; */
   background-repeat: repeat;
   display: flex;
   justify-content: center;

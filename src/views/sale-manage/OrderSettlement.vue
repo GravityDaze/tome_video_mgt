@@ -2,6 +2,7 @@
   <el-card>
     <searchs :formData="formData" :searchBtn="searchBtn" />
     <tables
+      v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
       :pagination="pagination"
@@ -21,7 +22,10 @@
 </template>
 
 <script>
-import { queryOrderSettlement, queryOrderDetail } from "@/api/management/saleManage";
+import {
+  queryOrderSettlement,
+  queryOrderDetail
+} from "@/api/management/saleManage";
 import initPagination from "@/mixins/initPagination";
 export default {
   mixins: [initPagination],
@@ -95,14 +99,14 @@ export default {
           placeholder: "请输入景区名称"
         },
         {
-          type:"yearPicker",
-          label:"结算年份",
-          model: "year",
+          type: "yearPicker",
+          label: "结算年份",
+          model: "year"
         },
         {
-          type:"monthPicker",
-          label:"结算月份",
-          model:"month"
+          type: "monthPicker",
+          label: "结算月份",
+          model: "month"
         }
       ],
       searchBtn: [
@@ -177,7 +181,8 @@ export default {
         total: 0,
         num: 1,
         size: 5
-      }
+      },
+      tablesLoading: false
     };
   },
   created() {
@@ -191,9 +196,14 @@ export default {
         ...this.searchData
       }
     ) {
-      const { data } = await queryOrderSettlement(query);
-      this.tableData = data.value.list;
-      this.pagination.total = data.value.total;
+      this.tablesLoading = true;
+      try {
+        const { data } = await queryOrderSettlement(query);
+        this.tableData = data.value.list;
+        this.pagination.total = data.value.total;
+      } finally {
+        this.tablesLoading = false;
+      }
     },
 
     // 打开订单详情对话框
@@ -204,19 +214,21 @@ export default {
     },
 
     // 获取订单详情数据
-    async getOrderDetail(query={
-      id:this.id,
-      pageNum:this.orderPagination.num,
-      pageSize:this.orderPagination.size
-    }) {
+    async getOrderDetail(
+      query = {
+        id: this.id,
+        pageNum: this.orderPagination.num,
+        pageSize: this.orderPagination.size
+      }
+    ) {
       const { data } = await queryOrderDetail(query);
-      this.orderDetailData = data.value.list
+      this.orderDetailData = data.value.list;
     },
 
     // 按钮查询
     query(searchData) {
       if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-      
+
       // 查询时 pageNum必须恢复为1
       this.searchData = searchData;
       // 查询时,num默认从1开始

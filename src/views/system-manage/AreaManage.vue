@@ -15,7 +15,7 @@
     <el-dialog
       :title="areaDialogTitle"
       :visible.sync="areaDialog"
-      @close="dialogClose('areaForm')"
+      @closed="dialogClose('areaForm')"
       :close-on-click-modal="false"
       top="10%"
       width="40%"
