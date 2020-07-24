@@ -115,7 +115,7 @@ import {
   sticky,
   cancelSticky,
   recommendFn,
-  cancelRecommend
+  cancelRecommend,
 } from "@/api/management/videoManage";
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
@@ -130,34 +130,34 @@ export default {
         {
           prop: "no",
           label: "视频编号",
-          align: "center"
+          align: "center",
         },
         {
           prop: "sceneryName",
           label: "所属景区",
-          align: "center"
+          align: "center",
         },
         {
           prop: "nickName",
           label: "用户昵称",
-          align: "center"
+          align: "center",
         },
         {
           prop: "duration",
           label: "时长",
-          align: "center"
+          align: "center",
         },
         {
           prop: "times",
           label: "下载次数",
-          align: "center"
+          align: "center",
         },
         {
           prop: "status",
           label: "状态",
           align: "center",
           type: "tag",
-          tagType: row => {
+          tagType: (row) => {
             switch (row.status) {
               case 0:
                 return "danger";
@@ -169,7 +169,7 @@ export default {
                 return "success";
             }
           },
-          formatter: row => {
+          formatter: (row) => {
             switch (row.status) {
               case 0:
                 return "已过期";
@@ -180,64 +180,64 @@ export default {
               default:
                 return "已购买";
             }
-          }
+          },
         },
         {
           prop: "shareStatus",
           label: "发布",
           align: "center",
           type: "tag",
-          tagType: row => (row.shareStatus === 0 ? "warning" : "success"),
-          formatter: row => (row.shareStatus === 0 ? "未发布" : "已发布")
+          tagType: (row) => (row.shareStatus === 0 ? "warning" : "success"),
+          formatter: (row) => (row.shareStatus === 0 ? "未发布" : "已发布"),
         },
         {
           prop: "topStatus",
           label: "置顶",
           type: "switch",
           align: "center",
-          change: this.handleTopStatus
+          change: this.handleTopStatus,
         },
         {
           prop: "recommend",
           label: "推荐",
           type: "switch",
           align: "center",
-          change: this.handleRecommend
+          change: this.handleRecommend,
         },
         {
           prop: "laudTimes",
           label: "点赞数",
-          align: "center"
+          align: "center",
         },
         {
           prop: "createDatetime",
           label: "提供时间",
-          align: "center"
+          align: "center",
         },
         {
           label: "操作",
           type: "button",
           align: "center",
-          btnList: [{ type: "primary", label: "编辑", handle: this.editVideo }]
-        }
+          btnList: [{ type: "primary", label: "编辑", handle: this.editVideo }],
+        },
       ],
       formData: [
         {
           type: "input",
           label: "所属景区",
           model: "sceneryName",
-          placeholder: "请输入景区名称"
+          placeholder: "请输入景区名称",
         },
         {
           type: "input",
           label: "用户昵称",
           model: "nickName",
-          placeholder: "请输入用户昵称"
+          placeholder: "请输入用户昵称",
         },
         {
           label: "提交时间",
           type: "datePicker",
-          model: "createDatetime"
+          model: "createDatetime",
         },
         {
           label: "需求类型",
@@ -246,67 +246,67 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "标准制作",
-              value: 1
+              value: 1,
             },
             {
               label: "定制合成",
-              value: 2
-            }
-          ]
-        }
+              value: 2,
+            },
+          ],
+        },
       ],
       searchBtn: [
         {
           type: "primary",
           label: "新增",
           handle: this.add,
-          icon: "el-icon-edit"
+          icon: "el-icon-edit",
         },
         {
           type: "primary",
           label: "查询",
           handle: this.query,
-          icon: "el-icon-search"
-        }
+          icon: "el-icon-search",
+        },
       ],
       demandTableCols: [
         {
           label: "需求编号",
           prop: "no",
-          align: "center"
+          align: "center",
         },
         {
           label: "用户昵称",
           prop: "customerNickName",
-          align: "center"
+          align: "center",
         },
         {
           label: "景区名",
           prop: "sceneryName",
-          align: "center"
+          align: "center",
         },
         {
           label: "时间",
           prop: "createDatetime",
-          align: "center"
+          align: "center",
         },
         {
           label: "操作",
           type: "button",
           btnList: [
-            { type: "primary", label: "选择", handle: this.demandSelected }
-          ]
-        }
+            { type: "primary", label: "选择", handle: this.demandSelected },
+          ],
+        },
       ],
       demandTableData: [],
       demandPagination: {
         num: 1,
         total: 0,
-        size: 10
+        size: 10,
       },
       handleVideoDialog: false, //编辑或新增模态框
       demandDialog: false, //制作需求对话框
@@ -318,14 +318,14 @@ export default {
         duration: "", //时长 秒
         coverUrl: "", //封面图
         url: "", //视频url
-        type: "" //视频类型
+        type: "", //视频类型
       }, //模态框表单
       videoDialogLoading: false, //模态框加载效果
       videoDialogTitle: "",
       id: "", //
       videoTips: "", //视频上传框下方提示
       sceneryList: [], //景区下拉框
-      token: "" //七牛云上传token
+      token: "", //七牛云上传token
     };
   },
 
@@ -338,14 +338,14 @@ export default {
       query = {
         ...this.searchData,
         pageNum: this.pagination.num,
-        pageSize: this.pagination.size
+        pageSize: this.pagination.size,
       }
     ) {
       try {
         this.tablesLoading = true;
         const { data } = await queryVideoList(query);
         // 转换为布尔值
-        this.tableData = data.value.list.map(v => {
+        this.tableData = data.value.list.map((v) => {
           // 将0和1转换为布尔值
           v.recommend = !!v.recommend;
           v.topStatus = !!v.topStatus;
@@ -384,7 +384,7 @@ export default {
     async getDemandData(
       query = {
         pageSize: this.demandPagination.size,
-        pageNum: this.demandPagination.num
+        pageNum: this.demandPagination.num,
       }
     ) {
       try {
@@ -427,7 +427,7 @@ export default {
       this.demandPagination = {
         num: 1,
         size: 10,
-        total: 0
+        total: 0,
       };
     },
 
@@ -437,10 +437,13 @@ export default {
     },
 
     // 新增视频
-    add() {
+    async add() {
       this.handleVideoDialog = true;
       this.videoDialogTitle = "新增视频";
       this.videoTips = "推荐720p或1080p视频，MP4格式，大小不超过 20M。";
+      // 获取景区下拉列表
+      const { data } = await getSceneryList({ id: this.id });
+      this.sceneryList = data.value;
     },
 
     // 获取七牛云token
@@ -579,8 +582,8 @@ export default {
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();
-    }
-  }
+    },
+  },
 };
 </script>
 

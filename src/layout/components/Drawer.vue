@@ -1,3 +1,9 @@
+/* 
+    个人资料及修改密码抽屉
+    Author:朱星杰
+    Date:2020/7/23
+*/
+
 <template>
   <el-drawer
     size="20%"
@@ -188,8 +194,8 @@ export default {
     // 上传头像前
     async beforeAvatarUpload({ type, name }) {
       // 校验文件类型
-      if (["image/jpeg", "image/png"].indexOf(type) == -1) {
-        this.$message.error("只能上传jpg & png 格式的图片");
+      if (["image/jpeg", "image/png","image/gif"].indexOf(type) == -1) {
+        this.$message.error("只能上传jpg & png & gif 格式的图片");
         return Promise.reject();
       } else {
         try {
@@ -280,7 +286,7 @@ export default {
     // 抽屉关闭回调
     drawerClose() {
       this.pwdForm = restore(this.pwdForm);
-      this.$refs["pwdForm"].resetFields();
+      this.$refs.pwdForm.resetFields();
     }
   }
 };

@@ -6,7 +6,7 @@
       </div>
       <div class="input_content">
         <div>
-          <label>
+          <label style="width:100%">
             <span>用户名：</span>
             <input
               @focus="curFocus=0"
@@ -19,7 +19,7 @@
         </div>
 
         <div>
-          <label>
+          <label style="width:100%">
             <span>密码：</span>
             <input
               @focus="curFocus=1"
@@ -30,7 +30,7 @@
             <div :style="{width:curFocus===1?'100%':''}" class="line"></div>
           </label>
         </div>
-        <div>
+        <div class="code-area">
           <label>
             <span>验证码：</span>
             <input
@@ -49,12 +49,7 @@
         </div>
       </div>
       <div class="footer">
-        <div
-          class="login_btn"
-          @click="loginFn"
-          v-loading.fullscreen="fullscreenLoading"
-          element-loading-text="登录中"
-        >登录</div>
+        <div :class="{login_btn:true,is_loading:loading}" @click="loginFn">{{loading?'正在登录':'登录'}}</div>
       </div>
       <div class="copy">
         <p style="padding:0;margin:0">—— 途咪小视频 后台管理系统 ——</p>
@@ -76,21 +71,21 @@ export default {
         name: "",
         password: "",
         code: "",
-        token: ""
+        token: "",
       },
       curFocus: -1, //当前激活的输入框
-      fullscreenLoading: false
+      loading: false,
     };
   },
   created() {
     this.enter();
     this.getCode();
   },
-  computed:mapGetters(['userInfo']),
+  computed: mapGetters(["userInfo"]),
   methods: {
     ...mapActions({
       login: "user/login",
-      getMenuList: "permission/getMenuList"
+      getMenuList: "permission/getMenuList",
     }),
 
     // 获取验证码
@@ -102,37 +97,32 @@ export default {
 
     // 登录
     async loginFn() {
-      if (!this.loginForm.name) {
-        return this.$message.warning("请输入用户名！");
-      }
-      if (!this.loginForm.password) {
-        return this.$message.warning("请输入密码！");
-        
-      }
-      if (!this.loginForm.code) {
-        return this.$message.warning("请输入验证码！");
-      }
+      if (this.loading) return;
+      if (!this.loginForm.name) return this.$message.warning("请输入用户名！");
+      if (!this.loginForm.password) return this.$message.warning("请输入密码！");
+      if (!this.loginForm.code) return this.$message.warning("请输入验证码！");
+
       // 登录actions
-      this.fullscreenLoading = true;
+      this.loading = true;
       this.login(this.loginForm)
         .then(() => {
           // 获取菜单
           this.getMenuList()
-            .then(resolve => {
+            .then((resolve) => {
               this.$router.push("/");
               this.$notify({
                 title: `您好 ${this.userInfo.loginName}`,
                 message: `今天是${new Date().toLocaleDateString()} 欢迎登录途咪小视频后台管理系统`,
-                type: "success"
+                type: "success",
               });
               // 登录actions
-              this.fullscreenLoading = false;
+              this.loading = false;
             })
             .catch((err) => console.log(err));
         })
         .catch(() => {
           this.getCode();
-          this.fullscreenLoading = false;
+          this.loading = false;
         });
     },
 
@@ -142,59 +132,81 @@ export default {
         const key = window.event.keyCode;
         key === 13 && this.loginFn();
       };
-    }
-  }
+    },
+  },
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .home_bg {
   height: 100vh;
   background-image: url("../assets/images/gs.png");
-  /* background-image: url("https://user.mockplus.cn/login-bg.jpg"); */
-  /* background-size: cover; */
   background-repeat: repeat;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-}
 
-.logo {
-  width: 200px;
-}
+  .login_content {
+    position: relative;
+    width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 1);
 
-.copy {
-  position: absolute;
-  bottom: -80px;
-  text-align: center;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  color: #fff;
-}
+    .input_content {
+      padding: 0 80px 0;
 
-.login_content {
-  position: relative;
-  width: 500px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 1);
-}
-.title {
-  background-image: url("../assets/images/login-bg.jpg");
-  /* background-image: url("http://demo.qfpffmp.cn/cssthemes4/tpez_7_xt/images/user-img-background.jpg"); */
-  
-  background-size: cover;
-  height: 170px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px 8px 0 0;
-}
+      input {
+        width: 100%;
+        height: 32px;
+        font-size: 16px;
+        border: none;
+        outline: none;
+      }
 
-.input_content {
-  padding: 0 80px 0;
+      .line {
+        position: absolute;
+        bottom: -1px;
+        width: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        height: 2px;
+        background: #5a84fd;
+        transition: 0.5s;
+      }
+    }
+
+    .title {
+      background-image: url("../assets/images/login-bg.jpg");
+      background-size: cover;
+      height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px 8px 0 0;
+
+      .logo {
+        width: 200px;
+      }
+    }
+
+    .footer {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 60px 80px;
+    }
+
+    .copy {
+      position: absolute;
+      bottom: -80px;
+      text-align: center;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: #fff;
+    }
+  }
 }
 
 .input_content > div {
@@ -202,17 +214,6 @@ export default {
   display: flex;
   padding-top: 28px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.line {
-  position: absolute;
-  bottom: -1px;
-  width: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 2px;
-  background: #5a84fd;
-  transition: 0.5s;
 }
 
 .input_content > div > span {
@@ -224,14 +225,6 @@ export default {
   color: rgba(0, 0, 0, 0.54);
 }
 
-input {
-  width: 100%;
-  height: 32px;
-  font-size: 16px;
-  border: none;
-  outline: none;
-}
-
 .code {
   width: 1rem;
   min-width: 80px;
@@ -241,11 +234,7 @@ input {
   justify-content: center;
   cursor: pointer;
 }
-.footer {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 60px 80px;
-}
+
 .login_btn {
   background: #5a84fd;
   box-shadow: 0 5px 30px rgba(0, 66, 255, 0.3);
@@ -257,9 +246,18 @@ input {
   border-radius: 5px;
   transition: 0.5s;
   cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 66, 255, 0.8);
+  }
 }
 
-.login_btn:hover {
-  background: rgba(0, 66, 255, 0.8);
+.is_loading {
+  background: darkgray;
+  cursor: wait;
+
+  &:hover {
+    background: darkgray;
+  }
 }
 </style>

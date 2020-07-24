@@ -31,29 +31,8 @@
           </div>
           <div class="info">
             <!-- 工具条 -->
-            <div class="tools">
-              <el-select
-                v-model="value"
-                multiple
-                filterable
-                size="small"
-                remote
-                reserve-keyword
-                placeholder="请输入关键词"
-                :remote-method="remoteMethod"
-                :loading="loading"
-              >
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-              <i class="el-icon-search"></i>
-              <i @click="handleFullScreen" class="el-icon-rank"></i>
-            </div>
-
+            <Tools />
+            <!-- 下拉菜单 -->
             <el-dropdown @command="handleCommand">
               <div class="el-dropdown-link" style="display:flex;align-items:center;cursor:pointer">
                 <el-avatar
@@ -94,7 +73,7 @@ import { queryUserInfo } from "@/api/user";
 import Menu from "./components/Menu";
 import Tabs from "./components/Tabs";
 import Drawer from "./components/Drawer";
-import screenfull from "screenfull";
+import Tools from "./components/Tools"
 export default {
   name: "layout",
   computed: mapGetters(["userInfo", "isCollapse"]),
@@ -102,38 +81,11 @@ export default {
     return {
       drawer: false,
       drawerFormType: "",
-      isFullscreen: false,
-       options: [],
-        value: [],
-        list: [],
-        loading: false,
-        states: ["Alabama", "Alaska", "Arizona",
-        "Arkansas", "California", "Colorado",
-        "Connecticut", "Delaware", "Florida",
-        "Georgia", "Hawaii", "Idaho", "Illinois",
-        "Indiana", "Iowa", "Kansas", "Kentucky",
-        "Louisiana", "Maine", "Maryland",
-        "Massachusetts", "Michigan", "Minnesota",
-        "Mississippi", "Missouri", "Montana",
-        "Nebraska", "Nevada", "New Hampshire",
-        "New Jersey", "New Mexico", "New York",
-        "North Carolina", "North Dakota", "Ohio",
-        "Oklahoma", "Oregon", "Pennsylvania",
-        "Rhode Island", "South Carolina",
-        "South Dakota", "Tennessee", "Texas",
-        "Utah", "Vermont", "Virginia",
-        "Washington", "West Virginia", "Wisconsin",
-        "Wyoming"]
+      options: [],
+      value: [],
+      list: [],
+      loading: false
     };
-  },
-  mounted() {
-    this.init();
-     this.list = this.states.map(item => {
-        return { value: `value:${item}`, label: `label:${item}` };
-      });
-  },
-  beforeDestroy() {
-    this.destroy();
   },
   methods: {
     // 下拉菜单
@@ -149,7 +101,7 @@ export default {
       this.$confirm("确定退出吗?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "warning"
+        type: "warning",
       })
         .then(async () => {
           try {
@@ -160,46 +112,7 @@ export default {
         })
         .catch(() => {});
     },
-    // 全屏
-    handleFullScreen() {
-      if (!screenfull.isEnabled) {
-        this.$message({
-          message: "you browser can not work",
-          type: "warning"
-        });
-        return false;
-      }
-      screenfull.toggle();
-    },
-    change() {
-      this.isFullscreen = screenfull.isFullscreen;
-    },
-    init() {
-      if (screenfull.enabled) {
-        screenfull.on("change", this.change);
-      }
-    },
-    destroy() {
-      if (screenfull.enabled) {
-        screenfull.off("change", this.change);
-      }
-    },
-    // 搜索
-     remoteMethod(query) {
-        if (query !== '') {
-          this.loading = true;
-          setTimeout(() => {
-            this.loading = false;
-            this.options = this.list.filter(item => {
-              return item.label.toLowerCase()
-                .indexOf(query.toLowerCase()) > -1;
-            });
-          }, 200);
-        } else {
-          this.options = [];
-        }
-      },
-
+    
     // 侧边栏伸缩
     collapse() {
       this.$store.commit("permission/SET_COLLAPSE");
@@ -208,13 +121,14 @@ export default {
     openDrawer(command) {
       this.drawer = true;
       this.drawerFormType = command;
-    }
+    },
   },
   components: {
     Tabs,
     Menu,
-    Drawer
-  }
+    Drawer,
+    Tools
+  },
 };
 </script>
 
@@ -267,16 +181,6 @@ export default {
       .info {
         display: flex;
         align-items: center;
-
-        .tools {
-          margin-right: 10px;
-
-          i {
-            cursor: pointer;
-            font-size: 20px;
-            margin-left: 10px;
-          }
-        }
       }
     }
   }

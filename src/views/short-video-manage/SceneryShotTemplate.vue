@@ -11,7 +11,7 @@
     />
 
     <!-- 编辑对话框 -->
-    <el-dialog :title="tempDialogTitle" :visible.sync="tempDialog" @closed="dialogClose">
+    <el-dialog :title="tempDialogTitle" :visible.sync="tempDialog" @closed="dialogClose" width="30%">
       <el-form :model="tempForm">
         <el-form-item label="景区" label-width="120px">
           <el-select v-model="tempForm.sceneryId" placeholder="请选择景区">
@@ -24,9 +24,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="模板名称" label-width="120px">
-          <el-input v-model="tempForm.name" autocomplete="off"></el-input>
+            <el-col :span="16">
+              <el-input v-model="tempForm.name" autocomplete="off"></el-input>
+            </el-col>
         </el-form-item>
         <el-form-item label="模板描述" label-width="120px">
+           <el-col :span="16">
           <el-input
             v-model="tempForm.describe"
             type="textarea"
@@ -34,6 +37,7 @@
             show-word-limit
             autocomplete="off"
           ></el-input>
+          </el-col>
         </el-form-item>
         <el-form-item label="时长限制" label-width="120px">
           <el-input-number v-model="tempForm.durationLimit" label="描述文字"></el-input-number>
@@ -356,10 +360,12 @@ export default {
     },
 
     // 新增
-    add() {
+    async add() {
       // 打开对话框
       this.tempDialog = true;
       this.tempDialogTitle = "新增";
+      const { data } = await getSceneryList({ id: this.id });
+      this.sceneryList = data.value;
     },
 
     // 关闭对话框

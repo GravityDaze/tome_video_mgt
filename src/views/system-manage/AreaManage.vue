@@ -1,6 +1,6 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
+    <searchs :searchBtn="searchBtn" />
     <tables
       v-loading="tablesLoading"
       :tableData="tableData"
@@ -25,19 +25,20 @@
         :model="areaForm"
         ref="areaForm"
         label-width="100px"
+        :rules="rules"
         size="small"
         :hide-required-asterisk="false"
       >
-        <el-form-item label="上级区域">
+        <el-form-item label="上级区域" prop="parentName">
           <el-input v-model.trim="areaForm.parentName" placeholder="请选择父菜单" disabled></el-input>
         </el-form-item>
-        <el-form-item label="区域名称">
+        <el-form-item label="区域名称" prop="name">
           <el-input v-model.trim="areaForm.name" placeholder="请输入区域名称"></el-input>
         </el-form-item>
-        <el-form-item label="标准区域码">
+        <el-form-item label="标准区域码" prop="code">
           <el-input v-model.trim="areaForm.code" placeholder="请输入区域码"></el-input>
         </el-form-item>
-        <el-form-item label="区域级别">
+        <el-form-item label="区域级别" prop="level">
            <el-select v-model="areaForm.level">
             <el-option v-for="(value,key) in areaMap.values()" :key="key" :label="value" :value="key"></el-option>
           </el-select>
@@ -45,16 +46,16 @@
         <el-form-item v-show="areaForm.level === 0 && areaForm.level !==''" label="国际电话区码">
           <el-input v-model.trim="areaForm.phoneCode" placeholder="请输入国际电话区码"></el-input>
         </el-form-item>
-        <el-form-item label="经纬度">
+        <el-form-item label="经纬度" prop="lonLat">
           <el-input v-model.trim="areaForm.lonLat" placeholder="请输入经纬度"></el-input>
         </el-form-item>
-        <el-form-item label="首字母">
+        <el-form-item label="首字母" prop="initial">
           <el-input v-model.trim="areaForm.initial" placeholder="请输入首字母"></el-input>
         </el-form-item>
-        <el-form-item label="简拼">
+        <el-form-item label="简拼" prop="simpleSpell">
           <el-input v-model.trim="areaForm.simpleSpell" placeholder="请输入简拼"></el-input>
         </el-form-item>
-        <el-form-item label="全拼">
+        <el-form-item label="全拼" prop="fullSpell">
          <el-input v-model.trim="areaForm.fullSpell" placeholder="请输入全拼"></el-input>
         </el-form-item>
         <el-form-item>
@@ -155,7 +156,6 @@ export default {
           ]
         }
       ],
-      formData: [],
       searchBtn: [
         {
           type: "primary",
@@ -192,31 +192,22 @@ export default {
 
       // 验证规则
       rules: {
-        parentName: [{ required: true, message: "请选择父级菜单" }],
-        type: [
-          { required: true, message: "请选择菜单类型", trigger: "change" }
-        ],
-        method: [
-          { required: true, message: "请选择菜单HTTP方法", trigger: "change" }
-        ],
+        parentName: [{ required: true, message: "请输入上级区域" }],
         name: [
-          { required: true, message: "请输入菜单中文名称", trigger: "blur" }
+          { required: true, message: "请输入区域名称", trigger: "blur" }
         ],
-        nameEn: [
-          { required: true, message: "请输入菜单英文名称", trigger: "blur" }
+        code: [
+          { required: true, message: "请输入标准区域码", trigger: "blur" }
         ],
-        url: [{ required: true, message: "请输入菜单URL", trigger: "blur" }],
-        sort: [
-          { required: true, message: "请输入菜单显示顺序" },
-          { type: "number", message: "顺序值必须为数字值" }
+        level: [
+          { required: true, message: "请选择区域级别", trigger: "change" }
         ],
-        refreshable: [
-          {
-            required: true,
-            message: "请选择此菜单信息是否可刷新",
-            trigger: "change"
-          }
-        ]
+        lonLat: [
+          { required: true, message: "请输入经纬度", trigger: "blur" }
+        ],
+        initial: [{ required: true, message: "请输入首字母", trigger: "blur" }],
+        simpleSpell: [{ required: true, message: "请输入简拼", trigger: "blur" }],
+        fullSpell: [{ required: true, message: "请输入全拼", trigger: "blur" }],
       },
       areaMap: new Map([
         [0, "国家"],

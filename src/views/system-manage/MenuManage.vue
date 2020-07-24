@@ -17,21 +17,22 @@
       :visible.sync="menuDialog"
       @closed="dialogClose('menuForm')"
       :close-on-click-modal="false"
-      top="10%"
+      top="5%"
       width="40%"
     >
       <el-form
         style="width:500px"
         :model="menuForm"
         ref="menuForm"
+        :rules="rules"
         label-width="100px"
         size="small"
         :hide-required-asterisk="false"
       >
-        <el-form-item label="父菜单">
+        <el-form-item label="父菜单" prop="parentName">
           <el-input v-model.trim="menuForm.parentName" placeholder="请选择父菜单" disabled></el-input>
         </el-form-item>
-        <el-form-item label="菜单类型">
+        <el-form-item label="菜单类型" prop="type">
           <el-select v-model="menuForm.type">
             <el-option
               v-for="(value,key) in typeMap.values()"
@@ -41,7 +42,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="HTTP方法">
+        <el-form-item label="HTTP方法"  prop="method">
           <el-select v-model="menuForm.method">
             <el-option
               v-for="(value,key) in methodMap.values()"
@@ -51,10 +52,10 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="中文名称">
+        <el-form-item label="中文名称"  prop="name">
           <el-input v-model.trim="menuForm.name" placeholder="请输入中文名称"></el-input>
         </el-form-item>
-        <el-form-item label="英文名称">
+        <el-form-item label="英文名称" prop="nameEn">
           <el-input v-model.trim="menuForm.nameEn" placeholder="请输入英文名称"></el-input>
         </el-form-item>
         <el-form-item label="路由文件路径">
@@ -66,10 +67,10 @@
         <el-form-item label="图标样式">
           <el-input v-model.trim="menuForm.iconStyle" placeholder="请输入图标样式"></el-input>
         </el-form-item>
-        <el-form-item label="显示顺序">
+        <el-form-item label="显示顺序" prop="sort">
           <el-input-number v-model="menuForm.sort" :min="1" :max="99" label="显示顺序"></el-input-number>
         </el-form-item>
-        <el-form-item label="可否刷新">
+        <el-form-item label="可否刷新" prop="refreshable">
           <el-radio-group v-model="menuForm.refreshable">
             <el-radio :label="1">可以</el-radio>
             <el-radio :label="0">不可以</el-radio>
@@ -106,8 +107,6 @@ import {
 } from "@/api/management/systemManage";
 import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
-// 重置动态路由
-import { resetRouter } from "@/router";
 export default {
   name: "menu-manage",
   mixins: [initPagination],
@@ -245,7 +244,6 @@ export default {
         nameEn: [
           { required: true, message: "请输入菜单英文名称", trigger: "blur" }
         ],
-        url: [{ required: true, message: "请输入菜单URL", trigger: "blur" }],
         sort: [
           { required: true, message: "请输入菜单显示顺序" },
           { type: "number", message: "顺序值必须为数字值" }
@@ -288,7 +286,7 @@ export default {
       }
     ) {
       try {
-        // 切换菜单状态时 , 不需要loadingf效果
+        // 切换菜单状态时 , 不需要loading效果
         if (!this.isChangeStatus) {
           this.tablesLoading = true;
         }

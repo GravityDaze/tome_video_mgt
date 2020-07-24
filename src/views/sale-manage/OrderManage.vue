@@ -56,17 +56,16 @@
           <span>{{refundForm.refundedPrice}}</span>
         </el-form-item>
         <el-form-item label="退款金额" label-width="120px" prop="refundPrice">
-          <el-input style="width:200px" placeholder="请输入退款金额" v-model="refundForm.refundPrice">
-            <template slot="append">元</template>
-          </el-input>
+          <el-col :span="12">
+            <el-input placeholder="请输入退款金额" v-model="refundForm.refundPrice">
+              <template slot="append">元</template>
+            </el-input>
+          </el-col>
         </el-form-item>
         <el-form-item label="退款原因" label-width="120px" prop="cause">
-          <el-input
-            style="width:300px"
-            placeholder="请输入退款原因"
-            type="textarea"
-            v-model="refundForm.cause"
-          ></el-input>
+          <el-col :span="16">
+            <el-input placeholder="请输入退款原因" type="textarea" v-model="refundForm.cause"></el-input>
+          </el-col>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -82,7 +81,7 @@ import {
   orderQuery,
   changeOrderStatus,
   refundPrice,
-  refund
+  refund,
 } from "@/api/management/saleManage";
 import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
@@ -94,58 +93,58 @@ export default {
         {
           label: "订单编号",
           prop: "no",
-          align: "center"
+          align: "center",
         },
         {
           label: "景区编号",
           prop: "sceneryNo",
-          align: "center"
+          align: "center",
         },
         {
           label: "所属景区",
           prop: "sceneryName",
-          align: "center"
+          align: "center",
         },
         {
           label: "用户编号",
           prop: "no",
-          align: "center"
+          align: "center",
         },
         {
           label: "小视频编号",
           prop: "videoNo",
-          align: "center"
+          align: "center",
         },
         {
           label: "订单金额",
           prop: "price",
-          align: "center"
+          align: "center",
         },
         {
           label: "下单时间",
           prop: "createDatetime",
-          align: "center"
+          align: "center",
         },
         {
           label: "订单状态",
           prop: "status",
           align: "center",
-          type:"tag",
-          tagType: row => row.status === 0 ? "info" : "success",
-          formatter: row => row.status === 0 ? "未支付" : "已完成"
+          type: "tag",
+          tagType: (row) => (row.status === 0 ? "info" : "success"),
+          formatter: (row) => (row.status === 0 ? "未支付" : "已完成"),
         },
         {
           label: "支付时间",
           prop: "buyDatetime",
-          align: "center"
+          align: "center",
         },
         {
           label: "支付状态",
           prop: "payStatus",
           align: "center",
-          type:'tag',
-          tagType: row => row.status === 0 ? "info" : "success",
-          formatter: row => row.payStatus === 0 ? "未支付" : "已支付"
+          type: "tag",
+          tagType: (row) => (row.status === 0 ? "info" : "success"),
+          formatter: (row) => (row.payStatus === 0 ? "未支付" : "已支付"),
         },
         {
           label: "操作",
@@ -156,40 +155,35 @@ export default {
               type: "text",
               label: "修改支付状态",
               handle: this.changeStatus,
-              show: row => row.payStatus === 0
+              show: (row) => row.payStatus === 0,
             },
             {
               type: "text",
               label: "退款",
               handle: this.handleRefund,
-              show: row => row.payStatus === 1
-            }
-          ]
-        }
+              show: (row) => row.payStatus === 1,
+            },
+          ],
+        },
       ],
       formData: [
         {
           type: "input",
           label: "所属景区",
           model: "sceneryName",
-          placeholder: "请输入景区名称"
+          placeholder: "请输入景区名称",
         },
         {
           type: "input",
           label: "昵称",
           model: "customerNickName",
-          placeholder: "请输入用户昵称"
+          placeholder: "请输入用户昵称",
         },
         {
           type: "input",
           label: "小视频编号",
           model: "videoNo",
-          placeholder: "请输入用户昵称"
-        },
-        {
-          label: "下单时间",
-          type: "datePicker",
-          model: "createDatetime"
+          placeholder: "请输入用户昵称",
         },
         {
           label: "订单状态",
@@ -198,17 +192,17 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "未支付",
-              value: 0
+              value: 0,
             },
             {
               label: "已完成",
-              value: 1
-            }
-          ]
+              value: 1,
+            },
+          ],
         },
         {
           type: "select",
@@ -218,49 +212,54 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "未支付",
-              value: 0
+              value: 0,
             },
             {
               label: "已支付",
-              value: 1
-            }
-          ]
-        }
+              value: 1,
+            },
+          ],
+        },
+        {
+          label: "下单时间",
+          type: "datePicker",
+          model: "createDatetime",
+        },
       ],
       searchBtn: [
         {
           type: "primary",
           label: "查询",
           handle: this.query,
-          icon: "el-icon-search"
-        }
+          icon: "el-icon-search",
+        },
       ],
       statusDialog: false, //修改支付状态对话框
       refundDialog: false, //退款对话框
       tablesLoading: false,
       statusForm: {
         cause: "",
-        status: 1
+        status: 1,
       }, //修改支付状态表单
       refundForm: {
         refundedPrice: "",
         cause: "",
         refundPrice: "",
-        price: ""
+        price: "",
       }, //退款表单
       refundRules: {
         refundPrice: [
-          { required: true, message: "请输入退款金额", trigger: "blur" }
+          { required: true, message: "请输入退款金额", trigger: "blur" },
         ],
-        cause: [{ required: true, message: "请输入退款原因", trigger: "blur" }]
+        cause: [{ required: true, message: "请输入退款原因", trigger: "blur" }],
       }, //退款表单验证规则
       statusRules: {
-        cause: [{ required: true, message: "请输入修改备注", trigger: "blur" }]
-      } //修改支付状态验证规则
+        cause: [{ required: true, message: "请输入修改备注", trigger: "blur" }],
+      }, //修改支付状态验证规则
     };
   },
   created() {
@@ -271,16 +270,16 @@ export default {
       query = {
         pageNum: this.pagination.num,
         pageSize: this.pagination.size,
-        ...this.searchData
+        ...this.searchData,
       }
     ) {
-      try{
-        this.tablesLoading = true
+      try {
+        this.tablesLoading = true;
         const { data } = await orderQuery(query);
         this.tableData = data.value.list;
         this.pagination.total = data.value.total;
-      }finally{
-        this.tablesLoading = false
+      } finally {
+        this.tablesLoading = false;
       }
     },
 
@@ -302,21 +301,20 @@ export default {
       this.refundForm.price = row.price;
     },
 
-
     // 确认退款
     refundSubmit(formName) {
-      this.$refs[formName].validate(async valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           try {
             const { refundPrice, cause } = this[formName];
             await refund({
               id: this.id,
               refundPrice: parseFloat(refundPrice) * 100,
-              cause
+              cause,
             });
             this.$message.success("退款成功");
             this.refundDialog = false;
-            this.getTableData()
+            this.getTableData();
           } catch (err) {}
         } else {
           return false;
@@ -326,12 +324,12 @@ export default {
 
     // 确认修改支付状态
     statusSubmit(formName) {
-      this.$refs[formName].validate(async valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           await changeOrderStatus({ id: this.id, cause: this[formName].cause });
           this.$message.success("修改支付状态成功");
           this.statusDialog = false;
-          this.getTableData()
+          this.getTableData();
         } else {
           return false;
         }
@@ -364,8 +362,8 @@ export default {
       // 查询时,num默认从1开始
       this.pagination.num = 1;
       this.getTableData();
-    }
-  }
+    },
+  },
 };
 </script>
 
