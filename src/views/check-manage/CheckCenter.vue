@@ -178,6 +178,7 @@ export default {
           label: "状态",
           model: "status",
           placeholder: "请选择审核状态",
+          default:0,
           options: [
             {
               label: "未审核",
@@ -250,6 +251,14 @@ export default {
     this.instance.close()
     // 清除定时器
     clearInterval(this.timer);
+  },
+  
+  watch:{
+    // 改变status的时候改变默认值
+    status(){
+        const index = this.formData.findIndex( v=> v.model === 'status' )
+        this.formData[index].default = this.status
+    }
   },
 
   methods: {

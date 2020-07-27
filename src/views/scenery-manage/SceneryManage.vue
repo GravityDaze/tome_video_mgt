@@ -152,7 +152,7 @@ export default {
   data() {
     return {
       coverTips:true,
-      tableCols: [
+      tableCols: Object.freeze([
         {
           prop: "no",
           label: "景区编号",
@@ -203,7 +203,7 @@ export default {
             { type: "danger", label: "删除", handle: this.deleteScenery }
           ]
         }
-      ],
+      ]),
       formData: [
         {
           type: "input",

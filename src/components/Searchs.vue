@@ -116,19 +116,22 @@ export default {
     };
   },
   mounted() {
-    // 初始化时查询数据中是否有默认值 bug toDo
+    // 初始化时查询数据中是否有默认值
     const defaultArr = this.formData.filter(v => v.default !== undefined);
     for (let i = 0; i < defaultArr.length; i++) {
       this.$set(this.searchData, defaultArr[i].model, defaultArr[i].default);
     }
   },
-  watch: {
+  watch:{
     // 监听默认值的变化
-    formData: {
-      handler(res) {
-        // console.log(res);
+    formData:{
+      handler(newVal) {
+        for( const item of newVal ){
+          if(item.default !== undefined && this.searchData[item.model] !== undefined){
+              this.searchData[item.model] = item.default
+          }
+        }
       },
-      immediate: true,
       deep: true
     }
   }
