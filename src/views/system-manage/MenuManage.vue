@@ -42,7 +42,21 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="HTTP方法"  prop="method">
+        <el-form-item v-show="menuForm.type === 0" label="菜单精确类型" prop="fullOrChildMenu">
+          <el-select v-model="menuForm.fullOrChildMenu">
+            <el-option label="父菜单" :value="0"></el-option>
+            <el-option label="子菜单" :value="1"></el-option>
+          </el-select>
+          <el-popover
+            placement="top-start"
+            width="200"
+            trigger="hover"
+            content="菜单精确类型决定了该按钮在左侧菜单将以何种方式进行显示。其中，子菜单类型是点击可以直接跳转的导航按钮，父菜单类型仅仅起到折叠展开子菜单的作用"
+          >
+            <i slot="reference" class="el-icon-question" style="cursor:pointer;margin-left:5px;color:#606266"></i>
+          </el-popover>
+        </el-form-item>
+        <el-form-item label="HTTP方法" prop="method">
           <el-select v-model="menuForm.method">
             <el-option
               v-for="(value,key) in methodMap.values()"
@@ -52,7 +66,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="中文名称"  prop="name">
+        <el-form-item label="中文名称" prop="name">
           <el-input v-model.trim="menuForm.name" placeholder="请输入中文名称"></el-input>
         </el-form-item>
         <el-form-item label="英文名称" prop="nameEn">
@@ -103,7 +117,7 @@ import {
   editMenu,
   getMenuInfo,
   enableMenu,
-  disableMenu
+  disableMenu,
 } from "@/api/management/systemManage";
 import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
@@ -116,52 +130,52 @@ export default {
         {
           prop: "name",
           label: "名称",
-          width: "150"
+          width: "150",
         },
         {
           prop: "no",
           label: "编号",
-          align: "center"
+          align: "center",
         },
         {
           prop: "url",
           label: "URL",
-          align: "center"
+          align: "center",
         },
         {
           prop: "iconStyle",
           label: "图标样式",
-          align: "center"
+          align: "center",
         },
         {
           prop: "sort",
           label: "显示顺序",
-          align: "center"
+          align: "center",
         },
         {
           prop: "type",
           label: "类型",
           align: "center",
-          formatter: row => this.typeMap.get(row.type)
+          formatter: (row) => this.typeMap.get(row.type),
         },
         {
           prop: "method",
           label: "HTTP方法",
           align: "center",
-          formatter: row => this.methodMap.get(row.method)
+          formatter: (row) => this.methodMap.get(row.method),
         },
         {
           prop: "refreshable",
           label: "可刷新",
           align: "center",
-          formatter: row => (row.refreshable ? "是" : "否")
+          formatter: (row) => (row.refreshable ? "是" : "否"),
         },
         {
           type: "popover",
           prop: "description",
           label: "描述",
           align: "center",
-          title: "查看"
+          title: "查看",
         },
         {
           type: "switch",
@@ -169,7 +183,7 @@ export default {
           label: "状态",
           align: "center",
           change: this.statusChange,
-          disabled: row => this.isChangeStatus
+          disabled: (row) => this.isChangeStatus,
         },
         {
           type: "button",
@@ -180,15 +194,17 @@ export default {
             {
               label: "新增",
               handle: this.addSubMenu,
-              type: "primary"
+              type: "primary",
+              disabled:row => row.fullOrChildMenu,
             },
             {
               label: "编辑",
               handle: this.editMenu,
-              type: "primary"
-            }
-          ]
-        }
+              type: "primary",
+              
+            },
+          ],
+        },
       ],
       formData: [],
       searchBtn: [
@@ -196,8 +212,8 @@ export default {
           type: "primary",
           label: "新增根菜单",
           handle: this.add,
-          icon: "el-icon-edit"
-        }
+          icon: "el-icon-edit",
+        },
       ],
       menuForm: {
         parentName: "",
@@ -210,20 +226,8 @@ export default {
         refreshable: "",
         description: "",
         iconStyle: "",
-        route:""
-      },
-      ruleForm: {
-        parentId: "",
-        parentName: "",
-        type: "",
-        method: "",
-        name: "",
-        nameEn: "",
-        url: "",
-        iconStyle: "",
-        sort: "",
-        refreshable: "",
-        description: ""
+        route: "",
+        fullOrChildMenu: "",
       },
       tablesLoading: false,
       menuDialog: false,
@@ -233,44 +237,44 @@ export default {
       rules: {
         parentName: [{ required: true, message: "请选择父级菜单" }],
         type: [
-          { required: true, message: "请选择菜单类型", trigger: "change" }
+          { required: true, message: "请选择菜单类型", trigger: "change" },
         ],
         method: [
-          { required: true, message: "请选择菜单HTTP方法", trigger: "change" }
+          { required: true, message: "请选择菜单HTTP方法", trigger: "change" },
         ],
         name: [
-          { required: true, message: "请输入菜单中文名称", trigger: "blur" }
+          { required: true, message: "请输入菜单中文名称", trigger: "blur" },
         ],
         nameEn: [
-          { required: true, message: "请输入菜单英文名称", trigger: "blur" }
+          { required: true, message: "请输入菜单英文名称", trigger: "blur" },
         ],
         sort: [
           { required: true, message: "请输入菜单显示顺序" },
-          { type: "number", message: "顺序值必须为数字值" }
+          { type: "number", message: "顺序值必须为数字值" },
         ],
         refreshable: [
           {
             required: true,
             message: "请选择此菜单信息是否可刷新",
-            trigger: "change"
-          }
-        ]
+            trigger: "change",
+          },
+        ],
       },
       typeMap: new Map([
         [0, "菜单"],
         [1, "按钮"],
         [2, "资源"],
         [3, "查询按钮"],
-        [4, "导出按钮"]
+        [4, "导出按钮"],
       ]),
       methodMap: new Map([
         [0, "GET"],
         [1, "POST"],
         [2, "PUT"],
-        [3, "DELETE"]
+        [3, "DELETE"],
       ]),
       treeMap: new Map(), //记录懒加载树形表格id,详见:https://blog.csdn.net/IM507/article/details/103297208
-      isChangeStatus: false //当前是否在切换菜单状态
+      isChangeStatus: false, //当前是否在切换菜单状态
     };
   },
   async created() {
@@ -282,7 +286,7 @@ export default {
     async getTableData(
       query = {
         pageNum: this.pagination.num,
-        pageSize: this.pagination.size
+        pageSize: this.pagination.size,
       }
     ) {
       try {
@@ -294,7 +298,7 @@ export default {
         const { data } = await querySubMenu(query);
         this.pagination.total = data.value.total;
         // 处理后台返回的数据
-        this.tableData = data.value.list.map(v => {
+        this.tableData = data.value.list.map((v) => {
           // hasChildren字段为true时会将该行表格转换为树形
           v.hasChildren = !!v.hasChildren;
           v.status = !!v.status;
@@ -318,7 +322,7 @@ export default {
       const { data } = await querySubMenu({ parentId: tree.id });
       // 加载数据
       resolve(
-        data.value.list.map(v => {
+        data.value.list.map((v) => {
           v.hasChildren = !!v.hasChildren;
           v.status = !!v.status;
           return v;
@@ -395,7 +399,7 @@ export default {
 
     // 提交
     submitForm(formName) {
-      this.$refs[formName].validate(async valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           try {
             // 判断是新增还是编辑
@@ -403,7 +407,7 @@ export default {
               await editMenu({
                 id: this.id,
                 parentId: this.parentId,
-                ...this[formName]
+                ...this[formName],
               });
               this.$message.success("修改成功");
               this.menuDialog = false;
@@ -424,12 +428,12 @@ export default {
             this.$store
               .dispatch("permission/getMenuList")
               .then(() => console.log("更新完成"))
-              .catch(err => console.log(err));
+              .catch((err) => console.log(err));
           }
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
