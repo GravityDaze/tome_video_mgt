@@ -248,7 +248,7 @@ export default {
   },
   beforeDestroy() {
     // 关闭通知栏
-    this.instance.close()
+    this.instance && this.instance.close()
     // 清除定时器
     clearInterval(this.timer);
   },

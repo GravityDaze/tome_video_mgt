@@ -195,7 +195,7 @@ export default {
               label: "新增",
               handle: this.addSubMenu,
               type: "primary",
-              disabled:row => row.fullOrChildMenu,
+              disabled:row => !!row.fullOrChildMenu
             },
             {
               label: "编辑",

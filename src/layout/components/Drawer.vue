@@ -286,7 +286,7 @@ export default {
     // 抽屉关闭回调
     drawerClose() {
       this.pwdForm = restore(this.pwdForm);
-      this.$refs.pwdForm.resetFields();
+      this.$refs.pwdForm && this.$refs.pwdForm.resetFields();
     }
   }
 };

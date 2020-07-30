@@ -1,6 +1,5 @@
 import { login, logout, refreshToken, queryUserInfo} from '@/api/user'
 import { resetRouter } from '@/router'
-import { clearRoutes }  from '@/utils/getAsyncRouter'
 
 const state = {
   token: localStorage.getItem('token') || '',
@@ -65,8 +64,6 @@ const actions = {
         commit('permission/RESET_ROUTER',[],{root:true})
         localStorage.clear()
         sessionStorage.clear()
-        // 清除全局变量newRouter,详见@/utils/filterRouter
-        clearRoutes()
         // 重新实例化vue-router重置动态路由
         resetRouter()
       } 

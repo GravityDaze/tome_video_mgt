@@ -43,7 +43,7 @@ function resolveRoutes(routerMap) {
 // 挂载动态路由
 export function getAsyncRouter() { 
     resolveRoutes(store.getters.menuList)
-    return[
+    const res = [
         {
             path: "/",
             name: "layout",
@@ -61,10 +61,8 @@ export function getAsyncRouter() {
             }
         }
     ]
-}
-
-// 清除全局变量asyncRouter和breadcrumb
-export function clearRoutes(){
+    // 清除全局变量asyncRouter和breadcrumb
     asyncRouter = []
     breadcrumb = []
+    return res
 }

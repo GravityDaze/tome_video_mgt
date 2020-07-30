@@ -98,7 +98,7 @@
             <i v-else class="el-icon-upload uploader-icon"></i>
           </el-upload>
         </el-form-item>
-        <el-form-item label="景区详图" label-width="120px">
+        <el-form-item ref="showImg" label="景区详图" label-width="120px" prop="imageUrls">
           <el-upload
             action="https://upload-z2.qiniup.com"
             list-type="picture-card"
@@ -109,7 +109,7 @@
             :file-list="fileList"
             :data="{token}"
           >
-            <div slot="tip" class="el-upload__tip">推荐尺寸为100(宽)*50(高)，大小不超过 300KB</div>
+            <div v-show="imageTips" slot="tip" class="el-upload__tip">推荐尺寸为100(宽)*50(高)，大小不超过 300KB</div>
             <i class="el-icon-plus"></i>
           </el-upload>
           <el-dialog :visible.sync="dialogVisible" append-to-body>
@@ -151,7 +151,8 @@ export default {
   name: "scenery-manage",
   data() {
     return {
-      coverTips:true,
+      imageTips:true,//是否显示景区详图上传框下方的提示,为false时将显示校验信息
+      coverTips:true,//是否显示景区封面上传框下方的提示,为false时将显示校验信息
       tableCols: Object.freeze([
         {
           prop: "no",
@@ -290,6 +291,9 @@ export default {
           ],
           coverUrl:[
             { required: true, message: '请上传封面图片', trigger: 'change' }
+          ],
+          imageUrls:[
+            { required: true, message: '请上传景区详图', trigger: 'change' }
           ]
       },//校验规则
       sceneryDialog: false, //景区修改或新增模态框
@@ -483,6 +487,7 @@ export default {
     // 模态框关闭时清除所有数据
     dialogClose(formName) {
       this.sceneryForm = restore(this[formName]);
+      console.log(this.sceneryForm)
       this.fileList = [];
       this.tags = [];
       // 清除校验
@@ -510,7 +515,6 @@ export default {
     onCoverUploadSuccess({ key }) {
       this.$message.success("上传成功");
       this.sceneryForm.coverUrl = `https://tomevideo.zhihuiquanyu.com/${key}`;
-      console.log('123')
       this.$refs.cover.clearValidate(); // 关闭校验
     },
 
@@ -520,13 +524,14 @@ export default {
       this.sceneryForm.advertisementUrl = `https://tomevideo.zhihuiquanyu.com/${key}`;
     },
 
-    // 展示图上传成功
+    // 景区详图上传成功
     onShowImgSuccess({ key }) {
       this.$message.success("上传成功");
       // 将新添加的图片添加到表单数据中
       this.sceneryForm.imageUrls.push(
         `https://tomevideo.zhihuiquanyu.com/${key}`
       );
+      this.$refs.showImg.clearValidate(); // 关闭校验
     },
 
     // 上传失败
@@ -571,8 +576,6 @@ export default {
           this.pagination.absTotal++;
           this.pagination.num = Math.ceil((absTotal + 1) / size);
           this.pagination.total = this.pagination.absTotal; //更新total
-          //  清空查询数据
-          this.clear(this.searchData);
           this.getTableData();
           this.$message.success(`已添加景区 ${this.sceneryForm.name}`);
           this.sceneryDialog = false;
@@ -603,9 +606,8 @@ export default {
       }
           } else {
             console.log(field)
-            if(field.coverUrl){
-              this.coverTips = false
-            }
+            field.coverUrl && (this.coverTips = false)
+            field.imageUrls && (this.imageTips = false)
             return false;
           }
         });
