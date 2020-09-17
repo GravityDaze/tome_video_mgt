@@ -171,7 +171,8 @@ export default {
             {
               type: "primary",
               label: "查看",
-              handle: this.checkCustomer
+              handle: this.checkCustomer,
+              disabled: row => row.id === 0
             }
           ]
         }
@@ -341,10 +342,12 @@ export default {
     // 需求详情分页
     demandSizeChange(val) {
       this.demandPagination.size = val;
+      this.getDemandData()
     },
 
     demandNumChange(val) {
       this.demandPagination.num = val;
+      this.getDemandData()
     },
 
     // 对话框关闭

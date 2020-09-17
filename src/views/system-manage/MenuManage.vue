@@ -42,7 +42,8 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-show="menuForm.type === 0" label="菜单精确类型" prop="fullOrChildMenu">
+        <!-- 后端暂不支持菜单精确类型 -->
+        <!-- <el-form-item v-show="menuForm.type === 0" label="菜单精确类型" prop="fullOrChildMenu">
           <el-select v-model="menuForm.fullOrChildMenu">
             <el-option label="父菜单" :value="0"></el-option>
             <el-option label="子菜单" :value="1"></el-option>
@@ -55,7 +56,7 @@
           >
             <i slot="reference" class="el-icon-question" style="cursor:pointer;margin-left:5px;color:#606266"></i>
           </el-popover>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="HTTP方法" prop="method">
           <el-select v-model="menuForm.method">
             <el-option
@@ -195,7 +196,7 @@ export default {
               label: "新增",
               handle: this.addSubMenu,
               type: "primary",
-              disabled:row => !!row.fullOrChildMenu
+              // disabled:row => !!row.fullOrChildMenu
             },
             {
               label: "编辑",
@@ -227,7 +228,7 @@ export default {
         description: "",
         iconStyle: "",
         route: "",
-        fullOrChildMenu: "",
+        // fullOrChildMenu: "",
       },
       tablesLoading: false,
       menuDialog: false,
@@ -432,8 +433,8 @@ export default {
           }
         }
       });
-    },
-  },
+    }
+  }
 };
 </script>
 

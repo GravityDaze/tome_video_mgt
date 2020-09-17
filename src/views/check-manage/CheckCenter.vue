@@ -109,6 +109,12 @@ export default {
           type:'img'
         },
         {
+          prop: "customerFaceUrl",
+          label: "人脸识别",
+          align: "center",
+          type:'img'
+        },
+        {
           prop: "status",
           label: "审核结果",
           align: "center",
@@ -361,11 +367,12 @@ export default {
             "examineDatetime",
             "statusUpload",
             "button",
-            "coverUrl"
+            "coverUrl",
+            "customerFaceUrl"
           ];
           break;
         default:
-          filter = ["button","remark","statusUpload","coverUrl"];
+          filter = ["button","remark","statusUpload","coverUrl", "customerFaceUrl"];
       }
       // 获取到过滤后的表头
       const mainCols = _.cloneDeep(
