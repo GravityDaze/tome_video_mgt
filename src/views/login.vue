@@ -2,7 +2,7 @@
   <div class="home_bg">
     <div class="login_content">
       <div class="title">
-        <img class="logo" src="../assets/images/logo.png" alt />
+        <!-- <img class="logo" src="../assets/images/logo.png" alt /> -->
       </div>
       <div class="input_content">
         <div>
