@@ -8,7 +8,7 @@
   <el-drawer
     size="20%"
     show-close
-    :title="drawerFormType === 'profile'?'个人资料':'修改密码'"
+    :title="drawerFormType === 'profile' ? '个人资料' : '修改密码'"
     :visible.sync="showDrawer"
     direction="rtl"
     append-to-body
@@ -17,6 +17,7 @@
     ref="drawer"
     @closed="drawerClose"
     @open="drawerOpen"
+    :wrapperClosable="false"
   >
     <!--  -->
     <div class="drawer" v-if="drawerFormType === 'profile'">
@@ -25,12 +26,16 @@
         :show-file-list="false"
         :on-success="handleAvatarSuccess"
         :before-upload="beforeAvatarUpload"
-        :data="{token}"
+        :data="{ token }"
         action="https://upload-z2.qiniup.com"
       >
         <el-avatar
-          style="width:80px;height:80px"
-          :src="userInfo.headheadPicPath || this.userInfoForm.headPicPath || require('../../assets/images/avatar.png')"
+          style="width: 80px; height: 80px"
+          :src="
+            userInfo.headheadPicPath ||
+            this.userInfoForm.headPicPath ||
+            require('../../assets/images/avatar.png')
+          "
         ></el-avatar>
         <div class="mask">
           <span>修改头像</span>
@@ -38,62 +43,79 @@
       </el-upload>
       <el-form ref="userInfoForm" :model="userInfoForm" label-width="80px">
         <el-form-item label="用户名">
-          <span>{{userInfo.loginName}}</span>
+          <span>{{ userInfo.loginName }}</span>
         </el-form-item>
         <el-form-item label="真实姓名">
           <el-input v-if="showForm" v-model="userInfoForm.realName"></el-input>
-          <span v-else>{{userInfo.realName}}</span>
+          <span v-else>{{ userInfo.realName }}</span>
         </el-form-item>
         <el-form-item label="性别">
           <el-radio-group v-if="showForm" v-model="userInfoForm.sex">
             <el-radio :label="1">男</el-radio>
             <el-radio :label="0">女</el-radio>
           </el-radio-group>
-          <span v-else>{{userInfo.sex?'男':'女'}}</span>
+          <span v-else>{{ userInfo.sex ? "男" : "女" }}</span>
         </el-form-item>
         <el-form-item label="联系电话">
           <el-input v-if="showForm" v-model="userInfoForm.phone"></el-input>
-          <span v-else>{{userInfo.phone || '未设置'}}</span>
+          <span v-else>{{ userInfo.phone || "未设置" }}</span>
         </el-form-item>
         <el-form-item label="Email">
           <el-input v-if="showForm" v-model="userInfoForm.email"></el-input>
-          <span v-else>{{userInfo.email || '未设置'}}</span>
+          <span v-else>{{ userInfo.email || "未设置" }}</span>
         </el-form-item>
         <el-form-item label="生日">
           <el-input v-if="showForm" v-model="userInfoForm.birthday"></el-input>
-          <span v-else>{{userInfo.birthday}}</span>
+          <span v-else>{{ userInfo.birthday }}</span>
         </el-form-item>
       </el-form>
     </div>
 
     <!-- 修改密码表单 -->
     <div class="changePwd" v-else>
-      <el-form ref="pwdForm" status-icon :model="pwdForm" label-width="80px" :rules="rules">
+      <el-form
+        ref="pwdForm"
+        status-icon
+        :model="pwdForm"
+        label-width="80px"
+        :rules="rules"
+      >
         <el-row type="flex" justify="center">
           <el-col :span="18">
             <el-form-item label="原密码" prop="oldPassword">
-              <el-input type="password" v-model="pwdForm.oldPassword"></el-input>
+              <el-input
+                type="password"
+                v-model="pwdForm.oldPassword"
+              ></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row type="flex" justify="center">
           <el-col :span="18">
             <el-form-item label="新密码" prop="newPassword">
-              <el-input type="password" v-model="pwdForm.newPassword"></el-input>
+              <el-input
+                type="password"
+                v-model="pwdForm.newPassword"
+              ></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row type="flex" justify="center">
           <el-col :span="18">
             <el-form-item label="确认密码" prop="confirmPassword">
-              <el-input type="password" v-model="pwdForm.confirmPassword"></el-input>
+              <el-input
+                type="password"
+                v-model="pwdForm.confirmPassword"
+              ></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row type="flex" justify="center">
           <el-col :span="18">
             <el-form-item>
-              <el-button @click="changePwd('pwdForm')" type="primary">确认修改</el-button>
+              <el-button @click="changePwd('pwdForm')" type="primary"
+                >确认修改</el-button
+              >
               <el-button @click="cancel">关闭</el-button>
             </el-form-item>
           </el-col>
@@ -104,10 +126,12 @@
     <div
       class="drawer__footer"
       v-if="drawerFormType === 'profile'"
-      style="display:flex;justify-content:center"
+      style="display: flex; justify-content: center"
     >
-      <el-button :disabled="pending" type="primary" @click="edit">{{showForm?'保存资料':'修改资料'}}</el-button>
-      <el-button @click="cancel">{{showForm?'取消':'关闭'}}</el-button>
+      <el-button :disabled="pending" type="primary" @click="edit">{{
+        showForm ? "保存资料" : "修改资料"
+      }}</el-button>
+      <el-button @click="cancel">{{ showForm ? "取消" : "关闭" }}</el-button>
     </div>
   </el-drawer>
 </template>
@@ -123,12 +147,12 @@ export default {
   props: {
     showDrawer: {
       type: Boolean,
-      default: false
+      default: false,
     },
     drawerFormType: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   data() {
     // 自定义密码修改校验规则
@@ -143,6 +167,14 @@ export default {
     var npValid = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入新密码"));
+      } else if (value.length < 8) {
+        return callback(new Error("密码长度不小于8位"));
+      } else if (
+        !/^.*(?=.{8,16})(?=.*\d)(?=.*[A-Z]{1,})(?=.*[a-z]{1,})(?=.*[!@#$%^&*?\(\)]).*$/.test(
+          value
+        )
+      ) {
+        return callback(new Error("需包含大小写字母、数字及特殊符号"));
       } else {
         if (this.pwdForm.confirmPassword !== "") {
           this.$refs.pwdForm.validateField("confirmPassword");
@@ -168,21 +200,23 @@ export default {
         phone: "",
         email: "",
         birthday: "",
-        headPicPath: ""
+        headPicPath: "",
       }, //个人资料表单
       pwdForm: {
         oldPassword: "",
         newPassword: "",
-        confirmPassword: ""
+        confirmPassword: "",
       }, //修改密码表单
       rules: {
-        oldPassword: [{required: true, validator: opValid, trigger: "blur" }],
-        newPassword: [{required: true, validator: npValid, trigger: "blur" }],
-        confirmPassword: [{required: true, validator: cpValid, trigger: "blur" }]
+        oldPassword: [{ required: true, validator: opValid, trigger: "blur" }],
+        newPassword: [{ required: true, validator: npValid, trigger: "blur" }],
+        confirmPassword: [
+          { required: true, validator: cpValid, trigger: "blur" },
+        ],
       },
       showForm: false,
       pending: false,
-      token: "" //七牛云上传token
+      token: "", //七牛云上传token
     };
   },
   methods: {
@@ -194,7 +228,7 @@ export default {
     // 上传头像前
     async beforeAvatarUpload({ type, name }) {
       // 校验文件类型
-      if (["image/jpeg", "image/png","image/gif"].indexOf(type) == -1) {
+      if (["image/jpeg", "image/png", "image/gif"].indexOf(type) == -1) {
         this.$message.error("只能上传jpg & png & gif 格式的图片");
         return Promise.reject();
       } else {
@@ -215,12 +249,12 @@ export default {
       console.log(this.userInfo);
       await editUserInfo({
         ...this.userInfo,
-        headPicPath: `https://tomevideo.zhihuiquanyu.com/${key}`
+        headPicPath: `https://tomevideo.zhihuiquanyu.com/${key}`,
       });
       //   同步至vuex
       this.$store.commit("user/SET_USER_INFO", {
         ...this.userInfo,
-        headPicPath: `https://tomevideo.zhihuiquanyu.com/${key}`
+        headPicPath: `https://tomevideo.zhihuiquanyu.com/${key}`,
       });
       this.$message.success("头像修改成功");
     },
@@ -237,7 +271,7 @@ export default {
           //   同步至vuex
           this.$store.commit("user/SET_USER_INFO", {
             loginName: this.userInfo.loginName,
-            ...this.userInfoForm
+            ...this.userInfoForm,
           });
           this.$message.success("修改资料成功");
         } catch (err) {
@@ -265,7 +299,7 @@ export default {
 
     // 修改密码
     changePwd(formName) {
-      this.$refs[formName].validate(async valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           const { data } = await editPassword(this[formName]);
           this.$message.success("修改密码成功");
@@ -287,8 +321,8 @@ export default {
     drawerClose() {
       this.pwdForm = restore(this.pwdForm);
       this.$refs.pwdForm && this.$refs.pwdForm.resetFields();
-    }
-  }
+    },
+  },
 };
 </script>
 
