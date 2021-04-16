@@ -22,7 +22,7 @@ instance.interceptors.response.use(response => {
         if( resultCode === '0000' ){
             return response
         }else{
-            Message.error(resultMessage)
+            Message.error(resultMessage || '未知错误')
             return Promise.reject(new Error(resultMessage || 'Error'))
         }
     }else{

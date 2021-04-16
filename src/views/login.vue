@@ -1,5 +1,14 @@
 <template>
   <div class="home_bg">
+    <div class="video">
+      <video
+        id="video"
+        loop
+        autoplay
+        muted
+        src="https://tomevideo.zhihuiquanyu.com/video3.mp4"
+      ></video>
+    </div>
     <div class="login_content">
       <div class="wel-img">
         <img class="logo" src="../assets/images/wel.jpg" alt />
@@ -9,7 +18,9 @@
           <img src="../assets/images/log.png" alt="" />
         </div>
         <div class="input_content">
-          <div>
+          <div
+            :style="{ borderColor: curFocus === 0 ? 'transparent' : '#5c544c' }"
+          >
             <label style="width: 100%">
               <span>用户名</span>
               <input
@@ -25,7 +36,9 @@
             </label>
           </div>
 
-          <div>
+          <div
+            :style="{ borderColor: curFocus === 1 ? 'transparent' : '#5c544c' }"
+          >
             <label style="width: 100%">
               <span>密码</span>
               <input
@@ -40,7 +53,10 @@
               ></div>
             </label>
           </div>
-          <div class="code-area">
+          <div
+            class="code-area"
+            :style="{ borderColor: curFocus === 2 ? 'transparent' : '#5c544c' }"
+          >
             <label>
               <span>验证码</span>
               <input
@@ -77,7 +93,7 @@
       <div class="copy">
         <p style="padding: 0; margin: 0">—— 途咪VLOG 后台管理系统 ——</p>
         <span style="white-space: nowrap"
-          >Copyright 2020 © 途咪智慧视频有限技术公司</span
+          >Copyright 2020 © 成都途咪智慧视频有限技术公司</span
         >
       </div>
     </div>
@@ -103,8 +119,16 @@ export default {
     };
   },
   created() {
-    this.enter();
+    // 监听回车按钮
+    document.onkeydown = () => {
+      const key = window.event.keyCode;
+      key === 13 && this.loginFn();
+    };
+
     this.getCode();
+  },
+  beforeDestroy() {
+    document.onkeydown = null;
   },
   computed: mapGetters(["userInfo"]),
   methods: {
@@ -128,36 +152,23 @@ export default {
         return this.$message.warning("请输入密码！");
       if (!this.loginForm.code) return this.$message.warning("请输入验证码！");
 
-      // 登录actions
       this.loading = true;
-      this.login(this.loginForm)
-        .then(() => {
-          // 获取菜单
-          this.getMenuList()
-            .then((resolve) => {
-              this.$router.push("/");
-              this.$notify({
-                title: `您好 ${this.userInfo.loginName}`,
-                message: `今天是${new Date().toLocaleDateString()} 欢迎登录途咪小视频后台管理系统`,
-                type: "success",
-              });
-              // 登录actions
-              this.loading = false;
-            })
-            .catch((err) => console.log(err));
-        })
-        .catch(() => {
-          this.getCode();
-          this.loading = false;
+      try {
+        // 登录
+        await this.login(this.loginForm);
+        // 获取菜单
+        await this.getMenuList();
+        this.$router.replace("/");
+        this.$notify({
+          title: `您好 ${this.userInfo.loginName}`,
+          message: `今天是${new Date().toLocaleDateString()} 欢迎登录途咪小视频后台管理系统`,
+          type: "success",
         });
-    },
-
-    // 监听回车按钮
-    enter() {
-      document.onkeydown = () => {
-        const key = window.event.keyCode;
-        key === 13 && this.loginFn();
-      };
+      } catch {
+        this.getCode();
+      } finally {
+        this.loading = false;
+      }
     },
   },
 };
@@ -166,13 +177,22 @@ export default {
 <style scoped lang="less">
 .home_bg {
   height: 100vh;
-  background: url("../assets/images/bg.jpg") center no-repeat;
-  background-size:cover;
-  // filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+
+  .video {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+
+    video {
+      object-fit: cover;
+    }
+  }
 
   &::after {
     content: "";
@@ -182,7 +202,7 @@ export default {
     right: 0;
     position: absolute;
     z-index: 2;
-    background: rgba(0, 0,0, 0.6);
+    background: rgba(0, 0, 0, 0.4);
   }
 
   .login_content {
@@ -190,50 +210,51 @@ export default {
     display: flex;
     z-index: 3;
     width: 770px;
-   box-shadow: 3px 5px 18px 0px rgba(88, 82, 70, 0.45);
+    box-shadow: 3px 5px 18px 0px rgba(88, 82, 70, 0.45);
     background: rgba(255, 255, 255, 1);
 
     .wel-img {
       position: relative;
+      // flex: 1;
       flex-shrink: 0;
       width: 50%;
-      cursor:pointer;
 
       img {
         // filter: blur(px);
         position: absolute;
         top: -10%;
         right: -15px;
-        box-shadow: 8px 13px 29px 0px rgba(29, 30, 23, 0.86); 
+        box-shadow: 8px 13px 29px 0px rgba(29, 30, 23, 0.86);
       }
     }
 
     .input-box {
       padding: 30px 45px 0 70px;
       box-sizing: border-box;
+      // flex:1;
+      // flex-shrink: 0;
 
       .logo {
         display: flex;
         justify-content: center;
-        margin-bottom:20px;
-        
-        img{
-          width:160px;
-          height:42px;
+        margin-bottom: 20px;
+
+        img {
+          width: 160px;
+          height: 42px;
         }
       }
     }
 
     .input_content {
       color: #5c544c;
-      font-weight:bold;
-      font-family: '宋体';
+      font: bold 14px "宋体";
 
       input {
         width: 100%;
         height: 32px;
         font-size: 16px;
-        
+
         border: none;
         outline: none;
       }
@@ -242,48 +263,79 @@ export default {
         position: absolute;
         bottom: -1px;
         width: 0;
-        left: 50%;
-        transform: translateX(-50%);
+        // left: 50%;
+        // transform: translateX(-50%);
         height: 2px;
         // background: rgb(244,186,27);
-        background:#5c544c;
+        background: #5c544c;
         // background:#000;
-        transition: 0.5s;
+        transition: 0.3s;
       }
     }
 
-    .title {
-      background-image: url("../assets/images/login-bg.jpg");
-      background-size: cover;
-      height: 170px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px 8px 0 0;
+    // .title {
+    //   // background-image: url("../assets/images/login-bg.jpg");
+    //   background-size: cover;
+    //   height: 170px;
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
+    //   border-radius: 8px 8px 0 0;
 
-      .logo {
-        width: 200px;
-      }
-    }
+    //   .logo {
+    //     width: 200px;
+    //   }
+    // }
 
     .footer {
       box-sizing: border-box;
       width: 100%;
-      padding:20px 6px 50px;
+      padding: 20px 6px 50px;
 
       .login_btn {
+        position: relative;
         border: 1px solid #5c544c;
-        font-size: 14px;
+        font: bold 14px "宋体";
+        color: #5c544c;
         padding: 14px 0;
         text-align: center;
         width: 100%;
         transition: 0.5s;
         cursor: pointer;
+        overflow: hidden;
+
+        &::after {
+          content: "";
+          position: absolute;
+          background: #5c544c;
+          border-radius: 50%;
+          width: 100%;
+          height: 100%;
+          right: 100%;
+          transition: 0.3s cubic-bezier(0.7, 0, 0.9, 1);
+          transform-origin: 100% 50%;
+          transform: scale3d(1, 2, 1);
+          z-index: -1;
+        }
 
         &:hover {
-          background:#5c544c;
-        //   border: 1px solid #d8a312;
-          color:#fff;
+          &::after {
+            transition-timing-function: cubic-bezier(0.52, 1.64, 0.37, 0.66);
+            border-radius: 0;
+            right: 0;
+          }
+          color: #fff;
+        }
+      }
+
+      .is_loading {
+        border: 1px solid darkgray !important;
+        background: darkgray;
+        cursor: wait;
+        color: #fff !important;
+
+        &:hover {
+          background: darkgray !important;
         }
       }
     }
@@ -301,6 +353,7 @@ export default {
 }
 
 .input_content > div {
+  transition: 0.5s;
   position: relative;
   display: flex;
   padding-top: 28px;
@@ -324,14 +377,5 @@ export default {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-}
-
-.is_loading {
-  background: darkgray;
-  cursor: wait;
-
-  &:hover {
-    background: darkgray;
-  }
 }
 </style>

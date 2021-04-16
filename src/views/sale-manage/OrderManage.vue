@@ -340,27 +340,21 @@ export default {
     dialogClose(formName) {
       // 重置验证
       this.$refs[formName].resetFields();
-      this[formName] = restore(this[formName]);
     },
 
     // 查询
     query(searchData) {
-      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-      // 将searchData中的时间数组转换为后台需要接收的格式
-      if (searchData.createDatetime && searchData.createDatetime.length) {
-        searchData.createStartDatetime = searchData.createDatetime[0];
-        searchData.createEndDatetime = searchData.createDatetime[1];
-        delete searchData.createDatetime;
-      } else if (
-        searchData.createStartDatetime ||
-        searchData.createEndDatetime
-      ) {
-        delete searchData.createStartDatetime;
-        delete searchData.createEndDatetime;
+
+      if (!_.isEqual(searchData, this.searchData) ) {
+        this.pagination.num = 1;
       }
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+      //将searchData中的时间数组转换为后台需要的字符串格式
+      if (searchData.createDatetime) {
+        const [ createStartDatetime, createEndDatetime] = searchData.createDatetime
+        this.searchData = { ...searchData, createStartDatetime, createEndDatetime };
+      }else{
+        this.searchData = { ...searchData }
+      }
       this.getTableData();
     },
   },

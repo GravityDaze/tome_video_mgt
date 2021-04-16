@@ -426,21 +426,18 @@ export default {
       this.tempPointData = []
     },
 
-    // 按钮查询
+    // 按钮查询 bug toFix
     query(searchData) {
-      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-      // 将searchData中的时间数组转换为后台需要的字符串格式 bug toFix
-      if (searchData.createDatetime && searchData.createDatetime.length) {
-        searchData.startDatetime = searchData.createDatetime[0];
-        searchData.endDatetime = searchData.createDatetime[1];
-        delete searchData.createDatetime;
-      } else if (searchData.startDatetime || searchData.endDatetime) {
-        delete searchData.startDatetime;
-        delete searchData.endDatetime;
+      if (!_.isEqual(searchData, this.searchData) ) {
+        this.pagination.num = 1;
       }
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+      //将searchData中的时间数组转换为后台需要的字符串格式
+      if (searchData.createDatetime) {
+        const [ startDatetime, endDatetime] = searchData.createDatetime
+        this.searchData = { ...searchData, startDatetime, endDatetime };
+      }else{
+        this.searchData = { ...searchData }
+      }
       this.getTableData();
     }
   }

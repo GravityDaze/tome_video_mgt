@@ -78,6 +78,8 @@ export default {
               case 2:
                 return "合成成功";
                 break;
+              case 4:
+                return "用户取消"
               default:
                 return "合成失败";
             }
@@ -188,7 +190,9 @@ export default {
         const { data } = await queryDemand(query);
         this.tableData = data.value.list;
         this.pagination.total = data.value.total;
-      } catch (err) {}
+      } catch (err) {
+        console.log(err)
+      }
       finally{
         this.tableLoading = false
       }
@@ -196,19 +200,16 @@ export default {
 
     // 按钮查询
     query(searchData) {
-      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-      // 将searchData中的时间数组转换为后台需要接收的格式
-      if (searchData.createDatetime && searchData.createDatetime.length) {
-        searchData.startDate = searchData.createDatetime[0];
-        searchData.endDate = searchData.createDatetime[1];
-        delete searchData.createDatetime;
-      } else if (searchData.startDate || searchData.endDate) {
-        delete searchData.startDate;
-        delete searchData.endDate;
+      if (!_.isEqual(searchData, this.searchData) ) {
+        this.pagination.num = 1;
       }
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+      //将searchData中的时间数组转换为后台需要的字符串格式
+      if (searchData.createDatetime) {
+        const [ startDate, endDate] = searchData.createDatetime
+        this.searchData = { ...searchData, startDate, endDate };
+      }else{
+        this.searchData = { ...searchData }
+      }
       this.getTableData();
     }
   }

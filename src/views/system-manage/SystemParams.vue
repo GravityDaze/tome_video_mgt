@@ -256,9 +256,10 @@ export default {
 
     // 按钮查询
     query(searchData){
-       this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+     if (!_.isEqual(searchData, this.searchData)) {
+        this.pagination.num = 1;
+      }
+      this.searchData = { ...searchData};
       this.getTableData();
     },
 

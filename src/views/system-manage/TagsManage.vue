@@ -36,7 +36,7 @@
         >
           <el-input v-model.trim="tagsForm.name" placeholder="请输入标签名称"></el-input>
         </el-form-item>
-        <el-form-item label="标签类型">
+        <el-form-item label="标签类型" prop="type">
           <el-select v-model="tagsForm.type" disabled>
             <el-option label="景区标签" :value="1"></el-option>
           </el-select>
@@ -205,10 +205,7 @@ export default {
       this.tagsDialogTitle = "编辑";
       this.tagsDialog = true;
       this.id = row.id;
-      // 回填数据
-      for (const item in this.tagsForm) {
-        this.tagsForm[item] = row[item];
-      }
+      this.$nextTick( _=> this.tagsForm = {...row}   )
     },
 
     // 新增标签
@@ -219,8 +216,6 @@ export default {
 
     // 对话框关闭时
     dialogClose(formName) {
-      this[formName].type = 1;
-      this[formName].name = "";
       this.$refs[formName].resetFields();
     },
 
@@ -250,9 +245,10 @@ export default {
 
     // 查询标签
     query(searchData) {
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+      if (!_.isEqual(searchData, this.searchData)) {
+        this.pagination.num = 1;
+      }
+      this.searchData = { ...searchData};
       this.getTableData();
     }
   }

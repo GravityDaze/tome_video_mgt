@@ -12,8 +12,12 @@
     />
 
     <!-- 上传对话框 begin -->
-    <el-dialog title="上传视频" :show-close="false" :visible.sync="upLoadDiaglogVisible">
-      <p style="margin-top:0">只能上传mp4格式，上传成功后，请点击确定按钮</p>
+    <el-dialog
+      title="上传视频"
+      :show-close="false"
+      :visible.sync="upLoadDiaglogVisible"
+    >
+      <p style="margin-top: 0">只能上传mp4格式，上传成功后，请点击确定按钮</p>
       <el-upload
         ref="upload"
         v-loading="uploading"
@@ -25,15 +29,26 @@
         :on-error="onUploadError"
         :on-progress="onUploading"
         :before-upload="beforeUploadSuccess"
-        :data="{token}"
+        :data="{ token }"
       >
-        <video v-if="videoUrl" autoplay muted :src="videoUrl" class="video"></video>
+        <video
+          v-if="videoUrl"
+          autoplay
+          muted
+          :src="videoUrl"
+          class="video"
+        ></video>
         <i v-else class="el-icon-plus video-uploader-icon"></i>
       </el-upload>
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancelDialog">取 消</el-button>
-        <el-button type="primary" :disabled="uploadDialogDisabled" @click="uploadFinish">确 定</el-button>
+        <el-button
+          type="primary"
+          :disabled="uploadDialogDisabled"
+          @click="uploadFinish"
+          >确 定</el-button
+        >
       </div>
     </el-dialog>
     <!-- 上传对话框 end -->
@@ -58,125 +73,131 @@
 import {
   queryVideoList,
   queryChecking,
-  checkStartApi,
+  beginCheck,
   uploadFinishApi,
-  postAuditStatus
+  postCheckStatus,
 } from "@/api/management/checkManage";
 import { getUpLoadParams } from "@/api/qiniu";
 import { download } from "@/utils/download";
 import initPagination from "@/mixins/initPagination";
 export default {
-  mixins:[initPagination],
+  mixins: [initPagination],
   data() {
     return {
       // 表头默认状态 0未审核 1正在审核  2:审核通过 3:审核不通过
       status: 0,
       // 响应审核状态映射
-      statusMap:new Map([
+      statusMap: new Map([
         [0, "未审核"],
         [1, "正在审核"],
         [2, "审核通过"],
-        [3, "审核未通过"]
+        [3, "审核未通过"],
       ]),
       // 响应审核标签类型映射
-      statusTagMap:new Map([
+      statusTagMap: new Map([
         [0, "warning"],
         [1, ""],
         [2, "success"],
-        [3, "danger"]
+        [3, "danger"],
       ]),
       filterTitle: [], //过滤后的表头数据
       tableCols: [
         {
           prop: "id",
           label: "审核id",
-          align: "center"
+          align: "center",
         },
         {
           prop: "customerNeedId",
           label: "用户需求id",
-          align: "center"
+          align: "center",
         },
         {
           prop: "name",
           label: "视频名称",
-          align: "center"
+          align: "center",
         },
         {
           prop: "coverUrl",
           label: "视频封面",
           align: "center",
-          type:'img'
+          type: "img",
         },
         {
           prop: "customerFaceUrl",
           label: "人脸识别",
           align: "center",
-          type:'img'
+          type: "img",
         },
         {
           prop: "status",
           label: "审核结果",
           align: "center",
-          type:'tag',
-          tagType:row => this.statusTagMap.get(row.status),
-          formatter: row => this.statusMap.get(row.status)
+          type: "tag",
+          tagType: (row) => this.statusTagMap.get(row.status),
+          formatter: (row) => this.statusMap.get(row.status),
         },
         {
           prop: "examineUserName",
           label: "审核员名称",
-          align: "center"
+          align: "center",
         },
         {
           prop: "examineDatetime",
           label: "审核确认时间",
-          align: "center"
+          align: "center",
         },
         {
           prop: "remark",
           label: "审核备注",
-          align: "center"
+          align: "center",
         },
         {
           prop: "createDatetime",
           label: "审核信息创建时间",
-          align: "center"
+          align: "center",
         },
         {
           prop: "statusUpload",
           label: "视频是否已重新上传",
           align: "center",
-          formatter: row => (row.statusUpload ? "是" : "否")
+          formatter: (row) => (row.statusUpload ? "是" : "否"),
         },
         {
           prop: "proName",
           label: "视频新名称",
-          align: "center"
+          align: "center",
         },
         {
           prop: "proCoverUrl",
           label: "视频新封面",
           align: "center",
-          type:'img'
+          type: "img",
         },
         {
           prop: "proUrl",
           label: "视频新链接",
-          align: "center"
+          align: "center",
+        },
+        {
+          prop: "source",
+          label: "来源",
+          align: "center",
+          formatter: (row) => row.source === 1?'腾讯':'途咪'
         },
         {
           label: "操作",
           type: "button",
-          align:"center",
+          align: "center",
           btnList: [
             { type: "text", label: "开启审核", handle: this.checkStart },
             { type: "text", label: "预览视频", handle: this.preview },
             { type: "text", label: "审核通过", handle: this.approved },
             { type: "text", label: "下载", handle: this.downloadVideo },
             { type: "text", label: "上传", handle: this.upload },
-            { type: "text", label: "拒绝", handle: this.disapproved }
-          ]
-        }
+            { type: "text", label: "拒绝", handle: this.disapproved },
+          ],
+        },
       ], //初始表头数据
       formData: [
         {
@@ -184,46 +205,46 @@ export default {
           label: "状态",
           model: "status",
           placeholder: "请选择审核状态",
-          default:0,
+          default: 0,
           options: [
             {
               label: "未审核",
-              value: 0
+              value: 0,
             },
             {
               label: "正在审核",
-              value: 1
+              value: 1,
             },
             {
               label: "审核通过",
-              value: 2
+              value: 2,
             },
             {
               label: "审核未通过",
-              value: 3
-            }
-          ]
+              value: 3,
+            },
+          ],
         },
         {
           type: "input",
           label: "审批人",
           model: "examineUserName",
-          placeholder: "请输入审批人"
+          placeholder: "请输入审批人",
         },
         {
           type: "datePicker",
           label: "时间范围",
-          model: "createDatetime"
-        }
+          model: "createDatetime",
+        },
       ], //初始表单数据
-      searchData:{},
+      searchData: {},
       searchBtn: [
         {
           type: "primary",
           label: "查询",
           handle: this.query,
-          icon: "el-icon-search"
-        }
+          icon: "el-icon-search",
+        },
       ], //search组件的按钮组
       tableData: [], //表格数据
       isCheck: false, //当前是否有正在审核的视频
@@ -244,8 +265,8 @@ export default {
         num: 1,
         size: 10,
         total: 0,
-        absTotal: 0
-      }
+        absTotal: 0,
+      },
     };
   },
 
@@ -254,17 +275,17 @@ export default {
   },
   beforeDestroy() {
     // 关闭通知栏
-    this.instance && this.instance.close()
+    this.instance && this.instance.close();
     // 清除定时器
     clearInterval(this.timer);
   },
-  
-  watch:{
+
+  watch: {
     // 改变status的时候改变默认值
-    status(){
-        const index = this.formData.findIndex( v=> v.model === 'status' )
-        this.formData[index].default = this.status
-    }
+    status() {
+      const index = this.formData.findIndex((v) => v.model === "status");
+      this.formData[index].default = this.status;
+    },
   },
 
   methods: {
@@ -274,7 +295,7 @@ export default {
         status: this.status,
         pageNum: this.pagination.num,
         pageSize: this.pagination.size,
-        ...this.searchData
+        ...this.searchData,
       }
     ) {
       try {
@@ -309,7 +330,7 @@ export default {
       const { data } = await queryChecking();
       this.isChecking = data.value.flag;
       if (this.isChecking) {
-         this.instance = this.$notify({
+        this.instance = this.$notify({
           title: "您有一条正在审核的视频",
           customClass: "hover",
           type: "warning",
@@ -317,11 +338,11 @@ export default {
             "a",
             {
               on: {
-                click: this.checkVideo
-              }
+                click: this.checkVideo,
+              },
             },
             "点击查看"
-          )
+          ),
         });
       }
       this.tableLoading = false;
@@ -353,7 +374,7 @@ export default {
             "proUrl",
             "remark",
             "examineDatetime",
-            "examineUserName"
+            "examineUserName",
           ];
           btnFilter = ["开启审核"];
           break;
@@ -368,20 +389,26 @@ export default {
             "statusUpload",
             "button",
             "coverUrl",
-            "customerFaceUrl"
+            "customerFaceUrl",
           ];
           break;
         default:
-          filter = ["button","remark","statusUpload","coverUrl", "customerFaceUrl"];
+          filter = [
+            "button",
+            "remark",
+            "statusUpload",
+            "coverUrl",
+            "customerFaceUrl",
+          ];
       }
       // 获取到过滤后的表头
       const mainCols = _.cloneDeep(
-        this.tableCols.filter(v => !filter.includes(v.prop || v.type))
+        this.tableCols.filter((v) => !filter.includes(v.prop || v.type))
       );
       // 对按钮组进行单独过滤
-      return mainCols.map(v => {
+      return mainCols.map((v) => {
         if (v.type === "button") {
-          v.btnList = v.btnList.filter(btn => !btnFilter.includes(btn.label));
+          v.btnList = v.btnList.filter((btn) => !btnFilter.includes(btn.label));
         }
         return v;
       });
@@ -389,7 +416,7 @@ export default {
 
     // 通过提示信息跳转到审核界面
     checkVideo() {
-      this.instance.close()
+      this.instance.close();
       this.status = 1;
       this.getTableData();
     },
@@ -405,9 +432,13 @@ export default {
 
     // 开启审核
     async checkStart({ id }) {
+      // 取消定时器
+      clearInterval(this.timer);
+      this.timer = null;
       try {
-        await checkStartApi({ id });
+        await beginCheck({ id });
         this.$message.success("已开启审核");
+        this.pagination.num = 1;
         this.status = 1;
         this.getTableData();
       } catch (err) {}
@@ -484,7 +515,7 @@ export default {
           proName: res.key,
           proUrl: `https://tomevideo.zhihuiquanyu.com/${res.key}`,
           proSize,
-          proDuration
+          proDuration,
         };
         // 完成视频上传
         this.$message.success("已上传视频，请点击确定按钮");
@@ -499,7 +530,7 @@ export default {
     onUploadError(res, file) {
       this.uploading = false;
       this.$confirm("上传视频失败,请刷新网页并尝试重新上传", "提示", {
-        type: "error"
+        type: "error",
       })
         .then(() => {})
         .catch(() => {});
@@ -527,13 +558,13 @@ export default {
       this.$confirm("是否审核通过?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "warning"
+        type: "warning",
       })
         .then(async () => {
           // 审核通过逻辑
-          await postAuditStatus({
+          await postCheckStatus({
             id,
-            result: 1
+            result: 1,
           });
           this.$message.success("已通过");
           // 重新渲染未审核数据
@@ -541,7 +572,7 @@ export default {
           this.getTableData();
         })
         .catch((err) => {
-          console.log(err)
+          console.log(err);
         });
     },
 
@@ -556,10 +587,10 @@ export default {
       if (this.remark === "") {
         this.$message.warning("备注不能为空");
       } else {
-        await postAuditStatus({
+        await postCheckStatus({
           id: this.id,
           remark: this.remark,
-          result: 0
+          result: 0,
         });
         this.$message.info("已拒绝");
         this.refuseDialogvisible = false;
@@ -571,16 +602,13 @@ export default {
 
     // 按钮查询
     query(searchData) {
-      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-
-      // 查询时 pageNum必须恢复为1
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+      if (!_.isEqual(searchData, this.searchData)) {
+        this.pagination.num = 1;
+      }
+      this.searchData = { ...searchData};
       this.getTableData();
-    }
-
-  }
+    },
+  },
 };
 </script>
 

@@ -19,107 +19,143 @@
       @closed="dialogClose('sceneryForm')"
     >
       <el-form :model="sceneryForm" :rules="rules" ref="sceneryForm">
-        <el-form-item label="景区名" label-width="120px" prop="name">
-          <el-input style="width:300px" placeholder="请输入景区名称" v-model="sceneryForm.name"></el-input>
-        </el-form-item>
-        <el-form-item label="景区经纬度" label-width="120px" prop="lonLat">
-          <el-input style="width:300px" placeholder="请输入景区经纬度" v-model="sceneryForm.lonLat"></el-input>
-          <el-button @click="getLnglat" style="margin-left:10px">获取经纬度</el-button>
-        </el-form-item>
-        <el-form-item label="景区标识" label-width="120px" prop="mark">
-          <el-input style="width:300px" placeholder="请输入景区标识" v-model="sceneryForm.mark"></el-input>
-        </el-form-item>
-        <el-form-item label="景区标签" label-width="120px">
-          <el-tag
-            :key="tag"
-            v-for="tag in tags"
-            closable
-            :disable-transitions="false"
-            @close="handleClose(tag)"
-          >{{tag}}</el-tag>
-          <el-autocomplete
-            v-if="inputVisible"
-            class="input-new-tag"
-            v-model="inputValue"
-            :fetch-suggestions="getAllTags"
-            ref="saveTagInput"
-            size="small"
-            @keyup.enter.native="handleInputConfirm"
-            @blur="handleInputConfirm"
-            @select="handleSelect"
-          ></el-autocomplete>
+        <el-row>
+          <el-col :span="10">
+            <el-form-item label="景区名" label-width="120px" prop="name">
+              <el-input
+                placeholder="请输入景区名称"
+                v-model="sceneryForm.name"
+              ></el-input>
+            </el-form-item>
+          </el-col>
 
-          <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新增</el-button>
-        </el-form-item>
-        <el-form-item label="服务器URL" label-width="120px" prop="aiUrl">
-          <el-input style="width:300px" v-model="sceneryForm.aiUrl"></el-input>
-        </el-form-item>
+          <el-col :span="10">
+            <el-form-item label="服务器URL" label-width="120px" prop="aiUrl">
+              <el-input v-model="sceneryForm.aiUrl"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="10">
+            <el-form-item label="景区经纬度" label-width="120px" prop="lonLat">
+              <el-input
+                placeholder="请输入景区经纬度"
+                v-model="sceneryForm.lonLat"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="10">
+            <el-form-item label="景区标识" label-width="120px" prop="mark">
+              <el-input
+                placeholder="请输入景区标识"
+                v-model="sceneryForm.mark"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="景区标签" label-width="120px">
+              <el-tag
+                :key="tag"
+                v-for="tag in tags"
+                closable
+                :disable-transitions="false"
+                @close="handleClose(tag)"
+               
+                >{{ tag }}</el-tag
+              >
+              <el-autocomplete
+                v-if="inputVisible"
+                class="input-new-tag"
+                v-model="inputValue"
+                :fetch-suggestions="getAllTags"
+                ref="saveTagInput"
+                size="small"
+                @keyup.enter.native="handleInputConfirm"
+                @blur="handleInputConfirm"
+                @select="handleSelect"
+              ></el-autocomplete>
+
+              <el-button
+                v-else
+                class="button-new-tag"
+                size="small"
+                @click="showInput"
+                :style="{ marginLeft:tags.length?'10px':'0' }"
+                >+ 新增</el-button
+              >
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <el-form-item label="景区描述" label-width="120px" prop="describe">
           <el-input
-            style="width:500px"
+            style="width: 500px"
             type="textarea"
             v-model="sceneryForm.describe"
             maxlength="30"
             show-word-limit
           ></el-input>
         </el-form-item>
-        <el-form-item ref="cover" label="景区封面" label-width="120px" prop="coverUrl">
-          <el-upload
-            class="uploader"
-            action="https://upload-z2.qiniup.com"
-            :show-file-list="false"
-            :before-upload="beforeUpload"
-            :on-success="onCoverUploadSuccess"
-            :on-error="onError"
-            :data="{token}"
-          >
-            <div v-show="coverTips" slot="tip" class="el-upload__tip">推荐尺寸为157(宽)*48(高)，大小不超过 300KB</div>
-            <img v-if="sceneryForm.coverUrl" :src="sceneryForm.coverUrl" class="upload-img" />
-            <i v-else class="el-icon-upload uploader-icon"></i>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="景区广告图" label-width="120px">
-          <el-upload
-            class="uploader"
-            action="https://upload-z2.qiniup.com"
-            :show-file-list="false"
-            :on-success="onADUploadSuccess"
-            :on-error="onError"
-            :before-upload="beforeUpload"
-            :data="{token}"
-            :element-loading-text="tips"
-          >
-            <div slot="tip" class="el-upload__tip">推荐尺寸为157(宽)*48(高)，大小不超过 300KB</div>
-            <img
-              v-if="sceneryForm.advertisementUrl"
-              :src="sceneryForm.advertisementUrl"
-              class="upload-img"
-            />
-            <i v-else class="el-icon-upload uploader-icon"></i>
-          </el-upload>
-        </el-form-item>
-        <el-form-item ref="showImg" label="景区详图" label-width="120px" prop="imageUrls">
-          <el-upload
-            action="https://upload-z2.qiniup.com"
-            list-type="picture-card"
-            :before-upload="beforeUpload"
-            :on-preview="handlePictureCardPreview"
-            :on-success="onShowImgSuccess"
-            :on-remove="handleRemove"
-            :file-list="fileList"
-            :data="{token}"
-          >
-            <div v-show="imageTips" slot="tip" class="el-upload__tip">推荐尺寸为100(宽)*50(高)，大小不超过 300KB</div>
-            <i class="el-icon-plus"></i>
-          </el-upload>
-          <el-dialog :visible.sync="dialogVisible" append-to-body>
-            <img width="100%" :src="previewUrl" alt />
-          </el-dialog>
-        </el-form-item>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+              ref="cover"
+              label="景区封面"
+              label-width="120px"
+              prop="coverUrl"
+            >
+              <Uploader
+                :imageUrl="sceneryForm.coverUrl"
+                @success="onCoverUploadSuccess"
+                tips=" 推荐宽高比为6:4，大小不超过 300KB"
+              />
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">
+            <el-form-item label="景区广告图" label-width="120px">
+              <Uploader
+                :imageUrl="sceneryForm.advertisementUrl"
+                @success="onADUploadSuccess"
+                tips=" 推荐宽高比为6:4，大小不超过 300KB"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="24">
+            <el-form-item
+              ref="showImg"
+              label="景区详图"
+              label-width="120px"
+              prop="imageUrls"
+            >
+              <Uploader
+                @success="onShowImgSuccess"
+                @preview="handlePictureCardPreview"
+                @remove="handleRemove"
+                :file-list="fileList"
+                list-type="picture-card"
+              />
+              <el-dialog :visible.sync="dialogVisible" append-to-body>
+                <img width="100%" :src="previewUrl" alt />
+              </el-dialog>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="sceneryDialog = false">取 消</el-button>
-        <el-button type="primary" @click="submit('sceneryForm')">确 定</el-button>
+        <el-button type="primary" @click="submit('sceneryForm')"
+          >确 定</el-button
+        >
       </div>
     </el-dialog>
   </el-card>
@@ -129,7 +165,6 @@
 // 网络接口
 import {
   getSceneryList,
-  querySceneryDetail,
   querySceneryInfo,
   addScenery,
   editScenery,
@@ -139,46 +174,47 @@ import {
   setHotScenery,
   cancelHotScenery,
   getSceneryTags,
-  editSceneryTags
+  editSceneryTags,
 } from "@/api/management/sceneryManage";
 import { tagsSelect } from "@/api/management/systemManage";
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
 import initPagination from "@/mixins/initPagination";
+import Uploader from "@/components/Uploader";
 export default {
   mixins: [initPagination],
   name: "scenery-manage",
   data() {
     return {
-      imageTips:true,//是否显示景区详图上传框下方的提示,为false时将显示校验信息
-      coverTips:true,//是否显示景区封面上传框下方的提示,为false时将显示校验信息
+      imageTips: true, //是否显示景区详图上传框下方的提示,为false时将显示校验信息
+      coverTips: true, //是否显示景区封面上传框下方的提示,为false时将显示校验信息
       tableCols: Object.freeze([
         {
           prop: "no",
           label: "景区编号",
-          align: "center"
+          align: "center",
         },
         {
           prop: "name",
           label: "景区名称",
-          align: "center"
+          align: "center",
         },
         {
           prop: "mark",
           label: "标识",
-          align: "center"
+          align: "center",
         },
 
         {
           prop: "updator",
           label: "最后更新者",
-          align: "center"
+          align: "center",
         },
         {
           prop: "updateDatetime",
           label: "最后更新时间",
-          align: "center"
+          align: "center",
         },
         {
           prop: "hotStatus",
@@ -186,14 +222,14 @@ export default {
           align: "center",
           type: "switch",
           change: this.handleHotScenery,
-          disabled:row=> !row.tripStatus
+          disabled: (row) => !row.tripStatus,
         },
         {
           prop: "tripStatus",
           label: "视频服务",
           align: "center",
           type: "switch",
-          change: this.handleService
+          change: this.handleService,
         },
         {
           label: "操作",
@@ -201,22 +237,22 @@ export default {
           align: "center",
           btnList: [
             { type: "primary", label: "编辑", handle: this.editScenery },
-            { type: "danger", label: "删除", handle: this.deleteScenery }
-          ]
-        }
+            { type: "danger", label: "删除", handle: this.deleteScenery },
+          ],
+        },
       ]),
       formData: [
         {
           type: "input",
           label: "景区名称",
           model: "sceneryName",
-          placeholder: "请输入景区名称"
+          placeholder: "请输入景区名称",
         },
         {
           type: "input",
           label: "景区编号",
           model: "sceneryNo",
-          placeholder: "请输入景区编号"
+          placeholder: "请输入景区编号",
         },
         {
           type: "select",
@@ -226,17 +262,17 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "是",
-              value: 1
+              value: 1,
             },
             {
               label: "否",
-              value: 0
-            }
-          ]
+              value: 0,
+            },
+          ],
         },
         {
           type: "select",
@@ -246,56 +282,52 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "关闭",
-              value: 0
+              value: 0,
             },
             {
               label: "开启",
-              value: 1
-            }
-          ]
-        }
+              value: 1,
+            },
+          ],
+        },
       ], //查询表单
       searchBtn: [
         {
           type: "primary",
           label: "查询",
           handle: this.query,
-          icon: "el-icon-search"
+          icon: "el-icon-search",
         },
         {
           type: "primary",
           label: "新增",
           handle: this.add,
-          icon: "el-icon-edit"
-        }
+          icon: "el-icon-edit",
+        },
       ],
-      rules:{
-          name: [
-            { required: true, message: '请输入景区名称', trigger: 'blur' }
-          ],
-          lonLat: [
-            { required: true, message: '请输入景区经纬度', trigger: 'blur' }
-          ],
-          mark: [
-            { required: true, message: '请输入景区标识', trigger: 'blur' }
-          ],
-          aiUrl: [
-            { required: true, message: '请输入服务器URL', trigger: 'blur' }
-          ],
-          describe:[
-            { required: true, message: '请输入景区描述', trigger: 'blur' }
-          ],
-          coverUrl:[
-            { required: true, message: '请上传封面图片', trigger: 'change' }
-          ],
-          imageUrls:[
-            { required: true, message: '请上传景区详图', trigger: 'change' }
-          ]
-      },//校验规则
+      rules: {
+        name: [{ required: true, message: "请输入景区名称", trigger: "blur" }],
+        lonLat: [
+          { required: true, message: "请输入景区经纬度", trigger: "blur" },
+        ],
+        mark: [{ required: true, message: "请输入景区标识", trigger: "blur" }],
+        aiUrl: [
+          { required: true, message: "请输入服务器URL", trigger: "blur" },
+        ],
+        describe: [
+          { required: true, message: "请输入景区描述", trigger: "blur" },
+        ],
+        coverUrl: [
+          { required: true, message: "请上传封面图片", trigger: "change" },
+        ],
+        imageUrls: [
+          { required: true, message: "请上传景区详图", trigger: "change" },
+        ],
+      }, //校验规则
       sceneryDialog: false, //景区修改或新增模态框
       sceneryForm: {
         name: "",
@@ -303,14 +335,14 @@ export default {
         mark: "",
         coverUrl: "",
         advertisementUrl: "",
-        aiUrl:"",
-        describe:"",
-        imageUrls: []
+        aiUrl: "",
+        describe: "",
+        imageUrls: [],
       }, //模态框表单
       dialogTitle: "", //模态框标题
       tablesLoading: false,
       tags: [], //标签数据
-      tagsList:[],//全部标签数据
+      tagsList: [], //全部标签数据
       tips: "",
       id: "", //记录当前正在编辑的景区id
       inputVisible: false, //标签相关参数
@@ -318,7 +350,7 @@ export default {
       token: "", //七牛云上传token
       dialogVisible: false, //展示图片预览对话框
       fileList: [], //视图上展示的fileList
-      previewUrl: "" //预览图片url
+      previewUrl: "", //预览图片url
     };
   },
   created() {
@@ -330,7 +362,7 @@ export default {
       query = {
         ...this.searchData,
         pageNum: this.pagination.num,
-        pageSize: this.pagination.size
+        pageSize: this.pagination.size,
       }
     ) {
       try {
@@ -343,7 +375,7 @@ export default {
           this.pagination.absTotal = data.value.total;
         }
         // 将后台返回的数据处理为符合switch组件的数据
-        this.tableData = data.value.list.map(v => {
+        this.tableData = data.value.list.map((v) => {
           // 将0和1转换为布尔值
           v.hotStatus = !!v.hotStatus;
           v.tripStatus = !!v.tripStatus;
@@ -400,7 +432,7 @@ export default {
         // 查询景区详细信息及标签详细信息
         const [sceneryInfo, tags] = await Promise.all([
           querySceneryInfo({ id }),
-          getSceneryTags({ sceneryId: id })
+          getSceneryTags({ sceneryId: id }),
         ]);
 
         // 将imageUrls转换为数组以便后续操作
@@ -409,24 +441,23 @@ export default {
             ","
           );
           // 获取展示图的视图数据
-          this.fileList = sceneryInfo.data.value.imageUrls.map(v => ({
-            url: v
+          this.fileList = sceneryInfo.data.value.imageUrls.map((v) => ({
+            url: v,
           }));
         }
         // 回填数据
         this.sceneryForm = sceneryInfo.data.value;
         // 获取到标签数据
         if (tags.data.value.length) {
-          this.tags = tags.data.value.map(v => v.tagName);
+          this.tags = tags.data.value.map((v) => v.tagName);
         }
 
         // 获取到全部标签的数据
-      const { data } = await tagsSelect({ type: 1 });
-      this.tagsList = data.value.map(v => ({
-        value: v.tagName,
-        tagId: v.tagId
-      }));
-
+        const { data } = await tagsSelect({ type: 1 });
+        this.tagsList = data.value.map((v) => ({
+          value: v.tagName,
+          tagId: v.tagId,
+        }));
       } catch (err) {
         console.log(err);
       }
@@ -436,7 +467,7 @@ export default {
     async getAllTags(queryStr, callback) {
       // 与输入文字进行匹配
       const res = queryStr
-        ? this.tagsList.filter(v => v.value.indexOf(queryStr) !== -1)
+        ? this.tagsList.filter((v) => v.value.indexOf(queryStr) !== -1)
         : this.tagsList;
       // 调用 callback 返回建议列表的数据
       callback(res);
@@ -450,7 +481,7 @@ export default {
     // 显示标签输入框
     showInput() {
       this.inputVisible = true;
-      this.$nextTick(_ => {
+      this.$nextTick((_) => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
@@ -478,20 +509,20 @@ export default {
       this.dialogTitle = "新增景区";
       // 获取到全部标签的数据
       const { data } = await tagsSelect({ type: 1 });
-      this.tagsList = data.value.map(v => ({
+      this.tagsList = data.value.map((v) => ({
         value: v.tagName,
-        tagId: v.tagId
+        tagId: v.tagId,
       }));
     },
 
     // 模态框关闭时清除所有数据
     dialogClose(formName) {
       this.sceneryForm = restore(this[formName]);
-      console.log(this.sceneryForm)
+      // console.log(this.sceneryForm);
       this.fileList = [];
       this.tags = [];
       // 清除校验
-       this.$refs[formName].resetFields();
+      this.$refs[formName].resetFields();
     },
 
     // 上传前统一获取token
@@ -548,7 +579,7 @@ export default {
     // 删除展示图
     handleRemove({ url }) {
       // 将fileList中的变动同步到表单数据中
-      const delIndex = this.sceneryForm.imageUrls.findIndex(v => v === url);
+      const delIndex = this.sceneryForm.imageUrls.findIndex((v) => v === url);
       this.sceneryForm.imageUrls.splice(delIndex, 1);
     },
 
@@ -558,60 +589,59 @@ export default {
     },
 
     // 模态框提交
-     submit(formName) {
-      this.$refs[formName].validate(async (valid,field) => {
-          if (valid) {
-            try {
-        // 判断当前是新增还是修改景区
-        if (this.dialogTitle === "新增景区") { 
-          // 先调用新增景区接口以获取到id , 然后才能通过id调用标签编辑接口
-          const { data } = await addScenery(this.sceneryForm);
-          await editSceneryTags({
-            sceneryId: data.value.sceneryId,
-            tags: this.tags
-          });
-          // 由于后台返回的数据是正序 所以新增景区后跳转到表格的最后一页
-          const { absTotal, size } = this.pagination;
-           // 在有查询数据的情况下使用total 将会出现异常 所以使用absTotal
-          this.pagination.absTotal++;
-          this.pagination.num = Math.ceil((absTotal + 1) / size);
-          this.pagination.total = this.pagination.absTotal; //更新total
-          this.getTableData();
-          this.$message.success(`已添加景区 ${this.sceneryForm.name}`);
-          this.sceneryDialog = false;
-        } else {
-          // 将tags数组中的已经存在于数据库的标签转换为KEY , 不存在的直接返回标签名
-          const newTags = this.tags.map(tagName => {
-            // 与tagList数组进行对比
-            const index = this.tagsList.findIndex(
-              item => item.value === tagName
-            );
-            if (index !== -1) {
-              // 匹配时返回KEY
-              return this.tagsList[index].tagId;
+    submit(formName) {
+      this.$refs[formName].validate(async (valid, field) => {
+        if (valid) {
+          try {
+            // 判断当前是新增还是修改景区
+            if (this.dialogTitle === "新增景区") {
+              // 先调用新增景区接口以获取到id , 然后才能通过id调用标签编辑接口
+              const { data } = await addScenery(this.sceneryForm);
+              await editSceneryTags({
+                sceneryId: data.value.sceneryId,
+                tags: this.tags,
+              });
+              // 由于后台返回的数据是正序 所以新增景区后跳转到表格的最后一页
+              const { absTotal, size } = this.pagination;
+              // 在有查询数据的情况下使用total 将会出现异常 所以使用absTotal
+              this.pagination.absTotal++;
+              this.pagination.num = Math.ceil((absTotal + 1) / size);
+              this.pagination.total = this.pagination.absTotal; //更新total
+              this.getTableData();
+              this.$message.success(`已添加景区 ${this.sceneryForm.name}`);
+              this.sceneryDialog = false;
             } else {
-              // 不匹配时直接返回标签名
-              return tagName;
+              // 将tags数组中的已经存在于数据库的标签转换为KEY , 不存在的直接返回标签名
+              const newTags = this.tags.map((tagName) => {
+                // 与tagList数组进行对比
+                const index = this.tagsList.findIndex(
+                  (item) => item.value === tagName
+                );
+                if (index !== -1) {
+                  // 匹配时返回KEY
+                  return this.tagsList[index].tagId;
+                } else {
+                  // 不匹配时直接返回标签名
+                  return tagName;
+                }
+              });
+              await Promise.all([
+                editScenery({ ...this.sceneryForm, id: this.id }),
+                editSceneryTags({ sceneryId: this.id, tags: newTags }),
+              ]);
+              this.$message.success(`修改成功`);
+              this.sceneryDialog = false;
             }
-          });
-          await Promise.all([
-            editScenery({ ...this.sceneryForm, id: this.id }),
-            editSceneryTags({ sceneryId: this.id, tags: newTags })
-          ]);
-          this.$message.success(`修改成功`);
-          this.sceneryDialog = false;
-        }
-      } catch (err) {
-        console.log(err);
-      }
-          } else {
-            console.log(field)
-            field.coverUrl && (this.coverTips = false)
-            field.imageUrls && (this.imageTips = false)
-            return false;
+          } catch (err) {
+            console.log(err);
           }
-        });
-      
+        } else {
+          console.log(field);
+          field.coverUrl && (this.coverTips = false);
+          field.imageUrls && (this.imageTips = false);
+          return false;
+        }
+      });
     },
 
     // 删除景区
@@ -619,7 +649,7 @@ export default {
       this.$confirm("此操作将永久删除该景区, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "warning"
+        type: "warning",
       })
         .then(async () => {
           await delScenery({ id });
@@ -640,13 +670,16 @@ export default {
 
     // 按钮查询相关
     query(searchData) {
-      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+      if (!_.isEqual(searchData, this.searchData)) {
+        this.pagination.num = 1;
+      }
+      this.searchData = { ...searchData};
       this.getTableData();
-    }
-  }
+    },
+  },
+  components: {
+    Uploader,
+  },
 };
 </script>
 
@@ -667,31 +700,4 @@ export default {
   margin-left: 10px;
   vertical-align: bottom;
 }
-
-// .scenery-manage {
-// 上传框
-.uploader .el-upload {
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.uploader .el-upload:hover {
-  border-color: #409eff;
-}
-.uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 157px;
-  height: 48px;
-  line-height: 48px;
-  text-align: center;
-}
-.upload-img {
-  width: 157px;
-  height: 48px;
-  display: block;
-}
-// }
 </style>

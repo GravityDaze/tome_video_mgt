@@ -92,15 +92,15 @@ export default {
     // 获取标签状态
     getTagsStatus() {
       // 获取vuex路由表保存的第一个路由
-      const defaultRouter = this.$store.getters.routerMap[0].children[0];
-      const { breadcrumb } = defaultRouter.meta;
+      const fristRoute = this.$store.getters.routerMap[0].children[0];
+      const { breadcrumb } = fristRoute.meta;
       this.editableTabs = JSON.parse(
         window.sessionStorage.getItem("editableTabs")
       ) || [
         {
           title: breadcrumb[breadcrumb.length - 1],
           name: "1",
-          path: defaultRouter.path,
+          path: fristRoute.path,
           close: false
         }
       ];
@@ -138,12 +138,12 @@ export default {
     // 关闭所有标签
     closeAllTags() {
       // 获取vuex路由表保存的第一个路由
-      const defaultRouter = this.$store.getters.routerMap[0].children[0];
+      const fristRoute = this.$store.getters.routerMap[0].children[0];
 
       if (this.editableTabs.length !== 1) {
         this.editableTabs.splice(1, this.editableTabs.length - 1);
-        if (this.$route.path !== defaultRouter.path)
-          this.$router.push(defaultRouter.path);
+        if (this.$route.path !== fristRoute.path)
+          this.$router.push(fristRoute.path);
         this.setTagsStatus();
         this.closeFlag = false;
       }

@@ -11,27 +11,44 @@
     />
 
     <!-- 小视频管理或新增 -->
-    <el-dialog :title="videoDialogTitle" :visible.sync="handleVideoDialog" @close="dialogClose">
+    <el-dialog
+      :title="videoDialogTitle"
+      :visible.sync="handleVideoDialog"
+      @close="dialogClose"
+    >
       <el-form :model="handleVideoForm" v-loading="videoDialogLoading">
         <el-form-item label="视频类型" label-width="120px">
-          <el-select v-model="handleVideoForm.type" placeholder="请选择视频类型">
+          <el-select
+            v-model="handleVideoForm.type"
+            placeholder="请选择视频类型"
+          >
             <el-option label="平台视频" :value="0"></el-option>
             <el-option label="用户视频" :value="1"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="制作需求" label-width="120px" v-show="handleVideoForm.type === 1">
-          <el-input style="width:200px" v-model="handleVideoForm.needNo" autocomplete="off"></el-input>
-          <el-button @click="demandSelect" style="margin-left:10px">选择需求</el-button>
+        <el-form-item
+          label="制作需求"
+          label-width="120px"
+          v-show="handleVideoForm.type === 1"
+        >
+          <el-input
+            style="width: 200px"
+            v-model="handleVideoForm.needNo"
+            autocomplete="off"
+          ></el-input>
+          <el-button @click="demandSelect" style="margin-left: 10px"
+            >选择需求</el-button
+          >
         </el-form-item>
-        <el-form-item label="景区" label-width="120px" v-show="handleVideoForm.type === 0">
-          <el-select v-model="handleVideoForm.sceneryId" placeholder="请选择景区名">
-            <el-option
-              v-for="item in sceneryList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            ></el-option>
-          </el-select>
+        <el-form-item
+          label="景区"
+          label-width="120px"
+          v-show="handleVideoForm.type === 0"
+        >
+          <SceneryPicker
+            :id="handleVideoForm.sceneryId"
+            @change="(id) => (handleVideoForm.sceneryId = id)"
+          />
         </el-form-item>
         <el-form-item label="视频封面" label-width="120px">
           <el-upload
@@ -41,10 +58,16 @@
             :before-upload="beforeCoverUpload"
             :on-success="onCoverUploadSuccess"
             :on-error="onError"
-            :data="{token}"
+            :data="{ token }"
           >
-            <div slot="tip" class="el-upload__tip">推荐尺寸为157(宽)*48(高)，大小不超过 300KB</div>
-            <img v-if="handleVideoForm.coverUrl" :src="handleVideoForm.coverUrl" class="upload-img" />
+            <div slot="tip" class="el-upload__tip">
+              推荐尺寸为157(宽)*48(高)，大小不超过 300KB
+            </div>
+            <img
+              v-if="handleVideoForm.coverUrl"
+              :src="handleVideoForm.coverUrl"
+              class="upload-img"
+            />
             <i v-else class="el-icon-upload uploader-icon"></i>
           </el-upload>
         </el-form-item>
@@ -57,9 +80,9 @@
             :on-success="onVideoUploadSuccess"
             :on-error="onError"
             :on-progress="onUploading"
-            :data="{token}"
+            :data="{ token }"
           >
-            <div slot="tip" class="el-upload__tip">{{videoTips}}</div>
+            <div slot="tip" class="el-upload__tip">{{ videoTips }}</div>
             <video
               autoplay
               muted
@@ -75,12 +98,15 @@
             size="small"
             v-if="handleVideoForm.url"
             @click="preview(handleVideoForm.url)"
-          >预览小视频</el-button>
+            >预览小视频</el-button
+          >
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="handleVideoDialog = false">取 消</el-button>
-        <el-button type="primary" @click="submit(handleVideoForm)">确 定</el-button>
+        <el-button type="primary" @click="submit(handleVideoForm)"
+          >确 定</el-button
+        >
       </div>
     </el-dialog>
 
@@ -108,7 +134,6 @@
 <script>
 import {
   queryVideoList,
-  getSceneryList,
   addVideo,
   updateVideo,
   queryNeed,
@@ -121,6 +146,7 @@ import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
 import initPagination from "@/mixins/initPagination";
+import SceneryPicker from "@/components/SceneryPicker";
 export default {
   name: "small-video-manage",
   mixins: [initPagination],
@@ -161,10 +187,8 @@ export default {
             switch (row.status) {
               case 0:
                 return "danger";
-                break;
               case 1:
                 return "";
-                break;
               default:
                 return "success";
             }
@@ -173,10 +197,8 @@ export default {
             switch (row.status) {
               case 0:
                 return "已过期";
-                break;
               case 1:
                 return "未购买";
-                break;
               default:
                 return "已购买";
             }
@@ -319,12 +341,12 @@ export default {
         coverUrl: "", //封面图
         url: "", //视频url
         type: "", //视频类型
+        needId: "",
       }, //模态框表单
       videoDialogLoading: false, //模态框加载效果
       videoDialogTitle: "",
       id: "", //
       videoTips: "", //视频上传框下方提示
-      sceneryList: [], //景区下拉框
       token: "", //七牛云上传token
     };
   },
@@ -367,9 +389,6 @@ export default {
       this.id = row.id;
       try {
         this.videoDialogLoading = true;
-        // 获取景区下拉列表
-        const { data } = await getSceneryList({ id: row.id });
-        this.sceneryList = data.value;
         // 获取到需要回填的数据
         for (const item in this.handleVideoForm) {
           this.handleVideoForm[item] = row[item];
@@ -442,8 +461,8 @@ export default {
       this.videoDialogTitle = "新增视频";
       this.videoTips = "推荐720p或1080p视频，MP4格式，大小不超过 20M。";
       // 获取景区下拉列表
-      const { data } = await getSceneryList({ id: this.id });
-      this.sceneryList = data.value;
+      // const { data } = await getSceneryList({ id: this.id });
+      // this.sceneryList = data.value;
     },
 
     // 获取七牛云token
@@ -461,7 +480,7 @@ export default {
     // 封面上传前
     beforeCoverUpload({ type, name }) {
       // 校验文件类型
-      if (["image/jpeg", "image/png"].indexOf(type) == -1) {
+      if (["image/jpeg", "image/png", "image/gif"].indexOf(type) == -1) {
         this.$message.error("只能上传jpg & png 格式的图片");
         return false;
       } else {
@@ -568,21 +587,22 @@ export default {
 
     // 按钮查询
     query(searchData) {
-      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-      // 将searchData中的时间数组转换为后台需要的字符串格式
-      if (searchData.createDatetime && searchData.createDatetime.length) {
-        searchData.startDate = searchData.createDatetime[0];
-        searchData.endDate = searchData.createDatetime[1];
-        delete searchData.createDatetime;
-      } else if (searchData.startDate || searchData.endDate) {
-        delete searchData.startDate;
-        delete searchData.endDate;
+       if (!_.isEqual(searchData, this.searchData) ) {
+        this.pagination.num = 1;
       }
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+      //将searchData中的时间数组转换为后台需要的字符串格式
+      if (searchData.createDatetime) {
+        const [ startDate, endDate] = searchData.createDatetime
+        this.searchData = { ...searchData, startDate, endDate };
+      }else{
+        this.searchData = { ...searchData }
+      }
       this.getTableData();
+
     },
+  },
+  components: {
+    SceneryPicker,
   },
 };
 </script>

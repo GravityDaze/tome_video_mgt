@@ -4,7 +4,7 @@
       <!-- 顶部logo  -->
       <transition name="el-fade-in-linear">
         <div class="logo" v-show="!isCollapse">
-          <!-- <img src="../assets/images/logo.png" alt /> -->
+          <img src="../assets/images/logo.png" alt />
         </div>
       </transition>
       <!-- 侧边菜单 -->
