@@ -8,16 +8,17 @@
 <template>
   <el-select :value="id" :placeholder="placeholder" @change="select">
     <el-option
-      v-for="item in sceneryList"
-      :key="item.id"
-      :label="item.name"
-      :value="item.id"
+      v-for="item in list"
+      :key="item[ value ]"
+      :label="item[ label ]"
+      :value="item[ value ]"
     ></el-option>
   </el-select>
 </template>
 
 <script>
 import { getSceneryList } from "@/api/management/videoManage";
+import { tagsSelect } from "@/api/management/systemManage"
 export default {
     props:{
         id:{
@@ -26,11 +27,20 @@ export default {
         placeholder:{
             default:"请选择景区名",
             type:String
+        },
+        type:{
+            default:""
+        },
+        label:{
+            default:"name"
+        },
+        value:{
+            default:"id"
         }
     },
     data(){
         return{
-            sceneryList:[]
+            list:[]
         }
     },
     created(){
@@ -38,11 +48,16 @@ export default {
     },
     methods:{
         async getList(){
-            const res = await getSceneryList()
-            this.sceneryList = res.data.value
+            if( this.type !== 'tag' ){
+                const res = await getSceneryList()
+                this.list = res.data.value
+            }else{
+                const res = await tagsSelect({type:2})
+                this.list = res.data.value
+            }
         },
         select(id){
-            console.log(id)
+            console.log(id) 
             this.$emit( 'change',id )
         }
     }

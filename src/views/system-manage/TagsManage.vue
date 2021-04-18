@@ -15,12 +15,12 @@
       :title="tagsDialogTitle"
       :visible.sync="tagsDialog"
       width="25%"
-      @closed="dialogClose('tagsForm')"
+      @closed="$refs[formName].resetFields()"
       :close-on-click-modal="false"
       top="15%"
     >
       <el-form
-        style="width:300px"
+        style="width: 300px"
         :model="tagsForm"
         ref="tagsForm"
         label-width="100px"
@@ -31,18 +31,24 @@
           label="标签名称"
           prop="name"
           :rules="[
-              { required: true, message: '标签不能为空',trigger: 'blur'},
-            ]"
+            { required: true, message: '标签不能为空', trigger: 'blur' },
+          ]"
         >
-          <el-input v-model.trim="tagsForm.name" placeholder="请输入标签名称"></el-input>
+          <el-input
+            v-model.trim="tagsForm.name"
+            placeholder="请输入标签名称"
+          ></el-input>
         </el-form-item>
         <el-form-item label="标签类型" prop="type">
-          <el-select v-model="tagsForm.type" disabled>
+          <el-select v-model="tagsForm.type">
             <el-option label="景区标签" :value="1"></el-option>
+            <el-option label="模板标签" :value="2"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('tagsForm')">提交</el-button>
+          <el-button type="primary" @click="submitForm('tagsForm')"
+            >提交</el-button
+          >
           <el-button @click="tagsDialog = false">关闭</el-button>
         </el-form-item>
       </el-form>
@@ -57,7 +63,7 @@ import {
   enableTag,
   disableTag,
   tagsSelect,
-  editTag
+  editTag,
 } from "@/api/management/systemManage";
 import initPagination from "@/mixins/initPagination";
 export default {
@@ -69,47 +75,47 @@ export default {
           prop: "name",
           label: "标签名称",
           align: "center",
-          type:"tag",
-          effect:"plain",
-          tagType:()=>'success'
+          type: "tag",
+          effect: "plain",
+          tagType: () => "success",
         },
         {
           prop: "type",
           label: "标签类型",
           align: "center",
-          formatter: row => (row.type === 1 ? "景区标签" : "未知")
+          formatter: (row) => (row.type === 1 ? "景区标签" : "模板标签"),
         },
         {
           prop: "createDatetime",
           label: "创建时间",
-          align: "center"
+          align: "center",
         },
         {
           prop: "updateDatetime",
           label: "最后更新时间",
-          align: "center"
+          align: "center",
         },
         {
           type: "switch",
           prop: "status",
           label: "状态",
           align: "center",
-          change: this.statusChange
+          change: this.statusChange,
         },
         {
           label: "操作",
           align: "center",
           width: "120",
           type: "button",
-          btnList: [{ type: "primary", label: "编辑", handle: this.editTag }]
-        }
+          btnList: [{ type: "primary", label: "编辑", handle: this.editTag }],
+        },
       ],
       formData: [
         {
           type: "input",
           label: "标签名称",
           model: "name",
-          placeholder: "请输入标签名"
+          placeholder: "请输入标签名",
         },
         {
           type: "select",
@@ -118,40 +124,40 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "启用",
-              value: 1
+              value: 1,
             },
             {
               label: "禁用",
-              value: 0
-            }
-          ]
-        }
+              value: 0,
+            },
+          ],
+        },
       ],
       searchBtn: [
         {
           type: "primary",
           label: "新增",
           handle: this.add,
-          icon: "el-icon-edit"
+          icon: "el-icon-edit",
         },
         {
           type: "primary",
           label: "查询",
           handle: this.query,
-          icon: "el-icon-search"
-        }
+          icon: "el-icon-search",
+        },
       ],
       tagsForm: {
         type: 1,
-        name: ""
+        name: "",
       },
       tagsDialog: false,
       tagsDialogTitle: "",
-      tablesLoading: false
+      tablesLoading: false,
     };
   },
   created() {
@@ -163,7 +169,7 @@ export default {
       query = {
         ...this.searchData,
         pageNum: this.pagination.num,
-        pageSize: this.pagination.size
+        pageSize: this.pagination.size,
       }
     ) {
       try {
@@ -172,7 +178,7 @@ export default {
         this.pagination.total = data.value.total;
         // 将后台返回的数据处理为符合switch组件的数据
         console.log(data.value.list);
-        this.tableData = data.value.list.map(v => {
+        this.tableData = data.value.list.map((v) => {
           // 将0和1转换为布尔值
           v.status = !!v.status;
           return v;
@@ -205,7 +211,7 @@ export default {
       this.tagsDialogTitle = "编辑";
       this.tagsDialog = true;
       this.id = row.id;
-      this.$nextTick( _=> this.tagsForm = {...row}   )
+      this.$nextTick(() => (this.tagsForm = { ...row }));
     },
 
     // 新增标签
@@ -214,28 +220,21 @@ export default {
       this.tagsDialog = true;
     },
 
-    // 对话框关闭时
-    dialogClose(formName) {
-      this.$refs[formName].resetFields();
-    },
-
     // 提交
     submitForm(formName) {
-      this.$refs[formName].validate(async valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           try {
             // 判断是新增还是编辑
             if (this.tagsDialogTitle === "编辑") {
               await editTag({ id: this.id, ...this.tagsForm });
               this.$message.success("修改成功");
-              this.tagsDialog = false;
-              this.getTableData();
             } else {
               await addTag(this.tagsForm);
               this.$message.success("新增成功");
-              this.tagsDialog = false;
-              this.getTableData();
             }
+            this.tagsDialog = false;
+            this.getTableData();
           } catch (err) {
             console.log(err);
           }
@@ -248,10 +247,10 @@ export default {
       if (!_.isEqual(searchData, this.searchData)) {
         this.pagination.num = 1;
       }
-      this.searchData = { ...searchData};
+      this.searchData = { ...searchData };
       this.getTableData();
-    }
-  }
+    },
+  },
 };
 </script>
 

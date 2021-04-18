@@ -24,6 +24,7 @@
       {{ tips }}
     </div>
     <img v-if="imageUrl" :src="imageUrl" class="img" />
+    <video autoplay loop v-else-if="videoUrl" :src="videoUrl" class="video" />
     <i v-else :class="['el-icon-plus',  listType ==='text'?'uploader-icon':'' ]"></i>
   </el-upload>
 </template>
@@ -34,6 +35,9 @@ export default {
   props: {
     imageUrl: {
       default: ""
+    },
+    videoUrl:{
+      default:""
     },
     name: {
       default: "",
@@ -120,6 +124,12 @@ export default {
    width: 178px;
    height: 178px;
    display: block;
+}
+
+.uploader video{
+   width: 178px;
+   height: 178px;
+   object-fit: cover;
 }
 
 .uploader-icon {

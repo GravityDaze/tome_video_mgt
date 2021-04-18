@@ -165,6 +165,7 @@ export default {
           type: "success",
         });
       } catch {
+        console.log('我执行了')
         this.getCode();
       } finally {
         this.loading = false;

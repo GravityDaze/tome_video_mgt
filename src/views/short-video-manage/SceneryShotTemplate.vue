@@ -1,6 +1,11 @@
 <template>
   <el-card>
-    <searchs :formData="formData" @query="query" @add="add" :searchBtn="searchBtn" />
+    <searchs
+      :formData="formData"
+      @query="query"
+      @add="add"
+      :searchBtn="searchBtn"
+    />
     <tables
       :tableCols="tableCols"
       :tableData="tableData"
@@ -10,45 +15,64 @@
       @numChange="numChange"
     />
 
-    <!-- 编辑对话框 -->
-    <el-dialog :title="tempDialogTitle" :visible.sync="tempDialog" @closed="dialogClose" width="30%">
-      <el-form :model="tempForm">
-        <el-form-item label="景区" label-width="120px">
-          <el-select v-model="tempForm.sceneryId" placeholder="请选择景区">
-            <el-option
-              v-for="item in sceneryList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            ></el-option>
-          </el-select>
+    <el-dialog
+      :title="tempDialogTitle"
+      :visible.sync="tempDialog"
+      @closed="onClose"
+      width="30%"
+    >
+      <el-form :model="tempForm" ref="form">
+        <el-form-item label="景区" label-width="120px" prop="sceneryId">
+          <SceneryPicker
+            :id="tempForm.sceneryId"
+            @change="(id) => (tempForm.sceneryId = id)"
+          />
         </el-form-item>
-        <el-form-item label="模板名称" label-width="120px">
-            <el-col :span="16">
-              <el-input v-model="tempForm.name" autocomplete="off"></el-input>
-            </el-col>
-        </el-form-item>
-        <el-form-item label="模板描述" label-width="120px">
-           <el-col :span="16">
-          <el-input
-            v-model="tempForm.describe"
-            type="textarea"
-            maxlength="100"
-            show-word-limit
-            autocomplete="off"
-          ></el-input>
+        <el-form-item label="模板名称" label-width="120px" prop="name">
+          <el-col :span="16">
+            <el-input v-model="tempForm.name" autocomplete="off"></el-input>
           </el-col>
         </el-form-item>
-        <el-form-item label="时长限制" label-width="120px">
-          <el-input-number v-model="tempForm.durationLimit" label="描述文字"></el-input-number>
-          <!-- <el-input v-model="tempForm.durationLimit" autocomplete="off" type="number"></el-input> -->
+        <el-form-item label="模板名称" label-width="120px" v-if="tempDialogTitle === '编辑'">
+          <SceneryPicker 
+
+            :id="tagId?'KEY_'+tagId:''" 
+            placeholder="请选择标签"
+            type="tag"
+            label="tagName"
+            value="tagId"
+            @change="(id)=> tagId = id.split('_')[1]"
+          />
         </el-form-item>
-        <el-form-item label="排序" label-width="120px">
-          <el-input-number v-model="tempForm.sort" label="描述文字"></el-input-number>
-          <!-- <el-input v-model="tempForm.sort" autocomplete="off" type="number"></el-input> -->
+        <el-form-item label="模板描述" label-width="120px" prop="describe">
+          <el-col :span="16">
+            <el-input
+              v-model="tempForm.describe"
+              type="textarea"
+              maxlength="100"
+              show-word-limit
+              autocomplete="off"
+            ></el-input>
+          </el-col>
         </el-form-item>
-        <el-form-item v-show="tempDialogTitle === '编辑'" label="点位信息" label-width="120px">
-          <el-button @click="checkTempPoint">点击查看</el-button>
+        <el-form-item label="模板封面" prop="coverUrl" label-width="120px">
+          <Uploader
+            :imageUrl="tempForm.coverUrl"
+            @success="
+              (res) =>
+                (tempForm.coverUrl = `https://tomevideo.zhihuiquanyu.com/${res.key}`)
+            "
+          />
+        </el-form-item>
+        <el-form-item label="模板预览视频" prop="videoUrl" label-width="120px">
+          <Uploader
+            :videoUrl="tempForm.videoUrl"
+            @success="
+              (res) =>
+                (tempForm.videoUrl = `https://tomevideo.zhihuiquanyu.com/${res.key}`)
+            "
+            :allowedFileType="['video/mp4']"
+          />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -58,14 +82,17 @@
     </el-dialog>
 
     <!-- 模板点位信息对话框 -->
-    <el-dialog  @close="tempPointClose" width="70%" title="模板点位信息列表" :visible.sync="tempPointDialog">
+    <el-dialog
+      width="70%"
+      title="视频片段管理"
+      :visible.sync="partDialog"
+    >
       <tables
-        :tableData="tempPointData"
+        :tableData="tempDetailData"
         :tableCols="tempPointCols"
         :pagination="tempPointPagination"
         @sizeChange="tempPointSizeChange"
         @numChange="tempPointNumChange"
-       
       />
     </el-dialog>
   </el-card>
@@ -76,22 +103,20 @@
 import {
   queryTemplateList,
   addTemplate,
-  queryTemplateInfo,
   editTemplate,
   disableTemplate,
   enableTemplate,
   queryTemplatePoint,
-  addTemplatePoint,
-  getTemplatePoint,
-  editTemplatePoint,
   disableTemplatePoint,
   enableTemplatePoint,
-  getSceneryList
-} from "@/api/management/videoManage";
+  getTempTag,
+  editTempTag,
+  queryTempDetail
+} from "@/api/management/tempManage";
+import SceneryPicker from "@/components/SceneryPicker";
+import Uploader from "@/components/Uploader";
 import initPagination from "@/mixins/initPagination";
-import { restore } from "@/utils/restoreModel";
 export default {
-  name: "scenery-shot-template",
   mixins: [initPagination],
   data() {
     return {
@@ -99,71 +124,52 @@ export default {
         {
           prop: "no",
           label: "模板编号",
-          align: "center"
+          align: "center",
         },
         {
           prop: "name",
           label: "模板名称",
-          align: "center"
+          align: "center",
         },
         {
           prop: "sceneryName",
           label: "所属景区",
-          align: "center"
+          align: "center",
         },
 
         {
           prop: "describe",
           label: "模板描述",
-          align: "center"
-        },
-        {
-          prop: "durationLimit",
-          label: "模板时长",
-          align: "center"
+          align: "center",
         },
         {
           prop: "creator",
           label: "创建者",
-          align: "center"
+          align: "center",
         },
 
         {
           prop: "createDatetime",
           label: "创建时间",
-          align: "center"
+          align: "center",
         },
         {
           prop: "status",
           label: "状态",
           type: "switch",
           align: "center",
-          change: this.statusChange
+          change: this.statusChange,
         },
         {
           label: "操作",
           type: "button",
-          align:"center",
-          btnList: [{ type: "primary", label: "编辑", handle: this.editTemp }]
-        }
-      ],
-      tableData: [
-        {
-          id: "",
-          sceneryName: "",
-          no: "",
-          name: "",
-          url: "",
-          coverUrl: "",
-          describe: "",
-          pointNum: "",
-          sort: "",
-          status: "",
-          creator: "",
-          createDatetime: "",
-          updator: "",
-          updateDatetime: ""
-        }
+          align: "center",
+          width:"200",
+          btnList: [
+              { type: "primary", label: "编辑", handle: this.editTemp },
+              { label: "配置", handle: this.config }
+            ],
+        },
       ],
       tablesLoading: false,
       tempDialog: false, //编辑 & 新增对话框
@@ -172,25 +178,25 @@ export default {
         name: "",
         describe: "",
         durationLimit: "",
-        sort: ""
+        sort: "",
       }, //对话框表单
       formData: [
         {
           type: "input",
           label: "景区名称",
           model: "sceneryName",
-          placeholder: "请输入所属景区"
+          placeholder: "请输入所属景区",
         },
         {
           type: "input",
           label: "模板名称",
           model: "name",
-          placeholder: "请输入模板名称"
+          placeholder: "请输入模板名称",
         },
         {
           type: "datePicker",
           label: "时间范围",
-          model: "createDatetime"
+          model: "createDatetime",
         },
         {
           type: "select",
@@ -199,82 +205,67 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "禁用",
-              value: 0
+              value: 0,
             },
             {
               label: "启用",
-              value: 1
-            }
-          ]
-        }
+              value: 1,
+            },
+          ],
+        },
       ],
       searchBtn: [
         {
           type: "primary",
           label: "新增",
           handle: this.add,
-          icon: "el-icon-edit"
+          icon: "el-icon-edit",
         },
         {
           type: "primary",
           label: "查询",
           handle: this.query,
-          icon: "el-icon-search"
-        }
+          icon: "el-icon-search",
+        },
       ],
       tempDialogTitle: "", //对话框标题
-      sceneryList: [], //景区下拉框
       tempPointDialog: false, //模板点位对话框
-      tempPointData: [],
+      partDialog:false,
+      tempDetailData: [],
       tempPointCols: [
         {
-          label: "模板名称",
-          prop: "templetName"
+          label: "片段名称",
+          prop: "name",
         },
         {
-          label: "点位名称",
-          prop: "name"
+          label: "点位",
+          prop: "pointId",
         },
         {
-          label: "位置",
-          prop: "location"
+          label: "视频地址",
+          prop: "url",
         },
         {
-          label: "描述",
-          prop: "describe"
-        },
-        {
-          label: "时长",
-          prop: "duration"
-        },
-        {
-          label: "序号",
-          prop: "sequence"
-        },
-        {
-          label: "创建者",
-          prop: "creator"
-        },
-        {
-          label: "创建时间",
-          prop: "createDatetime"
+          label: "排序",
+          prop: "sequence",
         },
         {
           label: "状态",
           type: "switch",
           prop: "status",
-          change: this.tempPointStatusChange
-        }
+          change: this.tempDetailStatusChange,
+        },
       ],
       tempPointPagination: {
         num: 1,
         size: 5,
-        total: 0
-      }
+        total: 0,
+      },
+      tagId:""
     };
   },
 
@@ -288,19 +279,20 @@ export default {
       query = {
         ...this.searchData,
         pageNum: this.pagination.num,
-        pageSize: this.pagination.size
+        pageSize: this.pagination.size,
       }
     ) {
       try {
         this.tablesLoading = true;
         const { data } = await queryTemplateList(query);
         this.pagination.total = data.value.total;
-        this.tableData = data.value.list.map(v => {
+        this.tableData = data.value.list.map((v) => {
           // 将0和1转换为布尔值
           v.status = !!v.status;
           return v;
         });
       } catch (err) {
+        console.log(err);
       } finally {
         this.tablesLoading = false;
       }
@@ -324,39 +316,17 @@ export default {
       }
     },
 
+
     // 编辑模板
     async editTemp(row) {
       // 打开对话框
-      this.tempDialog = true;
       this.tempDialogTitle = "编辑";
-      this.id = row.id; //记录id
-      const { data } = await getSceneryList({ id: this.id });
-      this.sceneryList = data.value;
-      // 回填数据
-      for (const item in this.tempForm) {
-        this.tempForm[item] = row[item];
-      }
-      // 将景区名转换为景区id
-      this.tempForm.sceneryId = this.sceneryList.find(
-        v => v.name === row.sceneryName
-      )["id"];
-    },
-
-    // 提交编辑 & 新增
-    async submit(form) {
-      try {
-        if (this.tempDialogTitle === "编辑") {
-          await editTemplate({ ...form, id: this.id });
-          this.getTableData();
-          this.$message.success("修改成功");
-          this.tempDialog = false;
-        } else {
-          await addTemplate({ ...form });
-          this.getTableData();
-          this.$message.success("新增成功");
-          this.getTableData = false;
-        }
-      } catch (err) {}
+      // make resetFields work
+      this.$nextTick(() => (this.tempForm = { ...row }));
+      this.tempDialog = true;
+      // get tempTags
+      const res = await getTempTag({ templetId: row.id });
+      this.tagId = res.data.value[0]?.tagId
     },
 
     // 新增
@@ -364,13 +334,53 @@ export default {
       // 打开对话框
       this.tempDialog = true;
       this.tempDialogTitle = "新增";
-      const { data } = await getSceneryList({ id: this.id });
-      this.sceneryList = data.value;
     },
 
-    // 关闭对话框
-    dialogClose() {
-      this.tempForm = restore(this.tempForm);
+    // 提交编辑 & 新增
+    async submit(form) {
+        const { sceneryId,id } = form
+      try {
+        if (this.tempDialogTitle === "编辑") {
+          await editTemplate(form);
+          await editTempTag({
+            sceneryId, //景区id
+            templetId:id, //模板id
+            tags:[ this.tagId ],
+          });
+          this.getTableData();
+          this.$message.success("修改成功");
+        } else {
+            // bug todo 暂时无法在新增时添加标签
+          console.log(await addTemplate(form));
+          this.$message.success("新增成功");
+        }
+        this.getTableData();
+        this.tempDialog = false;
+      } catch (err) {}
+    },
+
+    onClose(){
+        this.tagId = ""
+        this.$refs.form.resetFields()
+    },
+
+    // 配置模板
+    config(row){
+      this.partDialog = true
+      this.getDetils(row.id)
+    },
+
+
+    async getDetils(TempletId){
+      const res = await queryTempDetail({TempletId})
+      this.tempDetailData = res.data.value?.list || res.data.value.map( v=>{
+         v.status = !!v.status;
+        return v;
+      } )
+    },
+
+    async tempDetailStatusChange(){
+
     },
 
     // 查看模板点位信息
@@ -384,9 +394,9 @@ export default {
       const { data } = await queryTemplatePoint({
         pageNum: this.tempPointPagination.num,
         pageSize: this.tempPointPagination.size,
-        templetId: this.id
+        templetId: this.id,
       });
-      this.tempPointData = data.value.list.map(v => {
+      this.tempPointData = data.value.list.map((v) => {
         v.status = !!v.status;
         return v;
       });
@@ -421,26 +431,30 @@ export default {
     },
 
     // 关闭模板点位对话框
-    tempPointClose(){
-      this.tempPointPagination.total = 0
-      this.tempPointData = []
+    tempPointClose() {
+      this.tempPointPagination.total = 0;
+      this.tempPointData = [];
     },
 
-    // 按钮查询 bug toFix
+    // 按钮查询
     query(searchData) {
-      if (!_.isEqual(searchData, this.searchData) ) {
+      if (!_.isEqual(searchData, this.searchData)) {
         this.pagination.num = 1;
       }
       //将searchData中的时间数组转换为后台需要的字符串格式
       if (searchData.createDatetime) {
-        const [ startDatetime, endDatetime] = searchData.createDatetime
+        const [startDatetime, endDatetime] = searchData.createDatetime;
         this.searchData = { ...searchData, startDatetime, endDatetime };
-      }else{
-        this.searchData = { ...searchData }
+      } else {
+        this.searchData = { ...searchData };
       }
       this.getTableData();
-    }
-  }
+    },
+  },
+  components: {
+    SceneryPicker,
+    Uploader,
+  },
 };
 </script>
 
