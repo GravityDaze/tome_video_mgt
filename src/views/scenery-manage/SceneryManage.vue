@@ -1,7 +1,7 @@
 <template>
   <el-card class="scenery-manage">
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
+      :formData="formData"
       v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
@@ -14,10 +14,11 @@
       :close-on-click-modal="false"
       :title="dialogTitle"
       :visible.sync="sceneryDialog"
-      top="1%"
+      class="dialog-vertical"
       append-to-body
       @closed="dialogClose('sceneryForm')"
     >
+      <!-- @closed="dialogClose('sceneryForm')" -->
       <el-form :model="sceneryForm" :rules="rules" ref="sceneryForm">
         <el-row>
           <el-col :span="10">
@@ -157,6 +158,12 @@
           >确 定</el-button
         >
       </div>
+      <!-- <ProForm 
+        :forms="forms" 
+        @submit="submit1"
+        :formdata="formdata"
+        ref="form" 
+        /> -->
     </el-dialog>
   </el-card>
 </template>
@@ -180,6 +187,7 @@ import { tagsSelect } from "@/api/management/systemManage";
 import { getPublicUploadParams } from "@/api/qiniu";
 // 工具方法
 import { restore } from "@/utils/restoreModel";
+import ProForm from '@/components/ProForm'
 import initPagination from "@/mixins/initPagination";
 import Uploader from "@/components/Uploader";
 export default {
@@ -192,34 +200,28 @@ export default {
       tableCols: Object.freeze([
         {
           prop: "no",
-          label: "景区编号",
-          align: "center",
+          label: "景区编号" 
         },
         {
           prop: "name",
           label: "景区名称",
-          align: "center",
         },
         {
           prop: "mark",
           label: "标识",
-          align: "center",
         },
 
         {
           prop: "updator",
           label: "最后更新者",
-          align: "center",
         },
         {
           prop: "updateDatetime",
           label: "最后更新时间",
-          align: "center",
         },
         {
           prop: "hotStatus",
           label: "热门景区",
-          align: "center",
           type: "switch",
           change: this.handleHotScenery,
           disabled: (row) => !row.tripStatus,
@@ -227,20 +229,47 @@ export default {
         {
           prop: "tripStatus",
           label: "视频服务",
-          align: "center",
           type: "switch",
           change: this.handleService,
         },
         {
           label: "操作",
           type: "button",
-          align: "center",
           btnList: [
+            // { type: "primary", label: "编辑", handle: this.edi },
             { type: "primary", label: "编辑", handle: this.editScenery },
             { type: "danger", label: "删除", handle: this.deleteScenery },
           ],
         },
       ]),
+      forms:[
+        {
+          prop:'name',
+          placeholder:'请输入景区名称',
+          label:'景区名',
+          type:'input',
+          rules:[{required:true,message:'请输入景区名称',trigger:"blur"}]
+        },
+        {
+          prop:'cover',
+          label:'景区封面',
+          type:'upload',
+          uploadType:'video',
+          onSuccess:this.success,
+          rules:[{required:true,message:'请上传景区封面',trigger:"change"}]
+        },
+        {
+          prop:'imageUrls',
+          label:'景区详图',
+          type:'upload',
+          uploadType:'image',
+          onSuccess:this.success2,
+          'list-type':"picture-card"
+          
+          // rules:[{required:true,message:'请上传景区封面',trigger:"change"}]
+        },
+      ],
+      formdata:{},
       formData: [
         {
           type: "input",
@@ -294,21 +323,22 @@ export default {
             },
           ],
         },
-      ], //查询表单
-      searchBtn: [
-        {
-          type: "primary",
+         {
+          type: "button",
+          btnType:"primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search",
         },
-        {
-          type: "primary",
+        { 
+          type: "button",
+          btnType:"primary",
           label: "新增",
-          handle: this.add,
+          // handle: this.add,
+          handle: this.open,
           icon: "el-icon-edit",
         },
-      ],
+      ], 
       rules: {
         name: [{ required: true, message: "请输入景区名称", trigger: "blur" }],
         lonLat: [
@@ -357,6 +387,38 @@ export default {
     this.getTableData();
   },
   methods: {
+    submit1(form){
+      console.log(form)
+    },
+
+    close(){
+      // 清除校验
+      this.$refs.form.resetFields()
+    }, 
+
+    open(){
+      // 回填数据
+      this.sceneryDialog = true
+
+      this.formdata = { 
+        name:'赵四',
+        cover:'https://sf1-scmcdn-tos.pstatp.com/goofy/ies/douyin_home_web/medias/1-4.6d59e328.mp4',
+        imageUrls:[ 'https://tomevideo.zhihuiquanyu.com/1588047256762.PNG','https://tomevideo.zhihuiquanyu.com/1588047252334.PNG' ] 
+        }
+    },
+
+    success({key}){
+      this.formdata.cover = `https://tomevideo.zhihuiquanyu.com/${key}`;
+    },
+
+    success2(){
+
+    },
+
+    edi(){
+      this.sceneryDialog = true
+    },
+
     // 获取景区列表
     async getTableData(
       query = {
@@ -481,7 +543,7 @@ export default {
     // 显示标签输入框
     showInput() {
       this.inputVisible = true;
-      this.$nextTick((_) => {
+      this.$nextTick(() => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
@@ -679,6 +741,7 @@ export default {
   },
   components: {
     Uploader,
+    ProForm
   },
 };
 </script>

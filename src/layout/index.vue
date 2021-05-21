@@ -115,7 +115,8 @@ export default {
     
     // 侧边栏伸缩
     collapse() {
-      this.$store.commit("permission/SET_COLLAPSE");
+      sessionStorage.setItem('isCollapse',JSON.stringify(!this.isCollapse))
+      this.$store.commit("permission/SET_COLLAPSE",!this.isCollapse);
     },
     // 打开右侧抽屉
     openDrawer(command) {

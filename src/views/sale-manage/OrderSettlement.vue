@@ -1,16 +1,16 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
       v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
+      :formData="formData"
       :pagination="pagination"
       @sizeChange="sizeChange"
       @numChange="numChange"
     />
-    <el-dialog width="70%" title="订单明细" :visible.sync="orderDiaglog">
-      <tables
+    <el-dialog width="70%" title="订单明细"  :visible.sync="orderDiaglog">
+      <ProTable
         :tableData="orderDetailData"
         :tableCols="orderDetailCols"
         :pagination="orderPagination"
@@ -35,53 +35,43 @@ export default {
         {
           prop: "id",
           label: "结算ID",
-          align: "center"
         },
         {
           prop: "sceneryNo",
           label: "景区编号",
-          align: "center"
         },
         {
           prop: "sceneryName",
           label: "所属景区",
-          align: "center"
         },
         {
           prop: "type",
           label: "结算周期",
-          align: "center"
         },
         {
           prop: "year",
           label: "结算年份",
-          align: "center"
         },
         {
           prop: "month",
           label: "结算月份",
-          align: "center"
         },
         {
           prop: "orderTotalPrice",
           label: "订单总金额",
-          align: "center"
         },
         {
           prop: "createDatetime",
           label: "生成时间",
-          align: "center"
         },
         {
           prop: "orderTotalNum",
           label: "订单总笔数",
-          align: "center"
         },
         {
           type: "button",
           label: "操作",
           width: "80",
-          align: "center",
           btnList: [
             {
               type: "primary",
@@ -107,11 +97,10 @@ export default {
           type: "monthPicker",
           label: "结算月份",
           model: "month"
-        }
-      ],
-      searchBtn: [
-        {
-          type: "primary",
+        },
+         {
+          type: "button",
+          btnType:"primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search"
@@ -122,58 +111,47 @@ export default {
         {
           prop: "orderNo",
           label: "订单编号",
-          align: "center"
         },
         {
           prop: "sceneryNo",
           label: "景区编号",
-          align: "center"
         },
         {
           prop: "sceneryName",
           label: "所属景区",
-          align: "center"
         },
         {
           prop: "customerNo",
           label: "用户编号",
-          align: "center"
         },
         {
           prop: "customerOpenId",
           label: "用户openId",
-          align: "center"
         },
         {
           prop: "videoId",
           label: "小视频ID",
-          align: "center"
         },
         {
           prop: "videoDuration",
           label: "小视频时长",
-          align: "center"
         },
         {
           prop: "orderPrice",
           label: "订单金额",
-          align: "center"
         },
         {
           prop: "orderCreateDatetime",
           label: "下单时间",
-          align: "center"
         },
         {
           prop: "orderPayStatus",
           label: "订单状态",
-          align: "center",
           formatter: row => (row.orderPayStatus == "0" ? "未支付" : "已支付")
         },
         {
           prop: "orderBuyDatetime",
           label: "支付时间",
-          align: "center"
         }
       ],
       orderDetailData: [],
@@ -227,12 +205,11 @@ export default {
 
     // 按钮查询
     query(searchData) {
-      if (_.isEmpty(searchData)) return this.$message.warning("无效的查询");
-
-      // 查询时 pageNum必须恢复为1
-      this.searchData = searchData;
-      // 查询时,num默认从1开始
-      this.pagination.num = 1;
+       // 深度对比
+      if (!_.isEqual(searchData, this.searchData)) {
+        this.pagination.num = 1;
+      }
+      this.searchData = { ...searchData};
       this.getTableData();
     },
 

@@ -1,9 +1,9 @@
 <template>
   <el-card>
-    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
       :tableData="tableData"
       :tableCols="tableCols"
+      :formData="formData"
       :pagination="pagination"
       @sizeChange="sizeChange"
       @numChange="numChange"
@@ -12,6 +12,7 @@
 
     <!-- 用户信息对话框 -->
     <el-dialog
+     class="dialog-vertical"
       :title="dialogTitle"
       :close-on-click-modal="false"
       :visible.sync="positionDialog"
@@ -35,8 +36,8 @@
               ></el-input>
             </el-form-item>
             <el-form-item label="所属景区" prop="sceneryId">
-              <SceneryPicker
-                :id="positionForm.sceneryId"
+              <Select
+                :bind="positionForm.sceneryId"
                 @change="(id) => (positionForm.sceneryId = id)"
               />
             </el-form-item>
@@ -88,7 +89,7 @@ import {
   addPoint,
 } from "@/api/management/pointManage";
 import initPagination from "@/mixins/initPagination";
-import SceneryPicker from "@/components/SceneryPicker";
+import Select from "@/components/Select";
 import Uploader from "@/components/Uploader";
 export default {
   mixins: [initPagination],
@@ -208,21 +209,21 @@ export default {
             },
           ],
         },
-      ]),
-      searchBtn: [
         {
-          type: "primary",
+          type:"button",
+          btnType:"primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search",
         },
         {
-          type: "primary",
+          type: "button",
+          btnType:"primary",
           label: "新增",
           handle: this.openAddDialog,
           icon: "el-icon-edit",
         },
-      ],
+      ]),
       loading: false,
       positionDialog: false,
       positionForm: {
@@ -345,7 +346,7 @@ export default {
     },
   },
   components: {
-    SceneryPicker,
+    Select,
     Uploader,
   },
 };

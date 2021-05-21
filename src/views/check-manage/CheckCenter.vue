@@ -1,9 +1,9 @@
 <template>
   <el-card class="checkCenter">
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
       :tableData="tableData"
       :tableCols="filterTitle"
+      :formData="formData"
       @sizeChange="sizeChange"
       @numChange="numChange"
       :pagination="pagination"
@@ -101,38 +101,32 @@ export default {
         [3, "danger"],
       ]),
       filterTitle: [], //过滤后的表头数据
-      tableCols: [
+      tableCols:Object.freeze([
         {
           prop: "id",
           label: "审核id",
-          align: "center",
         },
         {
           prop: "customerNeedId",
           label: "用户需求id",
-          align: "center",
         },
         {
           prop: "name",
           label: "视频名称",
-          align: "center",
         },
         {
           prop: "coverUrl",
           label: "视频封面",
-          align: "center",
           type: "img",
         },
         {
           prop: "customerFaceUrl",
           label: "人脸识别",
-          align: "center",
           type: "img",
         },
         {
           prop: "status",
           label: "审核结果",
-          align: "center",
           type: "tag",
           tagType: (row) => this.statusTagMap.get(row.status),
           formatter: (row) => this.statusMap.get(row.status),
@@ -140,55 +134,45 @@ export default {
         {
           prop: "examineUserName",
           label: "审核员名称",
-          align: "center",
         },
         {
           prop: "examineDatetime",
           label: "审核确认时间",
-          align: "center",
         },
         {
           prop: "remark",
           label: "审核备注",
-          align: "center",
         },
         {
           prop: "createDatetime",
           label: "审核信息创建时间",
-          align: "center",
         },
         {
           prop: "statusUpload",
           label: "视频是否已重新上传",
-          align: "center",
           formatter: (row) => (row.statusUpload ? "是" : "否"),
         },
         {
           prop: "proName",
           label: "视频新名称",
-          align: "center",
         },
         {
           prop: "proCoverUrl",
           label: "视频新封面",
-          align: "center",
           type: "img",
         },
         {
           prop: "proUrl",
           label: "视频新链接",
-          align: "center",
         },
         {
           prop: "source",
           label: "来源",
-          align: "center",
           formatter: (row) => row.source === 1?'腾讯':'途咪'
         },
         {
           label: "操作",
           type: "button",
-          align: "center",
           btnList: [
             { type: "text", label: "开启审核", handle: this.checkStart },
             { type: "text", label: "预览视频", handle: this.preview },
@@ -198,7 +182,7 @@ export default {
             { type: "text", label: "拒绝", handle: this.disapproved },
           ],
         },
-      ], //初始表头数据
+      ]), //初始表头数据
       formData: [
         {
           type: "select",
@@ -236,16 +220,14 @@ export default {
           label: "时间范围",
           model: "createDatetime",
         },
-      ], //初始表单数据
-      searchData: {},
-      searchBtn: [
         {
-          type: "primary",
+          type:"button",
+          btnType: "primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search",
         },
-      ], //search组件的按钮组
+      ], //初始表单数据
       tableData: [], //表格数据
       isCheck: false, //当前是否有正在审核的视频
       upLoadDiaglogVisible: false, //上传对话框状态
@@ -275,7 +257,7 @@ export default {
   },
   beforeDestroy() {
     // 关闭通知栏
-    this.instance && this.instance.close();
+    this.instance?.close();
     // 清除定时器
     clearInterval(this.timer);
   },
@@ -403,7 +385,7 @@ export default {
       }
       // 获取到过滤后的表头
       const mainCols = _.cloneDeep(
-        this.tableCols.filter((v) => !filter.includes(v.prop || v.type))
+        this.tableCols.filter((v) => !filter.includes(v.prop ?? v.type))
       );
       // 对按钮组进行单独过滤
       return mainCols.map((v) => {

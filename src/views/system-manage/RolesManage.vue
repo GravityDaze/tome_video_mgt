@@ -1,7 +1,7 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
+    :formData="formData"
       v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
@@ -17,7 +17,7 @@
       width="25%"
       @closed="dialogClose('roleForm')"
       :close-on-click-modal="false"
-      top="15%"
+      class="dialog-vertical"
     >
       <el-form
         style="width:350px"
@@ -66,7 +66,7 @@
       :visible.sync="authDialog"
       @closed="authDialogClose('authForm')"
       :close-on-click-modal="false"
-      top="3%"
+       class="dialog-vertical"
     >
       <el-form
         :model="authForm"
@@ -127,34 +127,28 @@ export default {
         {
           prop: "name",
           label: "角色名称",
-          align: "center"
         },
         {
           prop: "mark",
           label: "权限标识",
-          align: "center"
         },
         {
           prop: "sort",
           label: "显示顺序",
-          align: "center"
         },
         {
           prop: "description",
           label: "角色描述",
-          align: "center"
         },
         {
           type: "switch",
           prop: "status",
           label: "状态",
-          align: "center",
           change: this.statusChange,
           disabled: row => row.name === "ADMIN"
         },
         {
           label: "操作",
-          align: "center",
           type: "button",
           btnList: [
             {
@@ -201,17 +195,17 @@ export default {
               value: 0
             }
           ]
-        }
-      ],
-      searchBtn: [
-        {
-          type: "primary",
+        },
+          {
+          type: "button",
+          btnType: "primary",
           label: "新增",
           handle: this.add,
           icon: "el-icon-edit"
         },
         {
-          type: "primary",
+          type: "button",
+          btnType: "primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search"

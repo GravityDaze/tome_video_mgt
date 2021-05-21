@@ -6,43 +6,40 @@ const _import = require('./_import_' + process.env.NODE_ENV) //获取组件的�
 import layout from '@/layout'
 import err from '@/views/error-page/404'
 import store from '@/store'
-import _ from 'lodash'
 
 // 遍历菜单数组生成动态路由
-let asyncRouter = []
-let breadcrumb = []
-function resolveRoutes(routerMap) {
+function resolveRoutes(routerMap, breadcrumb = []) {
+    const res = []
     routerMap.forEach(route => {
-        if (!route.child) {
-            // 查看该菜单是否是一级菜单,是则重置面包屑导航数据
+        const tmp = { ...route }
+        if (tmp.child) {
+            // 查看该菜单是否是一级菜单,是则重置面包屑数据
             route.parentId === 1 && (breadcrumb = [])
             breadcrumb.push(route.name)
-            // 解析路由路径
-            if (route.route) {
-                asyncRouter.push({
-                    path: route.url,
-                    name: route.name,
-                    component: _import(route.route),
-                    meta: {
-                        breadcrumb:_.cloneDeep(breadcrumb),
-                        title: route.name
-                    }
-                })
-                // 每添加一次路由都清除本级导航标题,保留父级
-                breadcrumb.pop()
-            }
-        }else{
-            // 查看该菜单是否是一级菜单,是则重置面包屑导航数据
+            res.push(...resolveRoutes(tmp.child, breadcrumb))
+        } else {
             route.parentId === 1 && (breadcrumb = [])
             breadcrumb.push(route.name)
-            resolveRoutes(route.child)
+            res.push({
+                path: tmp.url,
+                name: tmp.name,
+                component: _import(tmp.route),
+                meta: {
+                    breadcrumb: [...breadcrumb],
+                    title: tmp.name
+                }
+            })
+            // 每添加一次路由都清除本级导航标题,保留父级
+            breadcrumb.pop()
         }
     })
+    return res
 }
 
+
 // 挂载动态路由
-export function getAsyncRouter() { 
-    resolveRoutes(store.getters.menuList)
+export function getAsyncRoutes() {
+    const asyncRouter = resolveRoutes(store.getters.menuList)
     const res = [
         {
             path: "/",
@@ -61,8 +58,5 @@ export function getAsyncRouter() {
             }
         }
     ]
-    // 清除全局变量asyncRouter和breadcrumb
-    asyncRouter = []
-    breadcrumb = []
     return res
 }

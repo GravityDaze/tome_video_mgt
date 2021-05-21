@@ -1,7 +1,7 @@
 <template>
   <el-card>
-    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
+      :formData="formData" 
       :tableData="tableData"
       :tableCols="tableCols"
       :pagination="pagination"
@@ -161,11 +161,10 @@ export default {
               value: 3
             }
           ]
-        }
-      ],
-      searchBtn: [
-        {
-          type: "primary",
+        },
+         {
+          type:"button", 
+          btnType: "primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search"

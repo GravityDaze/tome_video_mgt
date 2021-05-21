@@ -36,5 +36,13 @@ body,
   outline: 0;
 }
 
+.dialog-vertical {
+  display: flex;
+  padding: 20px;
+  .el-dialog {
+    margin: auto !important;
+  }
+}
+
 @import "./assets/style/normalize.css"; 
 </style>

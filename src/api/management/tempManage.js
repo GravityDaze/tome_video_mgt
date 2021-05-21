@@ -46,3 +46,12 @@ export const getTempTag = params => request.get('/videomis/templet/getTempletTag
 
 // 获取模板明细
 export const queryTempDetail = data => request.post('/videomis/templet/queryDetail', {},{params:data})
+
+// 编辑模板明细
+export const editTempDetail = data => request.post('/videomis/templet/editDetail', data)
+
+// 启用模板点位
+export const enableTempDetail = data => request.get('/videomis/templet/enableDetail', {params:data})
+
+// 禁用模板点位
+export const disableTempDetail = data => request.get('/videomis/templet/disableDetail', {params:data})

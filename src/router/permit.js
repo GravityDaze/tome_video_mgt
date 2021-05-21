@@ -6,13 +6,11 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 NProgress.configure({ showSpinner: false })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // 开启进度条
   NProgress.start()
   const token = store.getters.token
   if (token) {
-    // 调用刷新token接口
-
     if (to.path === '/login') {
       next('/')
       NProgress.done()
@@ -21,14 +19,11 @@ router.beforeEach((to, from, next) => {
       if (to.meta.title) {
         document.title = `${to.meta.title} - 途咪小视频后台管理系统`
       }
+      // 如果不存在路由 则进行鉴权
       if (store.getters.routerMap.length === 0) {
-        store.dispatch('permission/getRouter').then(() => {
-          router.addRoutes(store.getters.routerMap)
-          next({ ...to, replace: true })
-        }).catch(() => {
-          next()
-        })
-        // 如果存在路由表 则正常跳转 
+        const accessRoutes = await store.dispatch('permission/getRouter')
+        router.addRoutes(accessRoutes)
+        next({ ...to, replace: true })
       } else {
         next()
       }

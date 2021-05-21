@@ -1,12 +1,7 @@
 <template>
   <el-card>
-    <searchs
+    <ProTable
       :formData="formData"
-      @query="query"
-      @add="add"
-      :searchBtn="searchBtn"
-    />
-    <tables
       :tableCols="tableCols"
       :tableData="tableData"
       v-loading="tablesLoading"
@@ -20,11 +15,12 @@
       :visible.sync="tempDialog"
       @closed="onClose"
       width="30%"
+      class="dialog-vertical"
     >
       <el-form :model="tempForm" ref="form">
         <el-form-item label="景区" label-width="120px" prop="sceneryId">
-          <SceneryPicker
-            :id="tempForm.sceneryId"
+          <Select
+            :bind="tempForm.sceneryId"
             @change="(id) => (tempForm.sceneryId = id)"
           />
         </el-form-item>
@@ -33,15 +29,15 @@
             <el-input v-model="tempForm.name" autocomplete="off"></el-input>
           </el-col>
         </el-form-item>
-        <el-form-item label="模板名称" label-width="120px" v-if="tempDialogTitle === '编辑'">
-          <SceneryPicker 
-
-            :id="tagId?'KEY_'+tagId:''" 
+        <el-form-item label="模板名称" label-width="120px">
+          <Select
+            :bind="tags"
             placeholder="请选择标签"
             type="tag"
             label="tagName"
             value="tagId"
-            @change="(id)=> tagId = id.split('_')[1]"
+            multiple
+            @change="(res) => (tags = res)"
           />
         </el-form-item>
         <el-form-item label="模板描述" label-width="120px" prop="describe">
@@ -60,7 +56,11 @@
             :imageUrl="tempForm.coverUrl"
             @success="
               (res) =>
-                (tempForm.coverUrl = `https://tomevideo.zhihuiquanyu.com/${res.key}`)
+                $set(
+                  tempForm,
+                  'coverUrl',
+                  `https://tomevideo.zhihuiquanyu.com/${res.key}`
+                )
             "
           />
         </el-form-item>
@@ -69,9 +69,12 @@
             :videoUrl="tempForm.videoUrl"
             @success="
               (res) =>
-                (tempForm.videoUrl = `https://tomevideo.zhihuiquanyu.com/${res.key}`)
+                $set(
+                  tempForm,
+                  'videoUrl',
+                  `https://tomevideo.zhihuiquanyu.com/${res.key}`
+                )
             "
-            :allowedFileType="['video/mp4']"
           />
         </el-form-item>
       </el-form>
@@ -81,19 +84,64 @@
       </div>
     </el-dialog>
 
-    <!-- 模板点位信息对话框 -->
+    <!-- 模板片段表格对话框 -->
     <el-dialog
+      class=""
       width="70%"
       title="视频片段管理"
       :visible.sync="partDialog"
     >
-      <tables
+      <ProTable
+        :formData="tempFormData"
+        :tableCols="tempDetailCols"
         :tableData="tempDetailData"
-        :tableCols="tempPointCols"
-        :pagination="tempPointPagination"
-        @sizeChange="tempPointSizeChange"
-        @numChange="tempPointNumChange"
+        hidePagination
       />
+    </el-dialog>
+
+    <!-- 模板片段新增/编辑 -->
+    <el-dialog
+      :title="'对话框'"
+      :visible.sync="tempDetailDialog"
+      @closed="onTempClose"
+     
+    >
+      <el-form :model="tempForm" ref="form">
+         <el-form-item label="名字" label-width="120px" >
+          <el-input
+            v-model.trim="tempForm.name"
+            placeholder="请输入名字"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="类型" label-width="120px" prop="type">
+          <el-select
+            v-model="tempForm.type"
+            placeholder="请选择类型"
+          >
+            <el-option label="点位" :value="1"></el-option>
+            <el-option label="空镜" :value="0"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item v-if="tempForm.type === 0" label="视频" prop="url" label-width="120px">
+          <Uploader
+            :videoUrl="tempForm.url"
+            @success="
+              (res) =>
+                $set(
+                  tempForm,
+                  'videoUrl',
+                  `https://tomevideo.zhihuiquanyu.com/${res.key}`
+                )
+            "
+            :allowedFileType="['video/mp4']"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="tempDetailDialog = false">取 消</el-button>
+        <el-button type="primary" @click="submit(tempForm)">确 定</el-button>
+      </div>
     </el-dialog>
   </el-card>
 </template>
@@ -111,76 +159,62 @@ import {
   enableTemplatePoint,
   getTempTag,
   editTempTag,
-  queryTempDetail
+  queryTempDetail,
+  editTempDetail,
+  enableTempDetail,
+  disableTempDetail,
 } from "@/api/management/tempManage";
-import SceneryPicker from "@/components/SceneryPicker";
+import Select from "@/components/Select";
 import Uploader from "@/components/Uploader";
 import initPagination from "@/mixins/initPagination";
 export default {
   mixins: [initPagination],
   data() {
     return {
-      tableCols: [
+      tableCols: Object.freeze([
         {
           prop: "no",
           label: "模板编号",
-          align: "center",
         },
         {
           prop: "name",
           label: "模板名称",
-          align: "center",
         },
         {
           prop: "sceneryName",
           label: "所属景区",
-          align: "center",
         },
 
         {
           prop: "describe",
           label: "模板描述",
-          align: "center",
         },
         {
           prop: "creator",
           label: "创建者",
-          align: "center",
         },
 
         {
           prop: "createDatetime",
           label: "创建时间",
-          align: "center",
         },
         {
           prop: "status",
           label: "状态",
           type: "switch",
-          align: "center",
           change: this.statusChange,
         },
         {
           label: "操作",
           type: "button",
-          align: "center",
-          width:"200",
+          width: "200",
           btnList: [
-              { type: "primary", label: "编辑", handle: this.editTemp },
-              { label: "配置", handle: this.config }
-            ],
+            { type: "primary", label: "编辑", handle: this.editTemp },
+            { label: "配置", handle: this.config },
+          ],
         },
-      ],
-      tablesLoading: false,
-      tempDialog: false, //编辑 & 新增对话框
-      tempForm: {
-        sceneryId: "",
-        name: "",
-        describe: "",
-        durationLimit: "",
-        sort: "",
-      }, //对话框表单
-      formData: [
+      ]),
+      formData: Object.freeze([
         {
           type: "input",
           label: "景区名称",
@@ -217,33 +251,51 @@ export default {
             },
           ],
         },
-      ],
-      searchBtn: [
         {
-          type: "primary",
+          type: "button",
+          btnType: "primary",
           label: "新增",
           handle: this.add,
           icon: "el-icon-edit",
         },
         {
-          type: "primary",
+          type: "button",
+          btnType: "primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search",
         },
-      ],
+      ]),
+      tablesLoading: false,
+      tempDialog: false, //编辑 & 新增对话框
+      tempForm: {
+        sceneryId: "",
+        name: "",
+        describe: "",
+        durationLimit: "",
+        sort: "",
+      }, //对话框表单
       tempDialogTitle: "", //对话框标题
-      tempPointDialog: false, //模板点位对话框
-      partDialog:false,
+      partDialog: false,
+      tempFormData: [
+        {
+          type: "button",
+          btnType: "primary",
+          label: "新增",
+          handle: this.checkTempDetail,
+          icon: "el-icon-edit",
+        },
+      ],
       tempDetailData: [],
-      tempPointCols: [
+      tempDetailCols: [
         {
           label: "片段名称",
           prop: "name",
         },
         {
-          label: "点位",
-          prop: "pointId",
+          label: "类型",
+          prop: "type",
+          formatter:row=>row.type?'点位':'空镜'
         },
         {
           label: "视频地址",
@@ -259,13 +311,17 @@ export default {
           prop: "status",
           change: this.tempDetailStatusChange,
         },
+        {
+          label: "操作",
+          type: "button",
+          width: "200",
+          btnList: [
+            { type: "primary", label: "编辑", handle: this.checkTempDetail },
+          ],
+        },
       ],
-      tempPointPagination: {
-        num: 1,
-        size: 5,
-        total: 0,
-      },
-      tagId:""
+      tempDetailDialog: false,
+      tags: [],
     };
   },
 
@@ -316,7 +372,6 @@ export default {
       }
     },
 
-
     // 编辑模板
     async editTemp(row) {
       // 打开对话框
@@ -326,7 +381,7 @@ export default {
       this.tempDialog = true;
       // get tempTags
       const res = await getTempTag({ templetId: row.id });
-      this.tagId = res.data.value[0]?.tagId
+      this.tags = res.data.value.map((v) => `KEY_${v.tagId}`);
     },
 
     // 新增
@@ -338,56 +393,80 @@ export default {
 
     // 提交编辑 & 新增
     async submit(form) {
-        const { sceneryId,id } = form
+      const { sceneryId, id } = form;
+      const tags = this.tags.map((v) => v.split("_")[1]);
       try {
         if (this.tempDialogTitle === "编辑") {
-          await editTemplate(form);
+          await Promise.all[
+            (editTemplate(form),
+            editTempTag({
+              sceneryId, //景区id
+              templetId: id, //模板id
+              tags,
+            }))
+          ];
+          this.getTableData();
+          this.$message.success("编辑成功");
+        } else {
+          const res = await addTemplate(form);
           await editTempTag({
             sceneryId, //景区id
-            templetId:id, //模板id
-            tags:[ this.tagId ],
+            templetId: res.data.value.id, //模板id
+            tags,
           });
-          this.getTableData();
-          this.$message.success("修改成功");
-        } else {
-            // bug todo 暂时无法在新增时添加标签
-          console.log(await addTemplate(form));
           this.$message.success("新增成功");
         }
         this.getTableData();
         this.tempDialog = false;
-      } catch (err) {}
+      } catch (err) {
+        console.log(err);
+      }
     },
 
-    onClose(){
-        this.tagId = ""
-        this.$refs.form.resetFields()
+    onClose() {
+      this.tags = [];
+      this.$refs.form.resetFields();
     },
 
     // 配置模板
-    config(row){
-      this.partDialog = true
-      this.getDetils(row.id)
+    config(row) {
+      this.partDialog = true;
+      this.getDetils(row.id);
     },
 
-
-    async getDetils(TempletId){
-      const res = await queryTempDetail({TempletId})
-      this.tempDetailData = res.data.value?.list || res.data.value.map( v=>{
-         v.status = !!v.status;
-        return v;
-      } )
+    async getDetils(TempletId) {
+      const res = await queryTempDetail({ TempletId });
+      this.tempDetailData =
+        res.data.value?.list ||
+        res.data.value.map((v) => {
+          v.status = !!v.status;
+          return v;
+        });
     },
 
-    async tempDetailStatusChange(){
-
+    async tempDetailStatusChange(row) {
+      try {
+        if (row.status) {
+          // 启用
+          await enableTempDetail({ id: row.id });
+          this.$message.success("已启用");
+        } else {
+          // 禁用
+          await disableTempDetail({ id: row.id });
+          this.$message.info("已禁用");
+        }
+      } catch (err) {
+        // 错误时还原switch组件的状态
+        row.status = !row.status;
+      }
     },
 
-    // 查看模板点位信息
-    checkTempPoint() {
-      this.tempPointDialog = true;
-      this.getTempPoint();
+    // 查看表单
+    checkTempDetail() {
+      this.tempDetailDialog = true;
     },
+
+    onTempClose() {},
 
     // 获取模板点位信息
     async getTempPoint() {
@@ -420,16 +499,6 @@ export default {
       }
     },
 
-    // 模板点位表格分页
-    tempPointSizeChange(val) {
-      this.tempPointPagination.size = val;
-      this.getTempPoint();
-    },
-    tempPointNumChange(val) {
-      this.tempPointPagination.num = val;
-      this.getTempPoint();
-    },
-
     // 关闭模板点位对话框
     tempPointClose() {
       this.tempPointPagination.total = 0;
@@ -452,7 +521,7 @@ export default {
     },
   },
   components: {
-    SceneryPicker,
+    Select,
     Uploader,
   },
 };

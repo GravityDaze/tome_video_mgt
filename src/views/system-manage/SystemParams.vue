@@ -1,7 +1,7 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
+      :formData="formData"
       v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
@@ -15,7 +15,7 @@
       :title="paramsDialogTitle"
       :visible.sync="paramsDialog"
       width="25%"
-      top="20vh"
+       class="dialog-vertical"
       @closed="dialogClose('paramsForm')"
       :close-on-click-modal="false"
     >
@@ -58,7 +58,6 @@
 <script>
 import {
   queryParams,
-  addParams,
   editParams,
   paramsSync
 } from "@/api/management/systemManage";
@@ -95,34 +94,28 @@ export default {
         {
           prop: "paramKey",
           label: "参数键",
-          align: "center"
         },
         {
           prop: "value",
           label: "参数值",
-          align: "center"
         },
         {
           prop: "regularExpression",
           label: "参数值规则",
-          align: "center"
         },
         {
           prop: "description",
           label: "描述",
-          align: "center"
         },
         {
           prop: "edit",
           label: "是否可编辑",
-          align: "center",
           type:"tag",
           tagType:row=> (row.edit ? "" : "info"),
           formatter: row => (row.edit ? "可编辑" : "不可编辑")
         },
         {
           label: "操作",
-          align: "center",
           type: "button",
           btnList: [
             {
@@ -165,23 +158,24 @@ export default {
               value: 0
             }
           ]
-        }
-      ],
-      searchBtn: [
+        },
         {
-          type: "primary",
+          type:"button",
+          btnType: "primary",
           label: "新增",
           handle: this.add,
           icon: "el-icon-edit"
         },
         {
-          type: "primary",
+           type:"button",
+          btnType: "primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search"
         },
         {
-          type: "primary",
+          type:"button",
+          btnType: "primary",
           label: "同步",
           handle: this.sync,
           icon: "el-icon-refresh",
@@ -265,10 +259,10 @@ export default {
 
     // 同步至redis
     async sync(){
-      const i = this.searchBtn.findIndex( v => v.label==="同步" )
-      this.searchBtn[i].loading = true
+      const i = this.formData.findIndex( v => v.label==="同步" )
+      this.formData[i].loading = true
       await paramsSync()
-      this.searchBtn[i].loading = false
+      this.formData[i].loading = false
       this.$message.success('同步成功')
     }
   }

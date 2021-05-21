@@ -1,8 +1,8 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
       v-loading="tablesLoading"
+      :formData="formData"
       :tableData="tableData"
       :tableCols="tableCols"
       :pagination="pagination"
@@ -84,7 +84,6 @@ import {
   refund,
 } from "@/api/management/saleManage";
 import initPagination from "@/mixins/initPagination";
-import { restore } from "@/utils/restoreModel";
 export default {
   mixins: [initPagination],
   data() {
@@ -93,42 +92,34 @@ export default {
         {
           label: "订单编号",
           prop: "no",
-          align: "center",
         },
         {
           label: "景区编号",
           prop: "sceneryNo",
-          align: "center",
         },
         {
           label: "所属景区",
           prop: "sceneryName",
-          align: "center",
         },
         {
           label: "用户编号",
           prop: "no",
-          align: "center",
         },
         {
           label: "小视频编号",
           prop: "videoNo",
-          align: "center",
         },
         {
           label: "订单金额",
           prop: "price",
-          align: "center",
         },
         {
           label: "下单时间",
           prop: "createDatetime",
-          align: "center",
         },
         {
           label: "订单状态",
           prop: "status",
-          align: "center",
           type: "tag",
           tagType: (row) => (row.status === 0 ? "info" : "success"),
           formatter: (row) => (row.status === 0 ? "未支付" : "已完成"),
@@ -136,12 +127,10 @@ export default {
         {
           label: "支付时间",
           prop: "buyDatetime",
-          align: "center",
         },
         {
           label: "支付状态",
           prop: "payStatus",
-          align: "center",
           type: "tag",
           tagType: (row) => (row.status === 0 ? "info" : "success"),
           formatter: (row) => (row.payStatus === 0 ? "未支付" : "已支付"),
@@ -149,7 +138,6 @@ export default {
         {
           label: "操作",
           type: "button",
-          align: "center",
           btnList: [
             {
               type: "text",
@@ -229,10 +217,9 @@ export default {
           type: "datePicker",
           model: "createDatetime",
         },
-      ],
-      searchBtn: [
         {
-          type: "primary",
+          type: "button",
+          btnType:"primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search",

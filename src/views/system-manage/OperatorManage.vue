@@ -1,7 +1,7 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
+      :formData="formData"
       v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
@@ -14,12 +14,13 @@
     <el-dialog
       :title="operatorDialogTitle"
       :visible.sync="operatorDialog"
+       class="dialog-vertical"
       width="25%"
       @closed="dialogClose('operatorForm')"
       :close-on-click-modal="false"
     >
       <el-form
-        style="width:320px"
+        style="width: 320px"
         :model="operatorForm"
         :rules="rules"
         ref="operatorForm"
@@ -30,26 +31,47 @@
         <el-form-item label="登录名" prop="name">
           <el-input
             placeholder="请输入登录名"
-            v-if="operatorDialogTitle==='新增'"
+            v-if="operatorDialogTitle === '新增'"
             v-model.trim="operatorForm.name"
           ></el-input>
-          <span v-else>{{operatorForm.name}}</span>
+          <span v-else>{{ operatorForm.name }}</span>
         </el-form-item>
-        <el-form-item v-if="operatorDialogTitle==='编辑'" label="角色授权" prop="name">
-          <el-tag type="success" v-for="tag in beAuth" :key="tag.name">{{tag.name}}</el-tag>
-          <el-button v-if="!beAuth.length" @click="reAuth">{{needReAuth?'取消':'授权'}}</el-button>
-          <el-button v-else style="margin-left:10px" @click="reAuth">{{needReAuth?'取消':'重新授权'}}</el-button>
+        <el-form-item
+          v-if="operatorDialogTitle === '编辑'"
+          label="角色授权"
+          prop="name"
+        >
+          <el-tag type="success" v-for="tag in beAuth" :key="tag.name">{{
+            tag.name
+          }}</el-tag>
+          <el-button v-if="!beAuth.length" @click="reAuth">{{
+            needReAuth ? "取消" : "授权"
+          }}</el-button>
+          <el-button v-else style="margin-left: 10px" @click="reAuth">{{
+            needReAuth ? "取消" : "重新授权"
+          }}</el-button>
         </el-form-item>
         <el-form-item label="可授角色" v-if="needReAuth">
           <el-checkbox-group v-model="roleIds">
-            <el-checkbox v-for="item in canAuth" :key="item.id" :label="item.id">{{item.name}}</el-checkbox>
+            <el-checkbox
+              v-for="item in canAuth"
+              :key="item.id"
+              :label="item.id"
+              >{{ item.name }}</el-checkbox
+            >
           </el-checkbox-group>
         </el-form-item>
         <el-form-item label="真实姓名" prop="realName">
-          <el-input placeholder="请输入真实姓名" v-model.trim="operatorForm.realName"></el-input>
+          <el-input
+            placeholder="请输入真实姓名"
+            v-model.trim="operatorForm.realName"
+          ></el-input>
         </el-form-item>
         <el-form-item label="联系电话" prop="phone">
-          <el-input placeholder="请输入联系电话" v-model.number="operatorForm.phone"></el-input>
+          <el-input
+            placeholder="请输入联系电话"
+            v-model.number="operatorForm.phone"
+          ></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="sex">
           <el-radio-group v-model="operatorForm.sex">
@@ -61,8 +83,15 @@
           <el-input v-model.trim="operatorForm.email"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('operatorForm')">提交</el-button>
-          <el-button type="primary" v-if="operatorDialogTitle==='编辑'" @click="resetPWD">重置密码</el-button>
+          <el-button type="primary" @click="submitForm('operatorForm')"
+            >提交</el-button
+          >
+          <el-button
+            type="primary"
+            v-if="operatorDialogTitle === '编辑'"
+            @click="resetPWD"
+            >重置密码</el-button
+          >
           <el-button @click="operatorDialog = false">关闭</el-button>
         </el-form-item>
       </el-form>
@@ -81,7 +110,7 @@ import {
   enableOperator,
   disableOperator,
   closeOperator,
-  resetPw
+  resetPw,
 } from "@/api/management/systemManage";
 import initPagination from "@/mixins/initPagination";
 import { restore } from "@/utils/restoreModel";
@@ -111,7 +140,7 @@ export default {
         sex: "", //性别
         email: "", //电子邮箱
         // birthday: "", //出生日期
-        headPicPath: "" //头像url
+        headPicPath: "", //头像url
       },
       // 验证规则
       rules: {
@@ -119,86 +148,76 @@ export default {
           {
             required: true,
             message: "操作员登录名不能为空",
-            tigger: "blur"
-          }
+            tigger: "blur",
+          },
         ],
         realName: [
-          { required: true, message: "请输入操作员真实姓名", tigger: "blur" }
+          { required: true, message: "请输入操作员真实姓名", tigger: "blur" },
         ],
         sex: [{ required: true, message: "请选择性别" }],
-        phone: [{ required: true, validator: checkPhone, trigger: "blur" }]
+        phone: [{ required: true, validator: checkPhone, trigger: "blur" }],
       },
       tableCols: [
         {
           prop: "name",
           label: "登录名",
-          align: "center"
         },
         {
           prop: "realName",
           label: "真实姓名",
-          align: "center"
         },
         {
           prop: "phone",
           label: "联系电话",
-          align: "center"
         },
         {
           prop: "sex",
           label: "性别",
-          align: "center",
-          formatter: row => (row.sex === 1 ? "男" : "女")
+          formatter: (row) => (row.sex === 1 ? "男" : "女"),
         },
         {
           prop: "email",
           label: "E-MAIL",
-          align: "center"
         },
         {
           prop: "createDatetime",
           label: "创建时间",
-          align: "center"
         },
         {
           prop: "loginDatetime",
           label: "最后登录时间",
-          align: "center"
         },
         {
           prop: "editPassDatetime",
           label: "最后修改时间",
-          align: "center"
         },
         {
           prop: "status",
           label: "状态",
-          align: "center",
           type: "switch",
-          change: this.statusChange
+          change: this.statusChange,
         },
         {
           label: "操作",
-          align: "center",
           type: "button",
           btnList: [
             { type: "primary", label: "编辑", handle: this.editOperator },
-            { type: "danger", label: "删除", handle: this.deleteOperator }
-          ]
-        }
+            { type: "danger", label: "删除", handle: this.deleteOperator },
+          ],
+        },
       ],
       formData: [
         {
           type: "input",
           label: "登录名",
           model: "name",
-          placeholder: "请输入登录名"
+          placeholder: "请输入登录名",
         },
         {
           type: "input",
           label: "手机号码",
           model: "phone",
-          placeholder: "请输入手机号码"
+          placeholder: "请输入手机号码",
         },
         {
           type: "select",
@@ -207,39 +226,39 @@ export default {
           options: [
             {
               label: "全部",
-              value: undefined
+              value: undefined,
             },
             {
               label: "启用",
-              value: 1
+              value: 1,
             },
             {
               label: "禁用",
-              value: 0
-            }
-          ]
-        }
-      ],
-      searchBtn: [
-        {
-          type: "primary",
-          label: "新增",
-          handle: this.add,
-          icon: "el-icon-edit"
+              value: 0,
+            },
+          ],
         },
         {
-          type: "primary",
+          type: "button",
+          btnType: "primary",
+          label: "新增",
+          handle: this.add,
+          icon: "el-icon-edit",
+        },
+        {
+          type: "button",
+          btnType: "primary",
           label: "查询",
           handle: this.query,
-          icon: "el-icon-search"
-        }
+          icon: "el-icon-search",
+        },
       ],
       tablesLoading: false,
       beAuth: [], //已授权角色
       canAuth: [], //可授权角色
       needReAuth: false, //是否重新授权
       operatorDialogTitle: "",
-      roleIds: [] //角色ID集合
+      roleIds: [], //角色ID集合
     };
   },
   created() {
@@ -251,7 +270,7 @@ export default {
       query = {
         ...this.searchData,
         pageNum: this.pagination.num,
-        pageSize: this.pagination.size
+        pageSize: this.pagination.size,
       }
     ) {
       try {
@@ -259,7 +278,7 @@ export default {
         const { data } = await queryOperator(query);
         this.pagination.total = data.value.total;
         // 将后台返回的数据处理为符合switch组件的数据
-        this.tableData = data.value.list.map(v => {
+        this.tableData = data.value.list.map((v) => {
           // 将0和1转换为布尔值
           v.status = !!v.status;
           return v;
@@ -324,7 +343,7 @@ export default {
 
     // 提交编辑&新增
     submitForm(form) {
-      this.$refs[form].validate(async valid => {
+      this.$refs[form].validate(async (valid) => {
         if (valid) {
           try {
             if (this.operatorDialogTitle === "编辑") {
@@ -361,7 +380,7 @@ export default {
       this.$confirm("此操作将永久删除该操作员, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "warning"
+        type: "warning",
       })
         .then(async () => {
           try {
@@ -382,7 +401,7 @@ export default {
       this.$confirm("是否重置该操作员的密码?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "warning"
+        type: "warning",
       })
         .then(async () => {
           try {
@@ -411,10 +430,10 @@ export default {
       if (!_.isEqual(searchData, this.searchData)) {
         this.pagination.num = 1;
       }
-      this.searchData = { ...searchData};
+      this.searchData = { ...searchData };
       this.getTableData();
-    }
-  }
+    },
+  },
 };
 </script>
 

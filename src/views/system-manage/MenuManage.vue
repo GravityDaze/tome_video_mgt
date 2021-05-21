@@ -1,7 +1,7 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
+    :formData="formData"
       v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
@@ -17,7 +17,7 @@
       :visible.sync="menuDialog"
       @closed="dialogClose('menuForm')"
       :close-on-click-modal="false"
-      top="5%"
+       class="dialog-vertical"
       width="40%"
     >
       <el-form
@@ -132,64 +132,55 @@ export default {
           prop: "name",
           label: "名称",
           width: "150",
+          align:"left"
         },
         {
           prop: "no",
           label: "编号",
-          align: "center",
         },
         {
           prop: "url",
           label: "URL",
-          align: "center",
         },
         {
           prop: "iconStyle",
           label: "图标样式",
-          align: "center",
         },
         {
           prop: "sort",
           label: "显示顺序",
-          align: "center",
         },
         {
           prop: "type",
           label: "类型",
-          align: "center",
           formatter: (row) => this.typeMap.get(row.type),
         },
         {
           prop: "method",
           label: "HTTP方法",
-          align: "center",
           formatter: (row) => this.methodMap.get(row.method),
         },
         {
           prop: "refreshable",
           label: "可刷新",
-          align: "center",
           formatter: (row) => (row.refreshable ? "是" : "否"),
         },
         {
           type: "popover",
           prop: "description",
           label: "描述",
-          align: "center",
           title: "查看",
         },
         {
           type: "switch",
           prop: "status",
           label: "状态",
-          align: "center",
           change: this.statusChange,
           disabled: (row) => this.isChangeStatus,
         },
         {
           type: "button",
           label: "操作",
-          align: "center",
           width: "180",
           btnList: [
             {
@@ -207,11 +198,11 @@ export default {
           ],
         },
       ],
-      formData: [],
-      searchBtn: [
+      formData: [
         {
-          type: "primary",
+          type: "button",
           label: "新增根菜单",
+          btnType:"primary",
           handle: this.add,
           icon: "el-icon-edit",
         },

@@ -6,9 +6,11 @@
 
 <template>
   <el-upload
+    ref="upload"
     class="uploader"
     action="https://upload-z2.qiniup.com"
-    :element-loading-text="tips"
+    :element-loading-text="loadingText"
+    v-loading="loading"
     :show-file-list="listType !== 'text'"
     :before-upload="beforeUpload"
     :on-success="onSuccess"
@@ -23,9 +25,9 @@
     <div v-if="tips" slot="tip" class="el-upload__tip">
       {{ tips }}
     </div>
-    <img v-if="imageUrl" :src="imageUrl" class="img" />
-    <video autoplay loop v-else-if="videoUrl" :src="videoUrl" class="video" />
-    <i v-else :class="['el-icon-plus',  listType ==='text'?'uploader-icon':'' ]"></i>
+    <img :style="{ height:height+'px',width:width+'px' }" v-if="imageUrl" :src="imageUrl" class="img" />
+    <video :style="{ height:height+'px',width:width+'px' }" autoplay loop v-else-if="videoUrl" :src="videoUrl" class="video" />
+    <i :style="{ height:height+'px',width:width+'px' }" v-else :class="['el-icon-plus',  listType ==='text'?'uploader-icon':'' ]"></i>
   </el-upload>
 </template>
 
@@ -44,7 +46,7 @@ export default {
     },
     allowedFileType: {
       default() {
-        return ["image/jpeg", "image/png"];
+        return [];
       },
       type: Array,
     },
@@ -61,16 +63,25 @@ export default {
     listType:{
       default:"text",
       type:String 
+    },
+    height:{
+      default:178
+    },
+    width:{
+      default:178
     }
   },
   data() {
     return {
       token: "",
+      loading:false,
+      loadingText:""
     };
   },
   methods: {
     async beforeUpload({ type, name }) {
-      if (this.allowedFileType.indexOf(type) === -1) {
+      const filterType = this.setDefaultType()
+      if (filterType.indexOf(type) === -1) {
         //'video/ogg', 'video/flv', 'video/avi', 'video/wmv', 'video/rmvb'
         this.$message.error("请上传的正确的文件格式");
         return Promise.reject();
@@ -83,8 +94,22 @@ export default {
         }
       }
     },
+
+    setDefaultType(){
+      // 设置默认类型过滤
+      if( this.allowedFileType.length ){
+        return this.allowedFileType
+      }else if( this.imageUrl ){
+        return [ "image/jpeg" ,"image/png" ]
+      }else{
+        return [ "video/mp4" ]
+      }
+    },
+
     // 获取上传进度
     onProgress(event) {
+      this.loading = true
+      this.loadingText = `正在上传中，请勿关闭对话框或刷新页面${parseInt(event.percent)}%`
       this.$emit('progress',event)
     },
     onError() {
@@ -95,6 +120,8 @@ export default {
         .catch(() => {});
     },
     onSuccess(res, file) {
+      this.loading = false
+      this.loadingText = ""
       this.$emit("success", res, file);
     },
     onPreview(file){
@@ -102,6 +129,12 @@ export default {
     },
     onRemove(file){
       this.$emit("remove", file);
+    },
+    abort(){
+      this.$refs.upload.abort();
+    },
+    clearFiles(){
+       this.$refs.upload.clearFiles();
     }
 
   },

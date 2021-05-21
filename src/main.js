@@ -7,17 +7,16 @@ import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
 import store from "./store"
 
-
 Vue.use(ElementUI);
 Vue.use(Vuex);
 
 // 引入组件
-import Tables from "./components/Tables";
-import Searchs from "./components/Searchs";
+import ProTable from "./components/ProTable";
+// import Searchs from "./components/Searchs";
 
 //全局注册注册组件
-Vue.component('tables',Tables)
-Vue.component('searchs',Searchs)
+Vue.component('ProTable',ProTable)
+// Vue.component('searchs',Searchs)
 
 new Vue({
   router,

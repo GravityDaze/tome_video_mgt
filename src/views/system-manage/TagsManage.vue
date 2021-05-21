@@ -1,8 +1,8 @@
 <template>
   <el-card>
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
       v-loading="tablesLoading"
+      :formData="formData"
       :tableData="tableData"
       :tableCols="tableCols"
       :pagination="pagination"
@@ -15,9 +15,9 @@
       :title="tagsDialogTitle"
       :visible.sync="tagsDialog"
       width="25%"
-      @closed="$refs[formName].resetFields()"
+      @closed="$refs.tagsForm.resetFields()"
       :close-on-click-modal="false"
-      top="15%"
+      class="dialog-vertical"
     >
       <el-form
         style="width: 300px"
@@ -74,7 +74,6 @@ export default {
         {
           prop: "name",
           label: "标签名称",
-          align: "center",
           type: "tag",
           effect: "plain",
           tagType: () => "success",
@@ -82,29 +81,24 @@ export default {
         {
           prop: "type",
           label: "标签类型",
-          align: "center",
           formatter: (row) => (row.type === 1 ? "景区标签" : "模板标签"),
         },
         {
           prop: "createDatetime",
           label: "创建时间",
-          align: "center",
         },
         {
           prop: "updateDatetime",
           label: "最后更新时间",
-          align: "center",
         },
         {
           type: "switch",
           prop: "status",
           label: "状态",
-          align: "center",
           change: this.statusChange,
         },
         {
           label: "操作",
-          align: "center",
           width: "120",
           type: "button",
           btnList: [{ type: "primary", label: "编辑", handle: this.editTag }],
@@ -136,16 +130,16 @@ export default {
             },
           ],
         },
-      ],
-      searchBtn: [
         {
-          type: "primary",
+          type: "button",
+          btnType:"primary",
           label: "新增",
           handle: this.add,
           icon: "el-icon-edit",
         },
         {
-          type: "primary",
+          type: "button",
+          btnType:"primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search",

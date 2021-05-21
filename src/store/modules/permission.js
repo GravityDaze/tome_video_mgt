@@ -1,5 +1,5 @@
 import { getMenu } from '@/api/user'
-import { getAsyncRouter }  from '@/utils/getAsyncRouter'
+import { getAsyncRoutes }  from '@/utils/getAsyncRouter'
 
 const state = {
   menuList: JSON.parse(localStorage.getItem('menuList')) || [],
@@ -17,9 +17,8 @@ const mutations = {
   RESET_ROUTER(state){
     state.routerMap = []
   },
-  SET_COLLAPSE(state){
-    state.isCollapse = !state.isCollapse
-    sessionStorage.setItem('isCollapse',JSON.stringify(state.isCollapse))
+  SET_COLLAPSE(state,isCollapse){
+    state.isCollapse = isCollapse
   }
 }
 
@@ -34,7 +33,7 @@ const actions = {
         resolve()
       } catch (err) {
         console.log(err)
-        reject(err)
+        reject(err)  
       }
     })
   },
@@ -43,8 +42,9 @@ const actions = {
   getRouter({commit}){
     return new Promise( (resolve,reject) =>{
       try{
-        commit('SET_ROUTER',getAsyncRouter())
-        resolve()
+        const accessedRoutes = getAsyncRoutes()
+        commit('SET_ROUTER',accessedRoutes)
+        resolve(accessedRoutes)
       }catch(err){
         console.log(err)
         reject(err)

@@ -1,9 +1,9 @@
 <template>
   <el-card>
-    <searchs @query="query" :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
       :tableData="tableData"
       :tableCols="tableCols"
+      :formData="formData"
       :pagination="pagination"
       @sizeChange="sizeChange"
       @numChange="numChange"
@@ -16,6 +16,7 @@
       :visible.sync="customerDialog"
       append-to-body
       width="70%"
+       class="dialog-vertical"
       @closed="dialogClose"
     >
       <el-tabs v-model="activeName" type="border-card">
@@ -83,7 +84,7 @@
           </el-row>
         </el-tab-pane>
         <el-tab-pane name="second" label="需求明细">
-          <tables
+          <ProTable
             :tableData="demandData"
             :tableCols="demandCols"
             :pagination="demandPagination"
@@ -207,11 +208,10 @@ export default {
               value: 1
             }
           ]
-        }
-      ],
-      searchBtn: [
+        },
         {
-          type: "primary",
+          type:"button",
+          btnType: "primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search"

@@ -1,5 +1,5 @@
 /* 
-    element-ui递归导航菜单子组件
+    element-ui导航菜单子组件
     Author:朱星杰
     Date:2020/7/20
 */

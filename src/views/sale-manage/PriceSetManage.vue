@@ -1,9 +1,9 @@
 <template>
   <el-card>
-    <searchs :searchBtn="searchBtn" />
-    <tables
+    <ProTable
       :tableData="tableData"
       :tableCols="tableCols"
+      :formData="formData"
       :pagination="pagination"
       @sizeChange="sizeChange"
       @numChange="numChange"
@@ -68,18 +68,17 @@ export default {
       tableCols: [
         {
           prop: "rule",
-          label: "规则"
+          label: "规则",
+          align:"left"
         },
         {
           prop: "price",
           label: "售价",
           width: "120",
-          align: "center"
         },
         {
           label: "操作",
           type: "button",
-          align: "center",
           width: "120",
           btnList: [
             {
@@ -91,9 +90,10 @@ export default {
           ]
         }
       ],
-      searchBtn: [
+      formData: [
         {
-          type: "primary",
+          type: "button",
+          btnType:"primary",
           label: "新增",
           handle: this.add,
           icon: "el-icon-edit"

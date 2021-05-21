@@ -1,7 +1,7 @@
 <template>
   <el-card class="small-video-manage">
-    <searchs :formData="formData" :searchBtn="searchBtn" />
-    <tables
+    <ProTable
+    :formData="formData"
       v-loading="tablesLoading"
       :tableData="tableData"
       :tableCols="tableCols"
@@ -14,10 +14,11 @@
     <el-dialog
       :title="videoDialogTitle"
       :visible.sync="handleVideoDialog"
-      @close="dialogClose"
+      @close="$refs.form.resetFields()"
+      class="dialog-vertical"
     >
-      <el-form :model="handleVideoForm" v-loading="videoDialogLoading">
-        <el-form-item label="视频类型" label-width="120px">
+      <el-form :model="handleVideoForm"  ref="form">
+        <el-form-item label="视频类型" label-width="120px" prop="type">
           <el-select
             v-model="handleVideoForm.type"
             placeholder="请选择视频类型"
@@ -29,6 +30,7 @@
         <el-form-item
           label="制作需求"
           label-width="120px"
+           prop="needNo"
           v-show="handleVideoForm.type === 1"
         >
           <el-input
@@ -44,55 +46,30 @@
           label="景区"
           label-width="120px"
           v-show="handleVideoForm.type === 0"
+           prop="sceneryId"
         >
-          <SceneryPicker
-            :id="handleVideoForm.sceneryId"
-            @change="(id) => (handleVideoForm.sceneryId = id)"
+          <Select
+            :bind="handleVideoForm.sceneryId"
+            @change="(id) => $set( handleVideoForm,'sceneryId',id )"
           />
         </el-form-item>
-        <el-form-item label="视频封面" label-width="120px">
-          <el-upload
-            class="uploader"
-            action="https://upload-z2.qiniup.com"
-            :show-file-list="false"
-            :before-upload="beforeCoverUpload"
-            :on-success="onCoverUploadSuccess"
-            :on-error="onError"
-            :data="{ token }"
-          >
-            <div slot="tip" class="el-upload__tip">
-              推荐尺寸为157(宽)*48(高)，大小不超过 300KB
-            </div>
-            <img
-              v-if="handleVideoForm.coverUrl"
-              :src="handleVideoForm.coverUrl"
-              class="upload-img"
-            />
-            <i v-else class="el-icon-upload uploader-icon"></i>
-          </el-upload>
+        <el-form-item label="视频封面" label-width="120px"  prop="coverUrl">
+          <Uploader
+            @success="onCoverUploadSuccess"
+            tips="推荐尺寸为157(宽)*48(高)，大小不超过 300KB"
+            :imageUrl="handleVideoForm.coverUrl"
+            :width="128"
+            :height="72"
+           />
         </el-form-item>
-        <el-form-item label="小视频" label-width="120px">
-          <el-upload
-            class="uploader"
-            action="https://upload-z2.qiniup.com"
-            :show-file-list="false"
-            :before-upload="beforeVideoUpload"
-            :on-success="onVideoUploadSuccess"
-            :on-error="onError"
-            :on-progress="onUploading"
-            :data="{ token }"
-          >
-            <div slot="tip" class="el-upload__tip">{{ videoTips }}</div>
-            <video
-              autoplay
-              muted
-              loop
-              v-if="handleVideoForm.url"
-              :src="handleVideoForm.url"
-              class="upload-img"
-            />
-            <i v-else class="el-icon-upload uploader-icon"></i>
-          </el-upload>
+        <el-form-item label="小视频" label-width="120px" prop="url">
+           <Uploader
+            @success="onVideoUploadSuccess"
+            :tips="videoTips"
+            :videoUrl="handleVideoForm.url"
+            :width="128"
+            :height="72"
+           />
           <el-button
             type="primary"
             size="small"
@@ -119,7 +96,7 @@
       top="5vh"
       @closed="demandDialogClose"
     >
-      <tables
+      <ProTable
         :tableCols="demandTableCols"
         :tableData="demandTableData"
         :pagination="demandPagination"
@@ -143,45 +120,38 @@ import {
   cancelRecommend,
 } from "@/api/management/videoManage";
 import { getPublicUploadParams } from "@/api/qiniu";
-// 工具方法
-import { restore } from "@/utils/restoreModel";
 import initPagination from "@/mixins/initPagination";
-import SceneryPicker from "@/components/SceneryPicker";
+import Select from "@/components/Select";
+import Uploader from "@/components/Uploader"
 export default {
   name: "small-video-manage",
   mixins: [initPagination],
   data() {
     return {
-      tableCols: [
+      tableCols: Object.freeze([
         {
           prop: "no",
           label: "视频编号",
-          align: "center",
         },
         {
           prop: "sceneryName",
           label: "所属景区",
-          align: "center",
         },
         {
           prop: "nickName",
           label: "用户昵称",
-          align: "center",
         },
         {
           prop: "duration",
           label: "时长",
-          align: "center",
         },
         {
           prop: "times",
           label: "下载次数",
-          align: "center",
         },
         {
           prop: "status",
           label: "状态",
-          align: "center",
           type: "tag",
           tagType: (row) => {
             switch (row.status) {
@@ -207,7 +177,6 @@ export default {
         {
           prop: "shareStatus",
           label: "发布",
-          align: "center",
           type: "tag",
           tagType: (row) => (row.shareStatus === 0 ? "warning" : "success"),
           formatter: (row) => (row.shareStatus === 0 ? "未发布" : "已发布"),
@@ -216,34 +185,29 @@ export default {
           prop: "topStatus",
           label: "置顶",
           type: "switch",
-          align: "center",
           change: this.handleTopStatus,
         },
         {
           prop: "recommend",
           label: "推荐",
           type: "switch",
-          align: "center",
           change: this.handleRecommend,
         },
         {
           prop: "laudTimes",
           label: "点赞数",
-          align: "center",
         },
         {
           prop: "createDatetime",
           label: "提供时间",
-          align: "center",
         },
         {
           label: "操作",
           type: "button",
-          align: "center",
           btnList: [{ type: "primary", label: "编辑", handle: this.editVideo }],
         },
-      ],
-      formData: [
+      ]),
+      formData: Object.freeze([
         {
           type: "input",
           label: "所属景区",
@@ -280,41 +244,37 @@ export default {
             },
           ],
         },
-      ],
-      searchBtn: [
         {
-          type: "primary",
+          type:"button",
+          btnType: "primary",
           label: "新增",
           handle: this.add,
           icon: "el-icon-edit",
         },
         {
-          type: "primary",
+          type:"button",
+          btnType: "primary",
           label: "查询",
           handle: this.query,
           icon: "el-icon-search",
         },
-      ],
+      ]),
       demandTableCols: [
         {
           label: "需求编号",
           prop: "no",
-          align: "center",
         },
         {
           label: "用户昵称",
           prop: "customerNickName",
-          align: "center",
         },
         {
           label: "景区名",
           prop: "sceneryName",
-          align: "center",
         },
         {
           label: "时间",
           prop: "createDatetime",
-          align: "center",
         },
         {
           label: "操作",
@@ -343,7 +303,6 @@ export default {
         type: "", //视频类型
         needId: "",
       }, //模态框表单
-      videoDialogLoading: false, //模态框加载效果
       videoDialogTitle: "",
       id: "", //
       videoTips: "", //视频上传框下方提示
@@ -386,17 +345,9 @@ export default {
       this.videoDialogTitle = "编辑视频";
       this.videoTips = "确定重新上传后，之前的视频将被彻底覆盖";
       // 编辑视频时 , id为必传
-      this.id = row.id;
-      try {
-        this.videoDialogLoading = true;
-        // 获取到需要回填的数据
-        for (const item in this.handleVideoForm) {
-          this.handleVideoForm[item] = row[item];
-        }
-      } catch (err) {
-      } finally {
-        this.videoDialogLoading = false;
-      }
+      this._id = row.id;
+      this.$nextTick(()=>this.handleVideoForm = { ...row })
+
     },
 
     // 请求需求接口
@@ -460,56 +411,12 @@ export default {
       this.handleVideoDialog = true;
       this.videoDialogTitle = "新增视频";
       this.videoTips = "推荐720p或1080p视频，MP4格式，大小不超过 20M。";
-      // 获取景区下拉列表
-      // const { data } = await getSceneryList({ id: this.id });
-      // this.sceneryList = data.value;
-    },
-
-    // 获取七牛云token
-    async getQiniuToken(name) {
-      try {
-        const { data } = await getPublicUploadParams({ fileName: name });
-        this.token = data.value.token;
-        return true;
-      } catch (err) {
-        this.$message.error("上传失败，请刷新后重试");
-        return Promise.reject();
-      }
-    },
-
-    // 封面上传前
-    beforeCoverUpload({ type, name }) {
-      // 校验文件类型
-      if (["image/jpeg", "image/png", "image/gif"].indexOf(type) == -1) {
-        this.$message.error("只能上传jpg & png 格式的图片");
-        return false;
-      } else {
-        return this.getQiniuToken(name);
-      }
-    },
-
-    // 视频上传前
-    beforeVideoUpload({ type, name }) {
-      // 校验文件类型
-      if (["video/mp4"].indexOf(type) == -1) {
-        this.$message.error("只能上传mp4格式的视频");
-        return false;
-      } else {
-        return this.getQiniuToken(name);
-      }
     },
 
     // 封面上传成功
     onCoverUploadSuccess({ key }) {
       this.$message.success("上传成功");
       this.handleVideoForm.coverUrl = `https://tomevideo.zhihuiquanyu.com/${key}`;
-    },
-
-    // 视频上传中
-    onUploading(event) {
-      this.videoTips = `正在上传中，请勿关闭对话框或刷新页面 ${parseFloat(
-        event.percent
-      ).toFixed(2)}%`;
     },
 
     // 视频上传成功
@@ -527,16 +434,6 @@ export default {
       });
     },
 
-    // 上传失败
-    onError() {
-      this.$message.error("上传失败，请刷新网页后重试");
-    },
-
-    // 对话框关闭回调
-    dialogClose() {
-      this.handleVideoForm = restore(this.handleVideoForm);
-      this.videoTips = "";
-    },
 
     // 确认提交
     async submit(form) {
@@ -544,7 +441,7 @@ export default {
         if (this.videoDialogTitle === "新增视频") {
           await addVideo({ ...form });
         } else {
-          await updateVideo({ ...form, id: this.id });
+          await updateVideo({ ...form, id: this._id });
         }
         this.handleVideoDialog = false;
         this.$message.success("修改成功");
@@ -602,7 +499,8 @@ export default {
     },
   },
   components: {
-    SceneryPicker,
+    Select,
+    Uploader
   },
 };
 </script>
