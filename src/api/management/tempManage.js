@@ -50,6 +50,9 @@ export const queryTempDetail = data => request.post('/videomis/templet/queryDeta
 // 编辑模板明细
 export const editTempDetail = data => request.post('/videomis/templet/editDetail', data)
 
+// 新增模板明细
+export const addTempDetail = data => request.post('/videomis/templet/addDetail', data)
+
 // 启用模板点位
 export const enableTempDetail = data => request.get('/videomis/templet/enableDetail', {params:data})
 

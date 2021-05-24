@@ -89,7 +89,7 @@
       class=""
       width="70%"
       title="视频片段管理"
-      :visible.sync="partDialog"
+      :visible.sync="configDialog"
     >
       <ProTable
         :formData="tempFormData"
@@ -101,36 +101,38 @@
 
     <!-- 模板片段新增/编辑 -->
     <el-dialog
-      :title="'对话框'"
+      :title="`${ tempConfigTitle }模板配置`"
       :visible.sync="tempDetailDialog"
       @closed="onTempClose"
-     
     >
-      <el-form :model="tempForm" ref="form">
-         <el-form-item label="名字" label-width="120px" >
-          <el-input
-            v-model.trim="tempForm.name"
-            placeholder="请输入名字"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="类型" label-width="120px" prop="type">
+      <el-form :model="tempConfigForm" ref="form">
+        <el-form-item label="类型" label-width="120px" prop="type"  >
           <el-select
-            v-model="tempForm.type"
+            v-model="tempConfigForm.type"
             placeholder="请选择类型"
           >
             <el-option label="点位" :value="1"></el-option>
             <el-option label="空镜" :value="0"></el-option>
           </el-select>
         </el-form-item>
+         <el-form-item label="名字" style="width:400px" label-width="120px" v-if="tempConfigForm.type === 0">
+          <el-input
+            v-model.trim="tempConfigForm.name"
+            placeholder="请输入名字"
+          ></el-input>
+        </el-form-item>
+         <el-form-item label="排序" style="width:400px" label-width="120px" v-if="tempConfigForm.type === 0">
+            <el-input-number v-model="tempConfigForm.sequence" :min="1" :max="10" label="描述文字"></el-input-number>
+        </el-form-item>
 
-        <el-form-item v-if="tempForm.type === 0" label="视频" prop="url" label-width="120px">
+        <el-form-item v-if="tempConfigForm.type === 0" label="视频" prop="url" label-width="120px">
           <Uploader
-            :videoUrl="tempForm.url"
+            :videoUrl="tempConfigForm.url"
             @success="
               (res) =>
                 $set(
-                  tempForm,
-                  'videoUrl',
+                  tempConfigForm,
+                  'url',
                   `https://tomevideo.zhihuiquanyu.com/${res.key}`
                 )
             "
@@ -140,7 +142,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="tempDetailDialog = false">取 消</el-button>
-        <el-button type="primary" @click="submit(tempForm)">确 定</el-button>
+        <el-button type="primary" @click="submitConfig('tempConfigForm')">确 定</el-button>
       </div>
     </el-dialog>
   </el-card>
@@ -161,6 +163,7 @@ import {
   editTempTag,
   queryTempDetail,
   editTempDetail,
+  addTempDetail,
   enableTempDetail,
   disableTempDetail,
 } from "@/api/management/tempManage";
@@ -210,7 +213,7 @@ export default {
           width: "200",
           btnList: [
             { type: "primary", label: "编辑", handle: this.editTemp },
-            { label: "配置", handle: this.config },
+            { label: "配置", handle: this.openConfigDialog },
           ],
         },
       ]),
@@ -276,13 +279,13 @@ export default {
         sort: "",
       }, //对话框表单
       tempDialogTitle: "", //对话框标题
-      partDialog: false,
+      configDialog: false,
       tempFormData: [
         {
           type: "button",
           btnType: "primary",
           label: "新增",
-          handle: this.checkTempDetail,
+          handle: this.addTempConfig,
           icon: "el-icon-edit",
         },
       ],
@@ -316,10 +319,12 @@ export default {
           type: "button",
           width: "200",
           btnList: [
-            { type: "primary", label: "编辑", handle: this.checkTempDetail },
+            { type: "primary", label: "编辑", handle: this.editTempConfig },
           ],
         },
       ],
+      tempConfigForm:{},
+      tempConfigTitle:'',
       tempDetailDialog: false,
       tags: [],
     };
@@ -429,11 +434,12 @@ export default {
     },
 
     // 配置模板
-    config(row) {
-      this.partDialog = true;
+    openConfigDialog(row) {
+      this.configDialog = true;
       this.getDetils(row.id);
     },
 
+    // 获取模板配置
     async getDetils(TempletId) {
       const res = await queryTempDetail({ TempletId });
       this.tempDetailData =
@@ -444,6 +450,7 @@ export default {
         });
     },
 
+    // 模板配置状态更改
     async tempDetailStatusChange(row) {
       try {
         if (row.status) {
@@ -461,9 +468,17 @@ export default {
       }
     },
 
-    // 查看表单
-    checkTempDetail() {
+    // 编辑表单
+    editTempConfig(row) {
+      this.tempConfigTitle = '编辑'
+      this.tempConfigForm = { ...row }
       this.tempDetailDialog = true;
+    },
+
+    // 新增表单
+    addTempConfig(){
+      this.tempConfigTitle = '新增'
+      this.tempDetailDialog = true
     },
 
     onTempClose() {},
@@ -503,6 +518,15 @@ export default {
     tempPointClose() {
       this.tempPointPagination.total = 0;
       this.tempPointData = [];
+    },
+
+    async submitConfig(form){
+      if( this.tempConfigTitle === '编辑' ){
+
+        await editTempDetail( this[form] )
+      }else{
+        await addTempDetail(  this[form] )
+      }
     },
 
     // 按钮查询
