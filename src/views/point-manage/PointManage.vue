@@ -37,7 +37,7 @@
             </el-form-item>
             <el-form-item label="所属景区" prop="sceneryId">
               <Select
-                :bind="positionForm.sceneryId"
+                :value="positionForm.sceneryId"
                 @change="(id) => (positionForm.sceneryId = id)"
               />
             </el-form-item>

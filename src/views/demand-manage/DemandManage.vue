@@ -89,7 +89,7 @@ export default {
           prop: "commitStatus",
           label: "推送通知",
           align: "center",
-          style:row => row.commitStatus === 1 ? {color:'green',fontWeight:'bold'} : {color:'grey'},
+          style: row => row.commitStatus === 1 ? {color:'green',fontWeight:'bold'} : {color:'grey'},
           formatter: row => (row.commitStatus === 1 ? "已提交" : "未提交")
         },
         {

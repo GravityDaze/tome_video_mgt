@@ -97,9 +97,10 @@ export default {
 
     setDefaultType(){
       // 设置默认类型过滤
+      console.log(  this.imageUrl === undefined  )
       if( this.allowedFileType.length ){
         return this.allowedFileType
-      }else if( this.imageUrl ){
+      }else if( this.imageUrl !== undefined ){
         return [ "image/jpeg" ,"image/png" ]
       }else{
         return [ "video/mp4" ]

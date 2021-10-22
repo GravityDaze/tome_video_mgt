@@ -6,12 +6,12 @@
 */
 
 <template>
-  <el-select :multiple="multiple" :value="bind" :placeholder="placeholder" @change="select">
+  <el-select :multiple="multiple" :value="value" :value-key="valueKey" :placeholder="placeholder" @change="select">
     <el-option
       v-for="item in list"
-      :key="item[value]"
+      :key="item[valueKey]"
       :label="item[label]"
-      :value="item[value]"
+      :value="isGetObjectValue? item:item[valueKey] "
     ></el-option>
   </el-select>
 </template>
@@ -19,10 +19,12 @@
 <script>
 import { getSceneryList } from "@/api/management/videoManage";
 import { tagsSelect } from "@/api/management/systemManage";
+import { queryPointList } from "@/api/management/pointManage";
+
 export default {
   props: {
-    bind: {
-      default: "" | [],
+    value: {
+      default: "",
     },
     placeholder: {
       default: "请选择景区名",
@@ -34,16 +36,22 @@ export default {
     label: {
       default: "name",
     },
-    value: {
+    valueKey: {
       default: "id",
     },
+    requestParams:{
+      default:()=>{}
+    },
     multiple:{
+      default:false
+    },
+    isGetObjectValue:{
       default:false
     }
   },
   data() {
     return {
-      list: [],
+      list: []
     };
   },
   created() {
@@ -52,11 +60,14 @@ export default {
   methods: {
     getList() {
       switch (this.type) {
-        case "scenery":
+        case "scenery": // 景区选择
           this.getSceneryList();
           break;
-        case "tag":
+        case "tag": //标签选择
           this.getTagList();
+          break;
+        case "position": //点位选择
+          this.getPosition() 
       }
     },
 
@@ -70,8 +81,13 @@ export default {
       this.list = res.data.value;
     },
 
-    select(res) {
-      this.$emit("change", res);
+    async getPosition() {
+      const res = await queryPointList(this.requestParams);
+      this.list = res.data.value.list;
+    },
+
+    select(value) {
+      this.$emit("change", value);
     },
 
   },

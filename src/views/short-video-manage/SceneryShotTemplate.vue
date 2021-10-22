@@ -20,7 +20,7 @@
       <el-form :model="tempForm" ref="form">
         <el-form-item label="景区" label-width="120px" prop="sceneryId">
           <Select
-            :bind="tempForm.sceneryId"
+            :value="tempForm.sceneryId"
             @change="(id) => (tempForm.sceneryId = id)"
           />
         </el-form-item>
@@ -31,11 +31,11 @@
         </el-form-item>
         <el-form-item label="模板名称" label-width="120px">
           <Select
-            :bind="tags"
+            :value="tags"
             placeholder="请选择标签"
             type="tag"
             label="tagName"
-            value="tagId"
+            value-key="tagId"
             multiple
             @change="(res) => (tags = res)"
           />
@@ -101,31 +101,50 @@
 
     <!-- 模板片段新增/编辑 -->
     <el-dialog
-      :title="`${ tempConfigTitle }模板配置`"
+      :title="`${tempConfigTitle}模板配置`"
       :visible.sync="tempDetailDialog"
       @closed="onTempClose"
     >
-      <el-form :model="tempConfigForm" ref="form">
-        <el-form-item label="类型" label-width="120px" prop="type"  >
-          <el-select
-            v-model="tempConfigForm.type"
-            placeholder="请选择类型"
-          >
+      <el-form :model="tempConfigForm" ref="tempConfigForm">
+        <el-form-item label="类型" label-width="120px" prop="type">
+          <el-select v-model="tempConfigForm.type" placeholder="请选择类型">
             <el-option label="点位" :value="1"></el-option>
             <el-option label="空镜" :value="0"></el-option>
           </el-select>
         </el-form-item>
-         <el-form-item label="名字" style="width:400px" label-width="120px" v-if="tempConfigForm.type === 0">
+        <el-form-item
+          label="名字"
+          style="width: 400px"
+          label-width="120px"
+          prop="name"
+          v-if="tempConfigForm.type === 0"
+        >
           <el-input
             v-model.trim="tempConfigForm.name"
             placeholder="请输入名字"
           ></el-input>
         </el-form-item>
-         <el-form-item label="排序" style="width:400px" label-width="120px" v-if="tempConfigForm.type === 0">
-            <el-input-number v-model="tempConfigForm.sequence" :min="1" :max="10" label="描述文字"></el-input-number>
+        <el-form-item
+          label="排序"
+          style="width: 400px"
+          label-width="120px"
+          prop="sequence"
+           v-if="tempConfigForm.type === 0  || tempConfigForm.type === 1"
+        >
+          <el-input-number
+            v-model="tempConfigForm.sequence"
+            :min="1"
+            :max="10"
+            label="描述文字"
+          ></el-input-number>
         </el-form-item>
 
-        <el-form-item v-if="tempConfigForm.type === 0" label="视频" prop="url" label-width="120px">
+        <el-form-item
+          v-if="tempConfigForm.type === 0"
+          label="视频"
+          prop="url"
+          label-width="120px"
+        >
           <Uploader
             :videoUrl="tempConfigForm.url"
             @success="
@@ -139,10 +158,28 @@
             :allowedFileType="['video/mp4']"
           />
         </el-form-item>
+        <el-form-item
+          v-if="tempConfigForm.type === 1"
+          label="点位"
+          label-width="120px"
+          prop="pointId"
+        >
+          <Select
+            ref="select"
+            type="position"
+            label="description"
+            placeholder="请选择点位"
+            :value="tempConfigForm.pointId"
+            :request-params="{ sceneryId,status:1 }"
+            @change=" onPositionSelect "
+          />
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="tempDetailDialog = false">取 消</el-button>
-        <el-button type="primary" @click="submitConfig('tempConfigForm')">确 定</el-button>
+        <el-button type="primary" @click="submitConfig('tempConfigForm')"
+          >确 定</el-button
+        >
       </div>
     </el-dialog>
   </el-card>
@@ -298,7 +335,7 @@ export default {
         {
           label: "类型",
           prop: "type",
-          formatter:row=>row.type?'点位':'空镜'
+          formatter: (row) => (row.type ? "点位" : "空镜"),
         },
         {
           label: "视频地址",
@@ -323,9 +360,11 @@ export default {
           ],
         },
       ],
-      tempConfigForm:{},
-      tempConfigTitle:'',
+      tempConfigForm: {},
+      tempConfigTitle: "",
       tempDetailDialog: false,
+      sceneryId:"",
+      tempId:"",
       tags: [],
     };
   },
@@ -435,6 +474,8 @@ export default {
 
     // 配置模板
     openConfigDialog(row) {
+      this.sceneryId = row.sceneryId
+      this.tempId = row.id
       this.configDialog = true;
       this.getDetils(row.id);
     },
@@ -470,18 +511,21 @@ export default {
 
     // 编辑表单
     editTempConfig(row) {
-      this.tempConfigTitle = '编辑'
-      this.tempConfigForm = { ...row }
+      this.tempConfigTitle = "编辑";
+      this.$nextTick( _=>   this.tempConfigForm = { ...row } )
       this.tempDetailDialog = true;
     },
 
     // 新增表单
-    addTempConfig(){
-      this.tempConfigTitle = '新增'
-      this.tempDetailDialog = true
+    addTempConfig() {
+      console.log(this.tempConfigForm.pointId)
+      this.tempConfigTitle = "新增";
+      this.tempDetailDialog = true;
     },
 
-    onTempClose() {},
+    onTempClose() {
+      this.$refs.tempConfigForm.resetFields()
+    },
 
     // 获取模板点位信息
     async getTempPoint() {
@@ -520,13 +564,23 @@ export default {
       this.tempPointData = [];
     },
 
-    async submitConfig(form){
-      if( this.tempConfigTitle === '编辑' ){
+    // 选择点位回调
+    onPositionSelect(id){
+       this.tempConfigForm.pointId = id 
+    },
 
-        await editTempDetail( this[form] )
-      }else{
-        await addTempDetail(  this[form] )
+    async submitConfig(form) {
+      const index = this.$refs.select?.list.findIndex( v=>v.id === this.tempConfigForm.pointId )
+      //  判断是空镜还是点位
+      const name = this[form].type === 1? this.$refs.select.list[index]?.description : this[form].name
+      if (this.tempConfigTitle === "编辑") {
+        await editTempDetail({...this[form],name});
+      } else {
+        await addTempDetail({...this[form], templetId:this.tempId,name });
       }
+      // 刷新表格
+      this.tempDetailDialog = false;
+      this.getDetils( this.tempId )
     },
 
     // 按钮查询

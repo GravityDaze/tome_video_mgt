@@ -49,7 +49,7 @@
            prop="sceneryId"
         >
           <Select
-            :bind="handleVideoForm.sceneryId"
+            :value="handleVideoForm.sceneryId"
             @change="(id) => $set( handleVideoForm,'sceneryId',id )"
           />
         </el-form-item>
